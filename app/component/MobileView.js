@@ -9,6 +9,7 @@ import React, {
 import { matchShape } from 'found';
 import MapBottomsheetContext from './map/MapBottomsheetContext';
 import MobileFooter from './MobileFooter';
+import { isBrowser } from '../util/browser';
 
 import {
   PREFIX_ROUTES,
@@ -26,7 +27,9 @@ const BOTTOM_SHEET_OFFSET = 20;
 const topBarHeight = 64;
 
 function getMiddlePosition() {
-  return Math.floor((window.innerHeight - topBarHeight) * 0.45);
+  return isBrowser
+    ? Math.floor((window.innerHeight - topBarHeight) * 0.45)
+    : 400;
 }
 
 function slowlyScrollTo(el, to, done) {
