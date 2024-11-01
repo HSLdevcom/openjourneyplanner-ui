@@ -1,7 +1,7 @@
 import { uniqBy } from 'lodash';
 import { getSettings } from './planParamUtil';
 
-export const getFaresFromLegs = (legs, config) => {
+export const getFaresFromLegs = (legs, config, itineraryDuration) => {
   if (
     !Array.isArray(legs) ||
     legs.size === 0 ||
@@ -19,9 +19,13 @@ export const getFaresFromLegs = (legs, config) => {
     ),
   }));
 
+  const selector =
+    itineraryDuration < 120000 // 120000s = 2h, ticket validity limit
+      ? 'fareProducts[0].product.id'
+      : 'fareProducts[0].id';
   const knownFareLegs = uniqBy(
     filteredLegs.filter(l => l.fareProducts.length > 0),
-    'fareProducts[0].product.id',
+    selector,
   ).map(leg => ({
     fareProducts: leg.fareProducts,
     agency: leg.route.agency,

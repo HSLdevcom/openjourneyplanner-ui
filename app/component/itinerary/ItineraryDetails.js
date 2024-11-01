@@ -138,7 +138,7 @@ class ItineraryDetails extends React.Component {
     if (!itinerary?.legs[0]) {
       return null;
     }
-    const fares = getFaresFromLegs(itinerary.legs, config);
+    const fares = getFaresFromLegs(itinerary.legs, config, itinerary.duration);
     const extraProps = this.getExtraProps(itinerary);
     const {biking, walking, driving, futureText, isMultiRow} = extraProps;
     const legsWithRentalBike = compressLegs(itinerary.legs).filter(leg =>
