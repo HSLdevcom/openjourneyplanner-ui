@@ -21,7 +21,7 @@ export const getFaresFromLegs = (legs, config) => {
 
   const knownFareLegs = uniqBy(
     filteredLegs.filter(l => l.fareProducts.length > 0),
-    'fareProducts[0].id',
+    'fareProducts[0].product.id',
   ).map(leg => ({
     fareProducts: leg.fareProducts,
     agency: leg.route.agency,
