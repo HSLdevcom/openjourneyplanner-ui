@@ -2,17 +2,23 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import React from 'react';
 
-import { mockContext, mockChildContextTypes } from '../helpers/mock-context';
-import { mountWithIntl, shallowWithIntl } from '../helpers/mock-intl-enzyme';
 import {
   component as Itinerary,
   ModeLeg,
-  ViaLeg,
   RouteLeg,
-} from '../../../app/component/itinerary/Itinerary';
-import { AlertSeverityLevelType } from '../../../app/constants';
-import RouteNumberContainer from '../../../app/component/RouteNumberContainer';
-import dcw12 from '../test-data/dcw12';
+  ViaLeg,
+} from '../../../../../app/component/itinerary/Itinerary';
+import RouteNumberContainer from '../../../../../app/component/RouteNumberContainer';
+import { AlertSeverityLevelType } from '../../../../../app/constants';
+import {
+  mockChildContextTypes,
+  mockContext,
+} from '../../../helpers/mock-context';
+import {
+  mountWithIntl,
+  shallowWithIntl,
+} from '../../../helpers/mock-intl-enzyme';
+import dcw12 from '../../../test-data/dcw12';
 
 const defaultProps = {
   breakpoint: 'large',

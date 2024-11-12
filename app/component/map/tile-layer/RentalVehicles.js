@@ -38,7 +38,10 @@ class RentalVehicles {
   fetchAndDraw = lang => {
     const zoomedIn =
       this.tile.coords.z > this.config.vehicleRental.cityBikeSmallIconZoom;
-    const baseUrl = getLayerBaseUrl(this.config.URL.RENTAL_VEHICLE_MAP, lang);
+    const baseUrl = getLayerBaseUrl(
+      this.config.URL.REALTIME_RENTAL_VEHICLE_MAP,
+      lang,
+    );
     const tileUrl = `${baseUrl}${
       this.tile.coords.z + (this.tile.props.zoomOffset || 0)
     }/${this.tile.coords.x}/${this.tile.coords.y}.pbf`;
@@ -54,7 +57,7 @@ class RentalVehicles {
             const vt = new VectorTile(new Protobuf(buf));
 
             this.features = [];
-            const layer = vt.layers.rentalVehicles;
+            const layer = vt.layers.realtimeRentalVehicles;
             const settings = getSettings(this.config);
             const { scooterNetworks } = settings;
             const scooterIconPrefix = `icon-icon_scooter`;
@@ -166,7 +169,8 @@ class RentalVehicles {
   shouldShowRentalVehicle = (id, network, pickupAllowed, formFactor) =>
     (!this.tile.stopsToShow || this.tile.stopsToShow.includes(id)) &&
     (!network ||
-      (this.config.vehicleRental.networks[network].enabled &&
+      (this.config.vehicleRental.networks[network] &&
+        this.config.vehicleRental.networks[network].enabled &&
         this.config.vehicleRental.networks[network].showRentalVehicles &&
         this.config.vehicleRental.networks[network].type ===
           formFactor.toLowerCase())) &&

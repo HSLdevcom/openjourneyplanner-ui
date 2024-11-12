@@ -56,6 +56,7 @@ const ScooterNetworkSelector = (
                 const newNetworks = updateVehicleNetworks(
                   getScooterNetworks(config),
                   network.networkName,
+                  network.type,
                 );
                 const newSettings = { scooterNetworks: newNetworks };
                 executeAction(saveRoutingSettings, newSettings);

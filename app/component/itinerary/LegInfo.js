@@ -34,7 +34,10 @@ export default function LegInfo(
     !constantOperationRoutes || !constantOperationRoutes[leg.route.gtfsId];
   const mode = isCallAgency
     ? 'call'
-    : getRouteMode({ mode: leg.mode, type: leg.route.type });
+    : getRouteMode(
+        { mode: leg.mode, type: leg.route.type, gtfsId: leg.route?.gtfsId },
+        config,
+      );
   const capacity = getCapacityForLeg(config, leg);
   let capacityTranslation;
   if (capacity) {

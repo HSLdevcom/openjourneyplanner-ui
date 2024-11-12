@@ -12,7 +12,7 @@ function ToggleMapTracking(props) {
       tabIndex={0}
       aria-label={props.ariaLabel}
     >
-      <Icon img={props.img} className={props.className} color="#ff0000" />
+      <Icon img={props.img} className={props.className} />
     </div>
   );
 }

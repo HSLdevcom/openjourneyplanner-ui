@@ -7,6 +7,7 @@ import { isInBoundingBox } from './geo-utils';
 import { addAnalyticsEvent } from './analyticsUtils';
 import { ExtendedRouteTypes, TransportMode } from '../constants';
 import { isDevelopmentEnvironment } from './envUtils';
+import { getFeedWithoutId, isExternalFeed } from './feedScopedIdUtils';
 
 function seasonMs(ddmmyyyy) {
   const parts = ddmmyyyy.split('.');
@@ -113,7 +114,7 @@ export function getTransportModes(config) {
   };
 }
 
-export function getRouteMode(route) {
+export function getRouteMode(route, config) {
   switch (route.type) {
     case ExtendedRouteTypes.BusExpress:
       return 'bus-express';
@@ -122,7 +123,9 @@ export function getRouteMode(route) {
     case ExtendedRouteTypes.SpeedTram:
       return 'speedtram';
     default:
-      return route.mode?.toLowerCase();
+      return isExternalFeed(getFeedWithoutId(route?.gtfsId), config)
+        ? `${route.mode?.toLowerCase()}-external`
+        : route.mode?.toLowerCase();
   }
 }
 

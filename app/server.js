@@ -162,8 +162,7 @@ function getEnvironment(config, agent, locale) {
       ttl: 60 * 60 * 1000,
     }),
     urlMiddleware({
-      url: () =>
-        Promise.resolve(`${config.URL.OTP}index/graphql${queryParameters}`),
+      url: () => Promise.resolve(`${config.URL.OTP}gtfs/v1${queryParameters}`),
     }),
     errorMiddleware(),
     retryMiddleware({
@@ -332,7 +331,7 @@ export default async function serve(req, res, next) {
     if (req.url !== LOCAL_STORAGE_EMITTER_PATH) {
       // Write preload hints before doing anything else
       if (process.env.NODE_ENV !== 'development') {
-        res.write(getAnalyticsInitCode(config.GTMid));
+        res.write(getAnalyticsInitCode(config, req.hostname));
 
         const preloads = [
           { as: 'style', href: config.URL.FONT },

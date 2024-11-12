@@ -45,10 +45,7 @@ const RentalVehicleContent = (
     rentalVehicle.rentalNetwork.networkId,
     config,
   );
-  const vehicleIcon = getRentalNetworkIcon(
-    networkConfig,
-    !rentalVehicle.operative,
-  );
+  const vehicleIcon = getRentalNetworkIcon(networkConfig);
 
   if (networks) {
     return (

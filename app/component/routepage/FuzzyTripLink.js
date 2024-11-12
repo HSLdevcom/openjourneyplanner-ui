@@ -133,11 +133,12 @@ FuzzyTripLink.propTypes = {
   trip: tripShape,
   vehicle: vehicleShape.isRequired,
   stopName: PropTypes.string.isRequired,
-  nextStopName: PropTypes.string.isRequired,
+  nextStopName: PropTypes.string,
 };
 
 FuzzyTripLink.defaultProps = {
   trip: undefined,
+  nextStopName: undefined,
 };
 
 FuzzyTripLink.contextTypes = {

@@ -1,5 +1,4 @@
-import React from 'react';
+import { createContext } from 'react';
 
-const context = React.createContext({ paddingBottomRight: [0, 0] });
-
-export default context;
+// value 0 = default map bottom padding, used in desktop
+export default createContext(0);

@@ -62,6 +62,9 @@ $caution-icon-color: $white;
 $caution-icon-font-color: none;
 $top-bar-color: $primary-color;
 $nav-content-color: false;
+$disclaimer-background-color: rgba(254, 209, 0, 0.1);
+$disclaimer-border-color: #fed100;
+$link-color-accessible: $primary-color;
 
 /* Vehicle palette */
 $airplane-color: $livi-airplane-blue;
@@ -75,12 +78,15 @@ $ferry-color: $livi-ferry-blue;
 $funicular-color: $livi-funicular-pink;
 $citybike-color: #f2b62d;
 $citybike-off-color: #919191;
-$walk-color: #666;
+$walk-color: #000;
 $wait-color: #979797;
 $bicycle-color: #666;
 $car-color: #333;
-$scooter-color: #bababa;
+$scooter-color: #c5cad2;
+$scooter-map-color: #666;
 $call-agency-color: #666;
+$external-feed-color: #c5cad2;
+$external-feed-map-color: #666;
 
 /* Fonts */
 $font-family: 'Roboto', arial, georgia, serif;
@@ -89,6 +95,7 @@ $button-font-family: $font-family;
 $font-weight-book: 400;
 $font-weight-medium: 700;
 $font-weight-map-container: $font-weight-book;
+$font-weight-disclaimer: $font-weight-medium;
 $letter-spacing: 0;
 $letter-spacing-front-page: -0.67px;
 $font-family-narrow: 'Roboto Condensed', 'Arial Condensed', arial, georgia,
@@ -121,6 +128,7 @@ $padding-xlarge: 2em;
 $border-radius-small: 2px;
 $border-radius: 3px;
 $border-radius-bigger: 8px;
+$border-radius-disclaimer: $border-radius;
 $spinner-image: url('../default/default-spinner.png');
 
 /* Navbar dimensions */

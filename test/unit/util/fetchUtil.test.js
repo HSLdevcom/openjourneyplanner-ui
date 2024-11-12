@@ -1,6 +1,6 @@
-import { expect, assert } from 'chai';
-import { describe, it } from 'mocha';
+import { assert, expect } from 'chai';
 import fetchMock from 'fetch-mock';
+import { describe, it } from 'mocha';
 import { retryFetch } from '../../../app/util/fetchUtils';
 
 // retryFetch retries fetch requests (url, options, retry count, delay) where total number or calls is initial request + retry count
@@ -11,106 +11,85 @@ const testUrl =
 const testJSONResponse = '{"test": 3}';
 
 describe('retryFetch', () => {
-  /* eslint-disable no-unused-vars */
-  it('fetching something that does not exist with 5 retries should give Not Found error and 6 requests in total should be made ', done => {
-    fetchMock.mock(testUrl, 404);
-    retryFetch(testUrl, 5, 10)
-      .then(res => res.json())
-      .then(
-        result => {
-          assert.fail('Error should have been thrown');
-        },
-        err => {
-          expect(err).to.equal(`${testUrl}: Not Found`);
-          // calls has array of requests made to given URL
-          const calls = fetchMock.calls(
-            'https://dev-api.digitransit.fi/timetables/v1/hsl/routes/routes.json',
-          );
-          expect(calls.length).to.equal(6);
-          fetchMock.restore();
-          done();
-        },
-      );
+  before(() => fetchMock.mockGlobal());
+
+  afterEach(() => {
+    fetchMock.removeRoutes();
+    fetchMock.clearHistory();
   });
 
-  it('fetch with larger fetch timeout should take longer', done => {
-    let firstEnd;
-    let firstDuration;
-    const firstStart = performance.now();
-    fetchMock.mock(testUrl, 404);
-    retryFetch(testUrl, 2, 20)
-      .then(res => res.json())
-      .then(
-        result => {
-          assert.fail('Error should have been thrown');
-        },
-        err => {
-          firstEnd = performance.now();
-          firstDuration = firstEnd - firstStart;
-          expect(firstDuration).to.be.above(40);
-          // because test system can be slow, requests should take between 40-200ms (because system can be slow) when retry delay is 20ms and 2 retries
-          expect(firstDuration).to.be.below(200);
-          fetchMock.restore();
-        },
-      )
-      .then(() => {
-        const secondStart = performance.now();
-        fetchMock.mock(testUrl, 404);
-        retryFetch(testUrl, 2, 100)
-          .then(res => res.json())
-          .then(
-            result => {
-              assert.fail('Error should have been thrown');
-            },
-            err => {
-              const secondEnd = performance.now();
-              const secondDuration = secondEnd - secondStart;
-              expect(secondDuration).to.be.above(200);
-              // because test system can be slow, requests should take between 200-360ms when retry delay is 100ms and 2 retries
-              expect(firstDuration).to.be.below(360);
-              // because of longer delay between requests, the difference between 2 retries with 20ms delay
-              // and 2 retries with 100ms delay should be 160ms but because performance slightly varies, there is a 60ms threshold for test failure
-              expect(secondDuration - firstDuration).to.be.above(100);
-              fetchMock.restore();
-              done();
-            },
-          );
-      });
+  after(() => fetchMock.unmockGlobal());
+
+  it('fetching something that does not exist with 5 retries should give Not Found error and 6 requests in total should be made ', async () => {
+    fetchMock.get(testUrl, 404);
+
+    try {
+      await retryFetch(testUrl, 5, 10);
+    } catch (err) {
+      expect(err).to.equal(`${testUrl}: Not Found`);
+    }
+
+    const calls = fetchMock.callHistory.calls(
+      'https://dev-api.digitransit.fi/timetables/v1/hsl/routes/routes.json',
+    );
+    expect(calls.length).to.equal(6);
   });
 
-  it('fetch that gives 200 should not be retried', done => {
+  it('fetch with larger fetch timeout should take longer', async () => {
+    async function measureFetchDuration(retries, delay) {
+      const start = performance.now();
+      try {
+        await retryFetch(testUrl, retries, delay);
+      } catch (err) {
+        // Expected error due to 404
+      }
+      return performance.now() - start;
+    }
+    // because test system can be slow, requests should take between 40-200ms when retry delay is 20ms and 2 retries
+    const firstDuration = await measureFetchDuration(2, 20);
+    expect(firstDuration).to.be.above(40);
+    expect(firstDuration).to.be.below(200);
+
+    // because test system can be slow, requests should take between 200-360ms when retry delay is 100ms and 2 retries
+    const secondDuration = await measureFetchDuration(2, 100);
+    expect(secondDuration).to.be.above(200);
+    expect(secondDuration).to.be.below(360);
+
+    // because of longer delay between requests, the difference between 2 retries with 20ms delay
+    // and 2 retries with 100ms delay should be 160ms but because performance slightly varies, there is a 100ms threshold for test failure
+    const expectedDifference = 100;
+    const allowedVariance = 100;
+    const durationDifference = secondDuration - firstDuration;
+
+    expect(durationDifference).to.be.within(
+      expectedDifference - allowedVariance,
+      expectedDifference + allowedVariance,
+    );
+  });
+
+  it('fetch that gives 200 should not be retried', async () => {
     fetchMock.get(testUrl, testJSONResponse);
-    retryFetch(testUrl, 5, 10)
-      .then(res => res.json())
-      .then(
-        result => {
-          // calls has array of requests made to given URL
-          const calls = fetchMock.calls(
-            'https://dev-api.digitransit.fi/timetables/v1/hsl/routes/routes.json',
-          );
-          expect(calls.length).to.equal(1);
-          fetchMock.restore();
-          done();
-        },
-        err => {
-          assert.fail('No error should have been thrown');
-        },
-      );
+    try {
+      await retryFetch(testUrl, 5, 10);
+    } catch (err) {
+      assert.fail('No error should have been thrown');
+    }
+    const calls = fetchMock.callHistory.calls(
+      'https://dev-api.digitransit.fi/timetables/v1/hsl/routes/routes.json',
+    );
+    expect(calls.length).to.equal(1);
   });
 
-  it('fetch that gives 200 should have correct result data', done => {
+  it('fetch that gives 200 should have correct result data', async () => {
     fetchMock.get(testUrl, testJSONResponse);
-    retryFetch(testUrl, 5, 10)
-      .then(res => res.json())
-      .then(
-        result => {
-          expect(result.test).to.equal(3);
-          fetchMock.restore();
-          done();
-        },
-        err => {
-          assert.fail('No error should have been thrown');
-        },
-      );
+
+    try {
+      const res = await retryFetch(testUrl, 5, 10);
+      const data = await res.json();
+
+      expect(data).to.have.property('test', 3);
+    } catch (err) {
+      assert.fail(`Request failed unexpectedly: ${err.message}`);
+    }
   });
 });

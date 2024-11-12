@@ -80,26 +80,6 @@ const mockData = {
     },
     type: 'endpoint',
   },
-  currentLocation: {
-    item: {
-      type: 'CurrentLocation',
-      address: 'Mannerheimintie 1, Helsinki',
-      lat: 60.17020147545328,
-      lon: 24.937821437201357,
-      properties: {
-        labelId: 'Käytä nykyistä sijaintia',
-        layer: 'currentPosition',
-        address: 'Mannerheimintie 1, Helsinki',
-        lat: 60.17020147545328,
-        lon: 24.937821437201357,
-      },
-      geometry: {
-        type: 'Point',
-        coordinates: [24.937821437201357, 60.17020147545328],
-      },
-    },
-    type: 'endpoint',
-  },
 };
 
 describe('OldSearchesStore', () => {
@@ -161,18 +141,11 @@ describe('OldSearchesStore', () => {
       setOldSearchesStorage({
         version: STORE_VERSION,
         items: [
-          {
-            type: 'endpoint',
-          },
-          {
-            type: 'route',
-          },
-          {
-            type: 'endpoint',
-          },
+          { item: {}, type: 'endpoint' },
+          { item: {}, type: 'route' },
+          { item: {}, type: 'endpoint' },
         ],
       });
-
       const store = new OldSearchesStore();
       const oldSearches = store.getOldSearches('endpoint');
       expect(oldSearches).to.not.be.empty;
@@ -228,32 +201,13 @@ describe('OldSearchesStore', () => {
       MockDate.set(timestamp);
       setOldSearchesStorage({
         version: STORE_VERSION,
-        items: [{}],
+        items: [{ item: {} }],
       });
 
       const store = new OldSearchesStore();
       const oldSearches = store.getOldSearches();
       expect(oldSearches).to.not.be.empty;
       expect(oldSearches.length).to.equal(1);
-    });
-
-    it('should ignore items of type "CurrentLocation" if they are found from the store', () => {
-      const timeStamp = moment('2019-06-19');
-      MockDate.set(timeStamp);
-      setOldSearchesStorage({
-        version: STORE_VERSION,
-        items: [
-          {
-            ...mockData.currentLocation,
-            count: 1,
-            lastUpdated: timeStamp.unix(),
-          },
-        ],
-      });
-
-      const store = new OldSearchesStore();
-      const searches = store.getOldSearches();
-      expect(searches).to.have.lengthOf(0);
     });
   });
 
@@ -344,12 +298,6 @@ describe('OldSearchesStore', () => {
 
       const result = store.getOldSearches()[0];
       expect(result).to.deep.equal(newData.item);
-    });
-
-    it('should not save items of type "CurrentLocation"', () => {
-      const store = new OldSearchesStore();
-      store.saveSearch({ ...mockData.currentLocation });
-      expect(getOldSearchesStorage().items).to.deep.equal([]);
     });
   });
 });

@@ -35,16 +35,24 @@ export function addAnalyticsEvent(event) {
  *
  * @return string
  */
-export function getAnalyticsInitCode(GTMid) {
-  if (!GTMid) {
-    return '';
+export function getAnalyticsInitCode(config, hostname) {
+  if (
+    config.analyticsScript &&
+    hostname &&
+    (!hostname.match(/dev|test/) || config.devAnalytics)
+  ) {
+    return config.analyticsScript(hostname);
   }
-  // Google Tag Manager script
-  return `<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+
+  if (config.GTMid) {
+    // Google Tag Manager script
+    return `<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
         new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
         j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-        })(window,document,'script','dataLayer','${GTMid}');</script>\n`;
+        })(window,document,'script','dataLayer','${config.GTMid}');</script>\n`;
+  }
+  return '';
 }
 const handleChange = () => {
   if (!window.CookieInformation) {

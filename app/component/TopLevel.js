@@ -163,6 +163,7 @@ class TopLevel extends React.Component {
               content={this.props.content}
               header={this.props.header}
               selectFromMapHeader={this.props.selectFromMapHeader}
+              match={this.props.match}
             />
           )}
           desktop={() => (

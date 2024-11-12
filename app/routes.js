@@ -143,12 +143,7 @@ export default config => {
             }
           }
         `}
-        render={({ Component, props }) => {
-          if (Component) {
-            return <Component {...props} />;
-          }
-          return undefined;
-        }}
+        render={getComponentOrNullRenderer}
       />
     ),
   };
@@ -347,12 +342,7 @@ export default config => {
                       /* webpackChunkName: "loading" */ './component/Loading'
                     ).then(getDefault)
               }
-              render={({ Component, props }) => {
-                if (Component) {
-                  return <Component {...props} />;
-                }
-                return undefined;
-              }}
+              render={getComponentOrNullRenderer}
             >
               {{
                 content: [

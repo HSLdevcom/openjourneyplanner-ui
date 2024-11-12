@@ -26,12 +26,10 @@ import {
 import ItineraryLine from './ItineraryLine';
 import {
   locationShape,
-  mapLayerOptionsShape,
   relayShape,
   configShape,
   stopShape,
 } from '../../util/shapes';
-import { mapLayerShape } from '../../store/MapLayerStore';
 import Loading from '../Loading';
 import LazilyLoad, { importLazy } from '../LazilyLoad';
 import { getDefaultNetworks } from '../../util/vehicleRentalUtils';
@@ -155,12 +153,9 @@ function StopsNearYouMap(
     favouriteIds,
     relay,
     position,
-    onEndNavigation,
-    onMapTracking,
-    mapLayers,
-    mapLayerOptions,
     showWalkRoute,
     prioritizedStopsNearYou,
+    ...rest
   },
   { ...context },
 ) {
@@ -458,13 +453,10 @@ function StopsNearYouMap(
     stopsToShow: mode === 'FAVORITE' ? Array.from(favouriteIds) : undefined,
     hilightedStops: hilightedStops(),
     mergeStops: false,
-    mapLayers,
-    mapLayerOptions,
     bounds,
     leafletObjs,
     breakpoint,
-    onEndNavigation,
-    onMapTracking,
+    ...rest,
   };
 
   if (breakpoint === 'large') {
@@ -499,15 +491,11 @@ StopsNearYouMap.propTypes = {
   prioritizedStopsNearYou: PropTypes.arrayOf(stopShape),
   // eslint-disable-next-line
   favouriteIds: PropTypes.object,
-  mapLayers: mapLayerShape.isRequired,
-  mapLayerOptions: mapLayerOptionsShape,
   position: locationShape.isRequired,
   match: matchShape.isRequired,
   breakpoint: PropTypes.string.isRequired,
   language: PropTypes.string.isRequired,
   relay: relayShape.isRequired,
-  onEndNavigation: PropTypes.func,
-  onMapTracking: PropTypes.func,
   loading: PropTypes.bool,
   showWalkRoute: PropTypes.bool,
 };
@@ -518,9 +506,6 @@ StopsNearYouMap.defaultProps = {
   loading: false,
   favouriteIds: undefined,
   prioritizedStopsNearYou: [],
-  mapLayerOptions: undefined,
-  onEndNavigation: undefined,
-  onMapTracking: undefined,
 };
 
 StopsNearYouMap.contextTypes = {

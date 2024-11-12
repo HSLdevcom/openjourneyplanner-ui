@@ -59,6 +59,7 @@ IconBadge.asString = (badgeFill, badgeText, badgeTextFill) => {
 
 function Icon({
   backgroundShape,
+  backgroundColor,
   badgeFill,
   badgeText,
   badgeTextFill,
@@ -88,7 +89,13 @@ function Icon({
         aria-label={ariaLabel}
       >
         {backgroundShape === 'circle' && (
-          <circle className="icon-circle" cx="20" cy="20" fill="white" r="20" />
+          <circle
+            className="icon-circle"
+            cx="20"
+            cy="20"
+            fill={backgroundColor}
+            r="20"
+          />
         )}
         {!dataURI && <use xlinkHref={`#${img}`} />}
         {dataURI && (
@@ -106,6 +113,7 @@ function Icon({
 
 Icon.propTypes = {
   backgroundShape: PropTypes.oneOf(['circle']),
+  backgroundColor: PropTypes.string,
   badgeFill: PropTypes.string,
   badgeText: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   badgeTextFill: PropTypes.string,
@@ -123,6 +131,7 @@ Icon.propTypes = {
 
 Icon.defaultProps = {
   backgroundShape: undefined,
+  backgroundColor: 'white',
   badgeFill: undefined,
   badgeText: undefined,
   badgeTextFill: undefined,

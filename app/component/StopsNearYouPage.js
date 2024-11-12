@@ -264,6 +264,11 @@ class StopsNearYouPage extends React.Component {
     }
   };
 
+  // store ref to map
+  setMWTRef = ref => {
+    this.MWTRef = ref;
+  };
+
   updateLocation = () => {
     const { centerOfMap } = this;
     const { mode } = this.props.match.params;
@@ -695,6 +700,7 @@ class StopsNearYouPage extends React.Component {
                     ...this.props.favouriteVehicleStationIds,
                   ]}
                   breakpoint={this.props.breakpoint}
+                  setMWTRef={this.setMWTRef}
                 />
               );
             }
@@ -766,6 +772,7 @@ class StopsNearYouPage extends React.Component {
               onEndNavigation={this.setCenterOfMap}
               onMapTracking={this.setCenterOfMap}
               breakpoint={this.props.breakpoint}
+              setMWTRef={this.setMWTRef}
             />
           );
         }}
@@ -821,7 +828,7 @@ class StopsNearYouPage extends React.Component {
       modeSet: this.context.config.iconModeSet,
       getAutoSuggestIcons: this.context.config.getAutoSuggestIcons,
     };
-    const targets = ['Locations', 'Stops'];
+    const targets = ['Locations', 'Stations', 'Stops'];
     if (
       useCitybikes(
         this.context.config.vehicleRental?.networks,
@@ -949,6 +956,8 @@ class StopsNearYouPage extends React.Component {
               content={this.renderContent()}
               map={this.renderMap()}
               searchBox={this.renderSearchBox()}
+              mapRef={this.MWTRef}
+              match={this.props.match}
             />
           )}
         />

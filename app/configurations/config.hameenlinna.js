@@ -11,14 +11,14 @@ export default configMerger(walttiConfig, {
   CONFIG,
 
   appBarLink: {
-    name: 'Hämeenlinna',
-    href: 'http://www.hameenlinna.fi/joukkoliikenne/',
+    name: 'Hämeenlinnan joukkoliikenne',
+    href: 'http://hameenlinnanjoukkoliikenne.fi/',
   },
 
   colors: {
-    primary: '#F76013',
+    primary: 'rgb(196,40,31)',
     iconColors: {
-      'mode-bus': '#F76013',
+      'mode-bus': 'rgb(196,40,31)',
     },
   },
 

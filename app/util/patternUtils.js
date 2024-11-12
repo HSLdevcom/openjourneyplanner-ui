@@ -4,7 +4,6 @@ import moment from 'moment';
  Return false if pattern doesn't have active dates information available
  or if current day is not found in active days
  * */
-// eslint-disable-next-line import/prefer-default-export
 export const isActiveDate = pattern => {
   if (!pattern || !pattern.activeDates) {
     return false;

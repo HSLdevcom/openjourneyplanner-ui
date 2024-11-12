@@ -7,8 +7,7 @@ const CONFIG = 'kela';
 const APP_TITLE = 'Reittiopas';
 const APP_DESCRIPTION = 'Digitransit-reittiopas';
 const API_URL = process.env.API_URL || 'https://dev-api.digitransit.fi';
-const OTP_URL =
-  process.env.OTP_URL || `${API_URL}/routing/v2-kela/routers/kela/`;
+const OTP_URL = process.env.OTP_URL || `${API_URL}/routing/v2-kela/kela/`;
 const MAP_URL =
   process.env.MAP_URL || 'https://digitransit-dev-cdn-origin.azureedge.net';
 const POI_MAP_PREFIX = `${MAP_URL}/map/v3-kela/kela`;
@@ -115,7 +114,6 @@ export default {
       'mode-ferry-pier': '#666666',
       'mode-citybike': '#FCBC19',
       'mode-citybike-secondary': '#333333',
-      'mode-scooter': '#BABABA',
     },
   },
 

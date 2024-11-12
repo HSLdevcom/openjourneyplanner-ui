@@ -77,14 +77,12 @@ function ItineraryListContainer(
   };
 
   const onSelectActive = index => {
-    const subpath = getSubPath('');
     if (activeIndex === index) {
       onSelectImmediately(index);
     } else {
       router.replace({
         ...match.location,
         state: { selectedItineraryIndex: index },
-        pathname: `${getItineraryPagePath(params.from, params.to)}${subpath}`,
       });
 
       addAnalyticsEvent({

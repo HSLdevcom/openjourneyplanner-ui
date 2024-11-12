@@ -1,6 +1,6 @@
 import ceil from 'lodash/ceil';
 import Pbf from 'pbf';
-// eslint-disable-next-line import/prefer-default-export
+
 export const parseFeedMQTT = (feedParser, data, topic) => {
   const pbf = new Pbf(data);
   const feed = feedParser(pbf);

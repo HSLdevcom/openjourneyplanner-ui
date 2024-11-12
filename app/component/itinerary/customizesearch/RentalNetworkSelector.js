@@ -57,6 +57,7 @@ const RentalNetworkSelector = (
                 const newNetworks = updateVehicleNetworks(
                   getCitybikeNetworks(config),
                   network.networkName,
+                  network.type,
                 );
                 const newSettings = { allowedBikeRentalNetworks: newNetworks };
                 executeAction(saveRoutingSettings, newSettings);

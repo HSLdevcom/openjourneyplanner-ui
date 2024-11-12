@@ -219,7 +219,7 @@ const getSuggestionValue = suggestion => {
  * }
  * const transportMode = undefined;
  * const placeholder = "stop-near-you";
- * const targets = ['Locations', 'Stops', 'Routes']; // Defines what you are searching. all available options are Locations, Stops, Routes, VehicleRentalStations, FutureRoutes, MapPosition and CurrentPosition. Leave empty to search all targets.
+ * const targets = ['Locations', 'Stops', 'Routes']; // Defines what you are searching. Options are Locations, Stops, Stations, Routes, VehicleRentalStations, FutureRoutes, MapPosition and CurrentPosition. Leave empty to search all targets.
  * const sources = ['Favourite', 'History', 'Datasource'] // Defines where you are searching. all available are: Favourite, History (previously searched searches) and Datasource. Leave empty to use all sources.
  * return (
  *  <DTAutosuggest
@@ -598,26 +598,24 @@ class DTAutosuggest extends React.Component {
           // do not let component cast unnecessary requests
           return;
         }
+        const { targets } = this.props;
+        const useAll = isEmpty(targets);
         const isLocationSearch =
-          isEmpty(this.props.targets) ||
-          this.props.targets.includes('Locations');
-        let targets;
+          isEmpty(targets) || targets.includes('Locations');
+        let newTargets;
         if (this.state.ownPlaces) {
-          targets = ['Locations'];
-          if (
-            isEmpty(this.props.targets) ||
-            this.props.targets.includes('Stops')
-          ) {
-            targets.push('Stops');
+          newTargets = ['Locations'];
+          if (useAll || targets.includes('Stops')) {
+            newTargets.push('Stops');
           }
-          if (
-            isEmpty(this.props.targets) ||
-            this.props.targets.includes('VehicleRentalStations')
-          ) {
-            targets.push('VehicleRentalStations');
+          if (useAll || targets.includes('Stations')) {
+            newTargets.push('Stations');
           }
-        } else if (!isEmpty(this.props.targets)) {
-          targets = [...this.props.targets];
+          if (useAll || targets.includes('VehicleRentalStations')) {
+            newTargets.push('VehicleRentalStations');
+          }
+        } else if (!useAll) {
+          newTargets = [...targets];
           // in desktop, favorites are accessed via sub search
           if (
             isLocationSearch &&
@@ -625,7 +623,7 @@ class DTAutosuggest extends React.Component {
             (isEmpty(this.props.sources) ||
               this.props.sources.includes('Favourite'))
           ) {
-            targets.push('SelectFromOwnLocations');
+            newTargets.push('SelectFromOwnLocations');
           }
         }
         // remove  location favourites in desktop search (collection item replaces it in target array)
@@ -642,7 +640,7 @@ class DTAutosuggest extends React.Component {
           );
 
         executeSearch(
-          targets,
+          newTargets,
           sources,
           this.props.transportMode,
           this.props.searchContext,

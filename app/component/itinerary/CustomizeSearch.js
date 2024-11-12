@@ -167,6 +167,27 @@ class CustomizeSearch extends React.Component {
               </div>
             </div>
           )}
+          <div className="settings-section">
+            <div className="settings-option-container">
+              <StreetModeSelectorPanel
+                currentSettings={currentSettings}
+                defaultSettings={this.defaultSettings}
+              />
+            </div>
+          </div>
+          <div className="settings-section">
+            <div className="settings-option-container">
+              <AccessibilityOptionSection currentSettings={currentSettings} />
+            </div>
+          </div>
+          {config.showTicketSelector && (
+            <div className="settings-section">
+              <FareZoneSelector
+                options={ticketOptions}
+                currentOption={currentSettings.ticketTypes}
+              />
+            </div>
+          )}
           {useScooters(config.vehicleRental?.networks) && (
             <div className="settings-section">
               <div className="settings-option-container">
@@ -187,7 +208,10 @@ class CustomizeSearch extends React.Component {
                           <FormattedMessage id="settings-e-scooter-routes" />
                           <div
                             className="disclaimer-close"
-                            aria-label="Sulje sähköpotkulautojen asetusohje."
+                            aria-label={intl.formatMessage({
+                              id: 'e-scooter-disclaimer-close',
+                              defaultMessage: 'close',
+                            })}
                             tabIndex="0"
                             onKeyDown={e => {
                               if (
@@ -213,6 +237,23 @@ class CustomizeSearch extends React.Component {
                             }}
                           />
                         </div>
+                        {config.vehicleRental.scooterInfoLink && (
+                          <a
+                            onClick={e => {
+                              e.stopPropagation();
+                            }}
+                            className="external-link"
+                            href={
+                              config.vehicleRental.scooterInfoLink[intl.locale]
+                                .url
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <FormattedMessage id="read-more" />
+                            <Icon img="icon-icon_external-link-box" />
+                          </a>
+                        )}
                       </div>
                     )}
                     <ScooterNetworkSelector
@@ -222,27 +263,6 @@ class CustomizeSearch extends React.Component {
                   </div>
                 </fieldset>
               </div>
-            </div>
-          )}
-          <div className="settings-section">
-            <div className="settings-option-container">
-              <StreetModeSelectorPanel
-                currentSettings={currentSettings}
-                defaultSettings={this.defaultSettings}
-              />
-            </div>
-          </div>
-          <div className="settings-section">
-            <div className="settings-option-container">
-              <AccessibilityOptionSection currentSettings={currentSettings} />
-            </div>
-          </div>
-          {config.showTicketSelector && (
-            <div className="settings-section">
-              <FareZoneSelector
-                options={ticketOptions}
-                currentOption={currentSettings.ticketTypes}
-              />
             </div>
           )}
         </ScrollableWrapper>

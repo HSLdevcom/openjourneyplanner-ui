@@ -1,7 +1,5 @@
 /* eslint-disable compat/compat */
 /* eslint-disable no-undef */
-import RoutePageBatchMockData from './mock-data/RoutePageBatchQueryResponse.json';
-import RoutePageBatchTampereMockData from './mock-data/RoutePageBatchTampereResponse.json';
 import RoutePageStopListMockData from './mock-data/RoutePageStopListQueryResponse.json';
 import RoutePageStopListTampereMockData from './mock-data/RoutePageStopListTampereResponse.json';
 import getConfig from './helpers/image-snapshot-config';
@@ -14,31 +12,7 @@ const platform = (process.env.MOBILE === 'true' && 'mobile') || 'desktop';
 const isMobile = platform === 'mobile';
 
 const mockRoutes = async page => {
-  await page.route('**/index/graphql/batch', async (route, request) => {
-    if (request.method() === 'POST') {
-      if (request.postData().includes('routeRoutes_RouteTitle_Query')) {
-        const mockData =
-          config === 'tampere'
-            ? RoutePageBatchTampereMockData
-            : RoutePageBatchMockData;
-        await route.fulfill({
-          headers: { 'access-control-allow-origin': '*' },
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify(mockData),
-        });
-      }
-      if (request.postData().includes('FuzzyTripLinkQuery')) {
-        await route.fulfill({
-          headers: { 'access-control-allow-origin': '*' },
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify([]),
-        });
-      }
-    }
-  });
-  await page.route('**/index/graphql', async (route, request) => {
+  await page.route('**/gtfs/v1', async (route, request) => {
     if (request.method() === 'POST') {
       if (
         request.postData().includes('RoutePatternSelect_similarRoutesQuery')

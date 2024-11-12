@@ -40,7 +40,13 @@ function ScooterLinkContainer(
     <div>
       <div className="itinerary-transit-leg-route-bike">
         <div className="citybike-itinerary">
-          <div className={cx('citybike-icon', { small: mobileReturn })}>
+          <div
+            className={cx(
+              'citybike-icon',
+              { small: mobileReturn },
+              'scooter-icon',
+            )}
+          >
             <Icon img={vehicleIcon} width={1.655} height={1.655} />
           </div>
           <div className="citybike-itinerary-text-container">

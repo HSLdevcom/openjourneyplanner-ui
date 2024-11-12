@@ -1,38 +1,42 @@
-import React from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
+import React from 'react';
+import { FormattedMessage, intlShape } from 'react-intl';
+import { configShape } from '../../util/shapes';
 import Icon from '../Icon';
 
-/* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
-export default function StartNavi({ setNavigation }) {
+const StartNavi = ({ setNavigation }, context) => {
+  const { config, intl } = context;
+
+  const color =
+    config.colors?.accessiblePrimary || config.colors?.primary || 'black';
+
   return (
     <div className="navi-start-container">
-      <div className="navi-start-leftgroup">
+      <button type="button" onClick={() => setNavigation(true)}>
+        <Icon img="icon-icon_navigation" color={color} height={2} width={2} />
+        <div className="content">
+          <FormattedMessage tagName="div" id="new-feature" />
+          <FormattedMessage tagName="h3" id="navigation-description" />
+        </div>
         <Icon
-          img="icon-icon_show-on-map"
-          width={1.4}
-          height={1.4}
-          className="navi-start-icon"
-        />
-        <FormattedMessage
-          id="navigation-description"
-          defaultMessage="Journey guidance"
-        />
-      </div>
-      <button
-        className="navi-start-button"
-        type="button"
-        onClick={() => setNavigation(true)}
-      >
-        <FormattedMessage
-          id="navigation-start"
-          defaultMessage="Start journey"
+          img="icon-icon_arrow-collapse--right"
+          title={intl.formatMessage({ id: 'continue' })}
+          color={color}
+          height={1}
+          width={1}
         />
       </button>
     </div>
   );
-}
+};
 
 StartNavi.propTypes = {
   setNavigation: PropTypes.func.isRequired,
 };
+
+StartNavi.contextTypes = {
+  config: configShape.isRequired,
+  intl: intlShape.isRequired,
+};
+
+export default StartNavi;

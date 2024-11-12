@@ -59,7 +59,6 @@ const planConnection = graphql`
         ...ItineraryListContainer_planEdges
         node {
           ...ItineraryDetails_itinerary
-          ...Navigator_itinerary
           duration
           walkDistance
           emissionsPerPerson {
@@ -70,10 +69,29 @@ const planConnection = graphql`
             mode
             distance
             transitLeg
+            legId: id
+            interlineWithPreviousLeg
+            duration
+            headsign
+            realtimeState
+            start {
+              scheduledTime
+              estimated {
+                time
+              }
+            }
+            end {
+              scheduledTime
+              estimated {
+                time
+              }
+            }
             legGeometry {
               points
             }
             route {
+              shortName
+              color
               gtfsId
             }
             trip {
@@ -88,9 +106,22 @@ const planConnection = graphql`
               lon
               stop {
                 gtfsId
+                name
+                lat
+                lon
+                parentStation {
+                  name
+                }
               }
               vehicleRentalStation {
                 stationId
+                name
+                rentalNetwork {
+                  networkId
+                }
+                availableVehicles {
+                  total
+                }
               }
               rentalVehicle {
                 vehicleId
@@ -99,11 +130,53 @@ const planConnection = graphql`
             to {
               lat
               lon
+              name
               stop {
                 gtfsId
+                name
+                code
+                platformCode
+                vehicleMode
+                zoneId
+                parentStation {
+                  name
+                }
+                routes {
+                  type
+                }
+              }
+              vehicleParking {
+                name
+              }
+              vehicleRentalStation {
+                name
+                rentalNetwork {
+                  networkId
+                }
+                availableVehicles {
+                  total
+                }
+              }
+              rentalVehicle {
+                rentalNetwork {
+                  networkId
+                  url
+                }
+              }
+            }
+            fareProducts {
+              product {
+                name
+                id
+                ... on DefaultFareProduct {
+                  price {
+                    amount
+                  }
+                }
               }
             }
           }
+          start
           end
         }
       }

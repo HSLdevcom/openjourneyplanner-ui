@@ -1,117 +1,432 @@
 .navi-start-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 56px;
-  flex-direction: row;
-  background-color: #e5f2fa;
-  color: $black;
-  margin-right: 10px;
-  margin-left: 10px;
-  margin-top: 16px;
-  border-radius: 10px;
-}
+  padding: 0 10px;
 
-.navi-start-leftgroup {
-  display: flex;
-  flex-direction: row;
-  margin-top: 5px;
-  margin-left: 10px;
-  font-size: $font-size-xsmall;
-  font-weight: $font-weight-book;
-}
+  button {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: $infobox-color-generic-blue;
+    margin: 4px 0 0 0;
+    padding: var(--space-m);
+    gap: var(--space-s);
+    font-weight: normal;
+    border-radius: $border-radius-bigger;
 
-.navi-start-icon {
-  margin-right: 12px;
-  margin-left: 5px;
-}
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: var(--space-s);
+    }
 
-.navi-start-button {
-  margin-right: 16px;
-  background-color: $primary-color;
-  color: $white;
+    span.icon-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
-  &:hover {
-    background-color: $standalone-btn-hover-color;
-    color: $white;
-  }
+      :last-of-type {
+        margin-left: auto;
+      }
+    }
 
-  font-size: $font-size-normal;
-  border-radius: 20px;
-  width: 140px;
-  height: 40px;
-  text-align: center;
-}
-
-.navigator {
-  .navigator-top-section {
-    font-size: $font-size-xsmall;
-    text-align: center;
-    margin-top: 10px;
-
-    .close-navigator {
-      position: absolute;
-      right: 0;
-      padding-right: 20px;
-      color: $secondary-color;
+    span.icon-container:last-of-type {
+      margin-left: auto;
     }
   }
+}
 
+.navitop {
+  margin-bottom: 5px;
+  position: fixed;
+  top: 80px;
+  width: 92%;
+  margin-left: 4%;
+  border-radius: 15px;
+  min-height: 70px;
+  color: black;
+  background-color: white !important;
+  display: flex;
+  align-items: center;
+
+  &.expanded {
+    max-height: 150px;
+  }
+
+  .navitop-arrow {
+    margin-right: var(--space-m);
+
+    .inverted {
+      transform: rotate(180deg);
+    }
+
+    position: absolute;
+    right: 20px;
+  }
+
+  .notifier {
+    margin: 15px 20px 0 20px;
+    width: 100%;
+    color: red;
+  }
+
+  .content {
+    width: 100%;
+
+    .navi-top-card {
+      .main-card {
+        display: flex;
+        flex-direction: row;
+        color: black;
+        margin: var(--space-s) var(--space-m) 0;
+
+        .mode {
+          width: var(--space-l);
+          height: var(--space-l);
+          color: black;
+          margin-right: var(--space-s);
+          margin-top: var(--space-xxs);
+        }
+      }
+
+      .instructions {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        font-size: $font-size-normal;
+        font-weight: $font-weight-medium;
+
+        .destination-header {
+          font-size: $font-size-normal;
+          font-weight: $font-weight-medium;
+          display: flex;
+        }
+
+        .wait-leg {
+          display: flex;
+          align-items: center;
+          margin-top: 3px;
+
+          .headsign {
+            margin-left: 10px;
+            font-size: $font-size-small;
+            font-weight: $font-weight-book;
+            max-width: 120px;
+          }
+
+          .icon {
+            margin-top: 2px;
+            height: 25px;
+            width: 25px;
+          }
+
+          .route-number {
+            min-width: 55px;
+
+            .vcenter-children {
+              .vehicle-number {
+                color: white;
+                font-size: $font-size-large;
+                margin-top: 4px;
+              }
+
+              display: flex;
+            }
+          }
+        }
+      }
+
+      .duration {
+        &.fade-out {
+          animation: fadeOut 3s forwards;
+        }
+
+        font-size: $font-size-xsmall;
+        font-weight: $font-weight-book;
+        display: flex;
+      }
+    }
+
+    .secondary-info {
+      flex-direction: column;
+      max-height: 250px;
+      padding-top: var(--space-xxs);
+
+      .secondary-divider {
+        border: 1px solid #ddd;
+        width: 75%;
+        margin-left: 50px;
+      }
+
+      .secondary-content {
+        display: flex;
+        margin-left: var(--space-xxl);
+        margin-bottom: var(--space-s);
+        margin-top: var(--space-xs);
+      }
+
+      .icon-expand {
+        margin-top: 5px;
+        width: var(--space-m);
+        height: var(--space-m);
+      }
+
+      .destination-icon {
+        margin: 0 10px;
+
+        &.place {
+          fill: $to-color;
+        }
+
+        &.bus-stop {
+          color: $bus-color;
+        }
+
+        &.tram-stop {
+          color: $tram-color;
+        }
+
+        &.subway-stop {
+          color: $metro-color;
+        }
+
+        &.rail-stop {
+          color: $rail-color;
+        }
+
+        &.ferry-stop {
+          color: $ferry-color;
+        }
+
+        &.funicular-stop {
+          color: $funicular-color;
+        }
+
+        &.speedtram-stop {
+          color: $speedtram-color;
+        }
+      }
+
+      .destination {
+        font-weight: $font-weight-book;
+        text-align: left;
+
+        .details {
+          > * {
+            margin-right: var(--space-xs);
+          }
+
+          .address {
+            color: #888;
+          }
+
+          .platform-short {
+            width: unset;
+          }
+
+          .zone-icon-container {
+            margin-top: 2px;
+          }
+
+          display: flex;
+          flex-direction: row;
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.info-stack {
+  position: fixed;
+  height: 69px;
+  margin-left: 5%;
+  width: 90%;
+  top: 150px;
+
+  &.expanded {
+    top: 180px;
+  }
+
+  &.slide-out {
+    animation: slideOut 0.5s ease-out forwards;
+    pointer-events: none;
+  }
+
+  &.slide-in {
+    animation: slideIn 0.5s ease-out forwards;
+  }
+
+  .info-stack-item {
+    position: relative;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    margin-top: 5px;
+
+    &.info {
+      background-color: #e5f2fa;
+    }
+
+    &.warning {
+      background-color: #fff8e8;
+    }
+
+    &.alert {
+      background-color: #fdf3f6;
+    }
+
+    &.slide-out-right {
+      animation: slideOutRight 0.5s ease-out forwards;
+      pointer-events: none;
+    }
+
+    .info-close {
+      position: absolute;
+      top: 7px;
+      right: 9px;
+    }
+
+    .info-icon {
+      margin-top: 10px;
+      margin-left: 20px;
+    }
+
+    &.slide-in {
+      animation: slideIn 0.5s ease-out forwards;
+    }
+
+    .navi-info {
+      display: flex;
+      flex-direction: column;
+      margin-left: 25px;
+
+      span:first-child {
+        font-weight: $font-weight-medium;
+        font-size: $font-size-normal;
+      }
+
+      span:last-child {
+        font-size: $font-size-xsmall;
+      }
+    }
+
+    .navi-info-content {
+      display: flex;
+      flex-direction: column;
+      margin-left: 15px;
+
+      span:first-child {
+        font-weight: $font-weight-medium;
+        font-size: $font-size-normal;
+      }
+
+      span:last-child {
+        font-size: $font-size-xsmall;
+        font-weight: $font-weight-book;
+      }
+    }
+  }
+}
+
+.navibottomsheet {
   .divider {
     width: 100%;
     height: 1px;
     border-top: 1px solid #ddd;
-    margin-bottom: 10px;
     margin-top: 10px;
   }
 
-  .info {
-    margin: 15px 20px 0 20px;
-    width: 100%;
+  .navi-bottom-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    font-size: $font-size-normal;
+    text-align: center;
+    margin: 20px 24px 10px 24px;
 
-    .navileg-goto {
+    .navi-close-button {
+      border-style: solid;
+      border-width: 1px;
+      border-radius: 20px;
+      width: 100px;
+      height: 40px;
+      text-align: center;
+      background-color: white;
+      border-color: red;
+      color: red;
+    }
+
+    .navi-time {
       display: flex;
-      flex-direction: row;
-      align-items: center;
+      flex-direction: column;
 
-      .navileg-mode {
-        width: 32px;
-        height: 32px;
-        margin-right: 12px;
+      .navi-daytime {
+        font-size: $font-size-xsmall;
+        font-weight: $font-weight-book;
       }
     }
 
-    .navileg-destination {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      margin-top: 10px;
-      font-size: $font-size-xsmall;
-      font-weight: $font-weight-book;
+    .navi-ticket-button {
+      border-radius: 20px;
+      width: 100px;
+      height: 40px;
+      text-align: center;
+      margin-left: 16px;
+      background-color: $primary-color;
+      color: white;
 
-      .navi-left-bar {
-        margin-left: 10px;
-        margin-right: 10px;
-        width: 8px;
-        height: 80px;
-        border-radius: 4px;
-        background-color: #e5f2fa;
-      }
-
-      .navileg-destination-details {
-        display: flex;
-        flex-direction: column;
-
-        .navi-destination-icon {
-          width: 24px;
-          height: 24px;
-        }
-
-        .navileg-focus {
-          font-weight: $font-weight-medium;
-          color: $primary-color;
-          margin-top: 8px;
-        }
+      a {
+        color: white;
+        text-decoration: none;
       }
     }
   }

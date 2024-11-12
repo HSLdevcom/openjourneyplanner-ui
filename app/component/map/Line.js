@@ -99,6 +99,10 @@ export default class Line extends React.Component {
     if (this.props.mode === 'walk') {
       legWeight *= 0.8;
     }
+    if (this.props.mode === 'ferry-external') {
+      haloWeight *= 0.6;
+      legWeight *= 0.6;
+    }
     if (this.props.passive) {
       haloWeight *= 0.5;
       legWeight *= 0.5;

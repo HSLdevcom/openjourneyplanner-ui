@@ -1,6 +1,6 @@
 {
   "name": "@digitransit-search-util/digitransit-search-util-execute-search-immidiate",
-  "version": "2.0.3",
+  "version": "3.0.1",
   "description": "digitransit-search-util execute-search-immidiate module",
   "main": "index.js",
   "publishConfig": {

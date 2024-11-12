@@ -9,9 +9,18 @@ import MessageStore, {
 
 describe('MessageStore', () => {
   describe('getMessages', () => {
+    before(() => fetchMock.mockGlobal());
+
+    afterEach(() => {
+      fetchMock.removeRoutes();
+      fetchMock.clearHistory();
+    });
+
+    after(() => fetchMock.unmockGlobal());
+
     it('should show higher priority first', async () => {
       const staticMessagesUrl = '/staticMessages';
-      const mock = fetchMock.sandbox().mock(staticMessagesUrl, {
+      fetchMock.get(staticMessagesUrl, {
         staticMessages: [
           {
             id: '2',
@@ -26,7 +35,6 @@ describe('MessageStore', () => {
           },
         ],
       });
-      global.fetch = mock;
       const store = new MessageStore();
       const config = {
         staticMessages: [
@@ -47,7 +55,7 @@ describe('MessageStore', () => {
       };
 
       await store.addConfigMessages(config);
-      expect(mock.called(staticMessagesUrl)).to.equal(true);
+      expect(fetchMock.callHistory.called(staticMessagesUrl)).to.equal(true);
       expect(store.getMessages()).to.deep.equal([
         {
           content: {

@@ -4,7 +4,7 @@ const http = require('https');
 
 const graphqlSchemaSource =
   process.env.SCHEMA_SRC ||
-  'https://raw.githubusercontent.com/HSLdevcom/OpenTripPlanner/dev-2.x/src/main/resources/org/opentripplanner/apis/gtfs/schema.graphqls';
+  'https://raw.githubusercontent.com/HSLdevcom/OpenTripPlanner/dev-2.x/application/src/main/resources/org/opentripplanner/apis/gtfs/schema.graphqls';
 const outputGraphQLFilename = 'schema.graphql';
 const outputGraphQLFileCopy = `../digitransit-search-util/packages/digitransit-search-util-query-utils/schema/${outputGraphQLFilename}`;
 

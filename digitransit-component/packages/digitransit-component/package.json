@@ -1,6 +1,6 @@
 {
   "name": "@digitransit-component/digitransit-component",
-  "version": "1.2.14",
+  "version": "1.2.15",
   "description": "a JavaScript library for Digitransit",
   "main": "digitransit-component",
   "module": "digitransit-component.mjs",
@@ -14,8 +14,8 @@
     "docs": "node -r esm ../../scripts/generate-readmes"
   },
   "dependencies": {
-    "@digitransit-component/digitransit-component-autosuggest": "^2.0.8",
-    "@digitransit-component/digitransit-component-autosuggest-panel": "^3.0.8",
+    "@digitransit-component/digitransit-component-autosuggest": "^3.0.1",
+    "@digitransit-component/digitransit-component-autosuggest-panel": "^4.0.1",
     "@digitransit-component/digitransit-component-control-panel": "^2.0.0",
     "@digitransit-component/digitransit-component-favourite-bar": "2.0.5",
     "@digitransit-component/digitransit-component-favourite-editing-modal": "^2.0.2",

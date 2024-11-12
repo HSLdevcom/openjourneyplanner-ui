@@ -12,11 +12,8 @@ import * as timetables from '../../../app/configurations/timetableConfigUtils';
 const stopIdNumber = '1140199';
 
 const props = {
-  propsForDateSelect: {
-    startDate: '20190110',
-    selectedDate: '20190110',
-    onDateChange: () => {},
-  },
+  startDate: '20190110',
+  onDateChange: () => {},
   stop: {
     gtfsId: `HSL:${stopIdNumber}`,
     locationType: 'STOP',

@@ -3,7 +3,7 @@ import { BIKEAVL_WITHMAX } from '../util/vehicleRentalUtils';
 
 const CONFIG = 'hsl';
 const API_URL = process.env.API_URL || 'https://dev-api.digitransit.fi';
-const OTP_URL = process.env.OTP_URL || `${API_URL}/routing/v2/routers/hsl/`;
+const OTP_URL = process.env.OTP_URL || `${API_URL}/routing/v2/hsl/`;
 const MAP_URL =
   process.env.MAP_URL || 'https://digitransit-dev-cdn-origin.azureedge.net';
 const POI_MAP_PREFIX = `${MAP_URL}/map/v3/hsl`;
@@ -12,10 +12,15 @@ const HSLTimetables = require('./timetableConfigUtils').default.HSL;
 const HSLParkAndRideUtils = require('../util/ParkAndRideUtils').default.HSL;
 
 const rootLink = process.env.ROOTLINK || 'https://test.hslfi.hsldev.com';
-const BANNER_URL =
-  process.env.BANNER_URL ||
-  'https://cms-test.hslfi.hsldev.com/api/v1/banners?site=JourneyPlanner';
-// 'https://content.hsl.fi/api/v1/banners?site=JourneyPlanner';
+
+const BANNER_URL = process.env.CONTENT_DOMAIN
+  ? `${process.env.CONTENT_DOMAIN}/api/v1/banners?site=JourneyPlanner`
+  : process.env.BANNER_URL ||
+    'https://cms-test.hslfi.hsldev.com/api/v1/banners?site=JourneyPlanner';
+const SUGGESTION_URL = process.env.CONTENT_DOMAIN
+  ? `${process.env.CONTENT_DOMAIN}/api/v1/search/suggestions`
+  : 'https://content.hsl.fi/api/v1/search/suggestions'; // old url
+
 const localStorageEmitter =
   process.env.USE_EMITTER && rootLink + '/local-storage-emitter';
 
@@ -34,9 +39,6 @@ export default {
     REALTIME_RENTAL_STATION_MAP: {
       default: `${POI_MAP_PREFIX}/fi/realtimeRentalStations/`,
     },
-    RENTAL_VEHICLE_MAP: {
-      default: `${POI_MAP_PREFIX}/fi/rentalVehicles/`,
-    },
     REALTIME_RENTAL_VEHICLE_MAP: {
       default: `${POI_MAP_PREFIX}/fi/realtimeRentalVehicles/`,
     },
@@ -54,7 +56,7 @@ export default {
     FONTCOUNTER: 'https://cloud.typography.com/6364294/7432412/css/fonts.css',
     ROOTLINK: rootLink,
     BANNERS: BANNER_URL,
-    HSL_FI_SUGGESTIONS: 'https://content.hsl.fi/api/v1/search/suggestions',
+    HSL_FI_SUGGESTIONS: SUGGESTION_URL,
     EMBEDDED_SEARCH_GENERATION: '/reittiopas-elementti',
     EMISSIONS_INFO: {
       fi: 'https://www.hsl.fi/hsl/sahkobussit/ymparisto-lukuina',
@@ -85,6 +87,7 @@ export default {
   useRoutingFeedbackPrompt: true,
 
   feedIds: ['HSL', 'HSLlautta', 'Sipoo'],
+  externalFeedIds: ['HSLlautta'],
 
   showHSLTracking: false,
   allowLogin: true,
@@ -414,6 +417,8 @@ export default {
   ticketPurchaseLink: function purchaseTicketLink(fare) {
     return `https://open.app.hsl.fi/zoneTicketWizard/TICKET_TYPE_SINGLE_TICKET/${fare.ticketName}/adult/-`;
   },
+  ticketLink: 'https://open.app.hsl.fi/tickets',
+  ticketLinkOperatorCode: 'hsl',
   // mapping fareId from OTP fare identifiers to human readable form
   // in the new HSL zone model, just strip off the prefix 'HSL:'
   fareMapping: function mapHslFareId(fareId) {
@@ -421,6 +426,7 @@ export default {
       ? fareId.substring(fareId.indexOf(':') + 1)
       : '';
   },
+  ticketButtonTextId: 'open-app',
 
   trafficNowLink: {
     fi: 'matkustaminen/liikenne',
@@ -512,6 +518,21 @@ export default {
       sv: 'https://www.hsl.fi/sv/stadscyklar?utm_campaign=kaupunkipyorat-omat&utm_source=reittiopas&utm_medium=referral#block-28474',
       en: 'https://www.hsl.fi/en/citybikes?utm_campaign=kaupunkipyorat-omat&utm_source=reittiopas&utm_medium=referral#block-28474',
     },
+    scooterInfoLink: {
+      fi: {
+        text: 'Potkulaudat',
+        url: 'https://www.hsl.fi/reittiopas_potkulaudat',
+      },
+      en: {
+        text: 'Scooters',
+        url: 'https://www.hsl.fi/en/journey_planner_scooters',
+      },
+      sv: {
+        text: 'Elsparkcyklar',
+        url: 'https://www.hsl.fi/sv/reseplaneraren_sparkcyklar',
+      },
+    },
+    maxMinutesToRentalJourneyEnd: 240,
   },
 
   showVehiclesOnItineraryPage: true,
@@ -561,6 +582,7 @@ export default {
   useRealtimeTravellerCapacities: true,
 
   navigation: true,
+  navigationLogo: 'hsl/navigator-logo.svg',
 
   stopCard: {
     header: {

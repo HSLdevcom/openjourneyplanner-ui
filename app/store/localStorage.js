@@ -202,7 +202,13 @@ export function getFavouriteRoutesStorage() {
 }
 
 export function getOldSearchesStorage() {
-  return getItemAsJson('saved-searches', '{"items": []}');
+  const storage = getItemAsJson('saved-searches', '{"items": []}');
+  return {
+    ...storage,
+    items: storage.items.filter(
+      search => search.item.address !== 'SelectFromMap',
+    ),
+  };
 }
 
 export function setOldSearchesStorage(data) {
@@ -280,3 +286,15 @@ export function setSavedGeolocationPermission(key, value) {
     [key]: value,
   });
 }
+
+export const setLatestNavigatorItinerary = value => {
+  setItem('latestNavigatorItinerary', value);
+};
+
+export const getLatestNavigatorItinerary = () => {
+  return getItemAsJson('latestNavigatorItinerary', '{}');
+};
+
+export const clearLatestNavigatorItinerary = () => {
+  setItem('latestNavigatorItinerary', {});
+};

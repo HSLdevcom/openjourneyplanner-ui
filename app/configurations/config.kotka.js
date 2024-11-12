@@ -7,10 +7,10 @@ const APP_TITLE = 'Kotkan seudun reittiopas';
 const APP_DESCRIPTION = 'Kotkan seudun reittiopas';
 const walttiConfig = require('./config.waltti').default;
 
-const minLat = 60.423693;
-const maxLat = 60.688566;
-const minLon = 26.422982;
-const maxLon = 27.739367;
+const minLat = 60.243;
+const maxLat = 60.688;
+const minLon = 26.422;
+const maxLon = 27.738;
 
 export default configMerger(walttiConfig, {
   CONFIG,

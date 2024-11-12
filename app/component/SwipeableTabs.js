@@ -63,13 +63,8 @@ const handleKeyPress = (e, reactSwipeEl) => {
 };
 
 export default class SwipeableTabs extends React.Component {
-  constructor(props) {
-    super();
-    this.state = { tabIndex: props.tabIndex };
-  }
-
   static propTypes = {
-    tabIndex: PropTypes.number,
+    tabIndex: PropTypes.number.isRequired,
     tabs: PropTypes.arrayOf(PropTypes.node).isRequired,
     onSwipe: PropTypes.func.isRequired,
     hideArrows: PropTypes.bool,
@@ -82,7 +77,6 @@ export default class SwipeableTabs extends React.Component {
   static defaultProps = {
     hideArrows: false,
     navigationOnBottom: false,
-    tabIndex: 0,
     classname: undefined,
   };
 
@@ -100,7 +94,7 @@ export default class SwipeableTabs extends React.Component {
   }
 
   tabBalls = tabsLength => {
-    const tabIndex = parseInt(this.state.tabIndex, 10);
+    const tabIndex = parseInt(this.props.tabIndex, 10);
     const onLeft = tabIndex;
     const onRight = tabsLength - tabIndex - 1;
     let tabBalls = [];
@@ -161,17 +155,15 @@ export default class SwipeableTabs extends React.Component {
           )}
           tabIndex={0}
           className={`swipe-tab-ball ${
-            index === this.state.tabIndex ? 'selected' : ''
+            index === this.props.tabIndex ? 'selected' : ''
           } ${ball.smaller ? 'decreasing-small' : ''} ${
             ball.small ? 'decreasing' : ''
           } ${ball.hidden ? 'hidden' : ''}`}
           onClick={() => {
-            this.setState({ tabIndex: index });
             this.props.onSwipe(index);
           }}
           onKeyDown={e => {
             if (isKeyboardSelectionEvent(e)) {
-              this.setState({ tabIndex: index });
               this.props.onSwipe(index);
             }
           }}
@@ -247,7 +239,6 @@ export default class SwipeableTabs extends React.Component {
                   callback: i => {
                     // force transition after animation should be over because animation can randomly fail sometimes
                     setTimeout(() => {
-                      this.setState({ tabIndex: i });
                       this.props.onSwipe(i);
                     }, 300);
                   },
@@ -262,11 +253,7 @@ export default class SwipeableTabs extends React.Component {
             </div>
           </ScrollableWrapper>
         )}
-        <div
-          className={`swipe-header-container ${this.props.classname} ${
-            this.state.scrolled && !navigationOnBottom ? 'scrolled' : ''
-          }`}
-        >
+        <div className={`swipe-header-container ${this.props.classname}`}>
           {this.props.classname === 'swipe-desktop-view' && (
             <div className="desktop-view-divider" />
           )}
@@ -282,7 +269,7 @@ export default class SwipeableTabs extends React.Component {
             {!hideArrows && (
               <div
                 className={cx('swipe-button-container', {
-                  active: !(disabled || this.state.tabIndex <= 0),
+                  active: !(disabled || this.props.tabIndex <= 0),
                 })}
               >
                 <div
@@ -301,7 +288,7 @@ export default class SwipeableTabs extends React.Component {
                   <Icon
                     img="icon-icon_arrow-collapse--left"
                     className={`itinerary-arrow-icon ${
-                      disabled || this.state.tabIndex <= 0 ? 'disabled' : ''
+                      disabled || this.props.tabIndex <= 0 ? 'disabled' : ''
                     }`}
                   />
                 </div>
@@ -322,7 +309,7 @@ export default class SwipeableTabs extends React.Component {
             {!hideArrows && (
               <div
                 className={cx('swipe-button-container', {
-                  active: !(disabled || this.state.tabIndex >= tabs.length - 1),
+                  active: !(disabled || this.props.tabIndex >= tabs.length - 1),
                 })}
               >
                 <div
@@ -341,7 +328,7 @@ export default class SwipeableTabs extends React.Component {
                   <Icon
                     img="icon-icon_arrow-collapse--right"
                     className={`itinerary-arrow-icon ${
-                      disabled || this.state.tabIndex >= tabs.length - 1
+                      disabled || this.props.tabIndex >= tabs.length - 1
                         ? 'disabled'
                         : ''
                     }`}
@@ -361,7 +348,6 @@ export default class SwipeableTabs extends React.Component {
                   callback: i => {
                     // force transition after animation should be over because animation can randomly fail sometimes
                     setTimeout(() => {
-                      this.setState({ tabIndex: i });
                       this.props.onSwipe(i);
                     }, 300);
                   },

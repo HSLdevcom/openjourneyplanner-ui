@@ -505,7 +505,6 @@ class TransitLeg extends React.Component {
           <LegInfo
             leg={leg}
             hasNoShortName={hasNoShortName}
-            mode={mode}
             headsign={headsign}
             alertSeverityLevel={alertSeverityLevel}
             isAlternativeLeg={false}

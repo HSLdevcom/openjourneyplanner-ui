@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import Icon from '../../Icon';
 import { isBrowser } from '../../../util/browser';
-import { legShape } from '../../../util/shapes';
+import { legShape, configShape } from '../../../util/shapes';
 
 /* eslint-disable global-require */
 
@@ -28,10 +28,26 @@ class LegMarker extends React.Component {
     style: undefined,
   };
 
+  static contextTypes = {
+    config: configShape.isRequired,
+  };
+
   // An arrow marker will be displayed if the normal marker can't fit
   getLegMarker() {
     const color = this.props.color ? this.props.color : 'currentColor';
     const className = this.props.wide ? 'wide' : '';
+    // Do not display route number if it is an external route and the route number is empty.
+    const displayRouteNumber = !(
+      this.context.config.externalFeedIds !== undefined &&
+      this.props.mode.includes('external') &&
+      this.props.leg.name === ''
+    );
+    const routeNumber = displayRouteNumber
+      ? `<span class="map-route-number ${this.props.mode}" aria-hidden="true">${
+          this.props.leg.name
+        }</span>
+         <span class="sr-only">${this.props.leg.name.toLowerCase()}</span>`
+      : '';
     return (
       <Marker
         key={`${this.props.leg.name}_text`}
@@ -48,14 +64,11 @@ class LegMarker extends React.Component {
               className: 'map-route-icon',
               color,
             })}
-              <span class="map-route-number" aria-hidden="true">${
-                this.props.leg.name
-              }</span>
-              <span class="sr-only">${this.props.leg.name.toLowerCase()}</span>
+              ${routeNumber}
             </div>`,
           className: `${
             this.props.style ? `arrow-${this.props.style}` : 'legmarker'
-          } ${this.props.mode}`,
+          } ${this.props.mode} ${displayRouteNumber ? '' : 'only-icon'}`,
           iconSize: null,
         })}
         zIndexOffset={this.props.zIndexOffset}

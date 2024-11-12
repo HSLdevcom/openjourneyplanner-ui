@@ -8,11 +8,8 @@ import {
 import { rentalVehicleShape } from '../util/shapes';
 
 const RentalVehicle = ({ rentalVehicle }, { config }) => {
-  const disabled = !rentalVehicle.operative;
-
   const vehicleIcon = getRentalNetworkIcon(
     getRentalNetworkConfig(rentalVehicle.rentalNetwork.networkId, config),
-    disabled,
   );
   return (
     <div className="scooter-content-container">

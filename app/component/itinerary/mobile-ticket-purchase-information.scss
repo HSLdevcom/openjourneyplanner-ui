@@ -1,135 +1,58 @@
-@charset "UTF-8";
-
 .itinerary-ticket-information-purchase {
   display: flex;
-  color: $gray;
+  flex-direction: row;
+  align-items: center;
+  color: #fff;
+  background-color: $primary-color;
   font-weight: $font-weight-book;
   font-size: $font-size-small;
   margin: 0 10px;
+  border-radius: 10px;
+  line-height: 1.1;
 
-  .ticket-type-agency-link {
-    flex: 0;
+  .ticket-container {
+    margin: 11px 6px 9px 15px;
+    max-width: 50%;
 
-    .external-link-container {
-      width: 120px;
-      text-align: center;
-      border-radius: 23px;
-      border: 1px solid #888;
-      min-height: 26px;
-
-      .external-link {
-        font-weight: $font-weight-medium;
-        color: $primary-color;
-        padding-top: 3px;
-        font-size: 13px;
-      }
-
-      &:hover {
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-        cursor: pointer;
-      }
-    }
-
-    @media print {
-      display: none;
-    }
-  }
-
-  .itinerary-pinfo-ticket-type {
-    .ticket-type-title {
-      color: #fff;
-    }
-
-    .app-link {
-      .external-link-container {
-        border: 0;
-        line-height: 25px;
-
-        a.external-link {
-          font-size: 16px;
-          color: $primary-color;
-        }
-      }
-
-      margin-right: 16px;
-      display: flex;
-      justify-content: space-evenly;
-      align-items: center;
-      padding: 3px 10px 5px 10px;
-      width: 140px;
-      height: 40px;
-      right: 15px;
-      top: 25px;
-      background: #fff;
-      font-weight: $font-weight-medium;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-      border-radius: 20px;
-    }
-
-    border-radius: 10px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    flex-grow: 1;
-    flex-shrink: 1;
-    white-space: normal;
-    line-height: 1.1;
-    background-color: $primary-color;
-    justify-content: space-between;
-
-    .ticket-container {
-      display: grid;
-      align-items: center;
-      justify-content: space-between;
-      margin: 11px 6px 9px 15px;
-
-      @include min-width(tablet) {
-        margin-right: 15px;
-      }
+    @include min-width(tablet) {
+      margin-right: 15px;
     }
 
     .ticket-type-zone {
-      @include font-book;
+      @include font-medium;
 
       align-items: center;
-      color: $gray;
-      display: flex;
-      justify-content: space-between;
-
-      .fare-container {
-        display: flex;
-        align-items: center;
-        font-size: 1.125rem;
-      }
-
-      a {
-        display: flex;
-        align-items: center;
-        text-decoration: none;
-        font-size: $font-size-normal;
-      }
+      font-size: 1.125rem;
 
       .ticket-description {
-        display: flex;
-        color: #fff;
         white-space: nowrap;
-      }
-
-      .ticket-identifier {
-        @include font-medium;
-
-        color: $black;
-        padding-right: 6px;
+        font-weight: $font-weight-book;
       }
     }
   }
-}
 
-.zone-ticket {
-  &.purchase {
-    color: #ffff;
-    letter-spacing: -0.03em;
-    line-height: 22px;
-    text-align: center;
+  .app-link {
+    .external-link-container {
+      border: 0;
+      line-height: 25px;
+      padding: 0 10px;
+
+      a.external-link {
+        font-size: 16px;
+        color: $primary-color;
+      }
+    }
+
+    position: absolute;
+    right: 24px;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    min-width: 140px;
+    height: 40px;
+    background: #fff;
+    font-weight: $font-weight-medium;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 20px;
   }
 }

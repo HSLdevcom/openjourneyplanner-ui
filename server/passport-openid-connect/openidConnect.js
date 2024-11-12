@@ -4,7 +4,7 @@ const session = require('express-session');
 const redis = require('redis');
 const axios = require('axios');
 const moment = require('moment');
-const RedisStore = require('connect-redis').default;
+const RedisStore = require('connect-redis')(session);
 const LoginStrategy = require('./Strategy').Strategy;
 
 const clearAllUserSessions = false; // set true if logout should erase all user's sessions
@@ -28,13 +28,13 @@ export default function setUpOIDC(app, port, indexPath, hostnames) {
 
   const RedisHost = process.env.REDIS_HOST || 'localhost';
   const RedisPort = process.env.REDIS_PORT || 6379;
-  const RedisProtocol = process.env.REDIS_HOST ? 'rediss' : 'redis';
-  const RedisURL = `${RedisProtocol}://${RedisHost}:${RedisPort}`;
   const RedisKey = process.env.REDIS_KEY;
   const RedisClient = RedisKey
-    ? redis.createClient({ url: RedisURL, password: RedisKey })
-    : redis.createClient({ url: RedisURL });
-  RedisClient.connect().catch(console.error);
+    ? redis.createClient(RedisPort, RedisHost, {
+        auth_pass: RedisKey,
+        tls: { servername: RedisHost },
+      })
+    : redis.createClient(RedisPort, RedisHost);
 
   const redirectUris = hostnames.map(host => `${host}${callbackPath}`);
   const postLogoutRedirectUris = hostnames.map(
@@ -61,7 +61,7 @@ export default function setUpOIDC(app, port, indexPath, hostnames) {
         console.log(`adding session for used ${userId} id ${sessionId}`);
       }
       if (clearAllUserSessions) {
-        RedisClient.sAdd(`sessions-${userId}`, sessionId);
+        RedisClient.sadd(`sessions-${userId}`, sessionId);
       }
     },
   });
@@ -125,6 +125,8 @@ export default function setUpOIDC(app, port, indexPath, hostnames) {
     session({
       secret: process.env.SESSION_SECRET || 'reittiopas_secret',
       store: new RedisStore({
+        host: RedisHost,
+        port: RedisPort,
         client: RedisClient,
         ttl: 60 * 60 * 24 * 60,
       }),
@@ -204,7 +206,7 @@ export default function setUpOIDC(app, port, indexPath, hostnames) {
     }
     const sessions = `sessions-${req.session.userId}`;
     req.logout({}, () => {
-      RedisClient.sMembers(sessions).then(sessionIds => {
+      RedisClient.smembers(sessions, function (err, sessionIds) {
         req.session.destroy(function () {
           res.clearCookie('connect.sid');
           if (sessionIds && sessionIds.length > 0) {

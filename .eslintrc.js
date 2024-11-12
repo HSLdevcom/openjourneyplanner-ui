@@ -16,6 +16,7 @@ module.exports = {
     'import/no-extraneous-dependencies': 'off',
     'import/no-named-default': 'off',
     'import/extensions': 'off',
+    'import/prefer-default-export': 'off',
     // react
     'react/button-has-type': 'warn',
     'react/destructuring-assignment': 'off',

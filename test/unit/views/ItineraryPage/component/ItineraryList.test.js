@@ -1,8 +1,11 @@
 import React from 'react';
 
-import { mockContext, mockChildContextTypes } from '../helpers/mock-context';
-import { mountWithIntl } from '../helpers/mock-intl-enzyme';
-import { Component as ItineraryList } from '../../../app/component/itinerary/ItineraryList';
+import { Component as ItineraryList } from '../../../../../app/component/itinerary/ItineraryList';
+import {
+  mockChildContextTypes,
+  mockContext,
+} from '../../../helpers/mock-context';
+import { mountWithIntl } from '../../../helpers/mock-intl-enzyme';
 
 const noop = () => {};
 

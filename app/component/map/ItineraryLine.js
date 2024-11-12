@@ -69,7 +69,14 @@ class ItineraryLine extends React.Component {
       }
       const nextLeg = this.props.legs[i + 1];
 
-      let mode = getRouteMode({ mode: leg.mode, type: leg.route?.type });
+      let mode = getRouteMode(
+        {
+          mode: leg.mode,
+          type: leg.route?.type,
+          gtfsId: leg.route?.gtfsId,
+        },
+        this.context.config,
+      );
 
       const [interliningLines, interliningLegs] = getInterliningLegs(
         this.props.legs,
@@ -260,6 +267,7 @@ export default createFragmentContainer(ItineraryLine, {
       transitLeg
       interlineWithPreviousLeg
       route {
+        gtfsId
         shortName
         color
         type

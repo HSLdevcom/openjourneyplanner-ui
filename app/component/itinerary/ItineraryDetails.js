@@ -296,13 +296,12 @@ class ItineraryDetails extends React.Component {
                 />
               )),
 
-            this.props.setNavigation && (
-              <div key="navigation">
+              this.props.setNavigation && (
                 <StartNavi
+                  key="navigation"
                   setNavigation={this.props.setNavigation}
-		/>
-              </div>
-            ),
+                />
+              ),
             config.showCO2InItinerarySummary && !legsWithScooter && (
               <EmissionsInfo
 		key="emissionsummary"

@@ -299,21 +299,31 @@ class IndexPage extends React.Component {
     const origin = this.pendingOrigin || this.props.origin;
     const destination = this.pendingDestination || this.props.destination;
     const sources = ['Favourite', 'History', 'Datasource'];
-    const stopAndRouteSearchTargets = ['Stops', 'Routes'];
-    const locationSearchTargets = [
+    const stopAndRouteSearchTargets = ['Stations', 'Stops', 'Routes'];
+    let locationSearchTargets = [
       'Locations',
       'CurrentPosition',
       'FutureRoutes',
-      'Stops',
     ];
 
-    if (useCitybikes(config.vehicleRental?.networks, config)) {
-      stopAndRouteSearchTargets.push('VehicleRentalStations');
-      locationSearchTargets.push('VehicleRentalStations');
-    }
-    if (config.includeParkAndRideSuggestions) {
-      stopAndRouteSearchTargets.push('ParkingAreas');
-      locationSearchTargets.push('ParkingAreas');
+    if (config.locationSearchTargetsFromOTP) {
+      // configurable setup
+      locationSearchTargets = [
+        ...locationSearchTargets,
+        ...config.locationSearchTargetsFromOTP,
+      ];
+    } else {
+      // default setup
+      locationSearchTargets.push('Stations');
+      locationSearchTargets.push('Stops');
+      if (useCitybikes(config.vehicleRental?.networks, config)) {
+        stopAndRouteSearchTargets.push('VehicleRentalStations');
+        locationSearchTargets.push('VehicleRentalStations');
+      }
+      if (config.includeParkAndRideSuggestions) {
+        stopAndRouteSearchTargets.push('ParkingAreas');
+        locationSearchTargets.push('ParkingAreas');
+      }
     }
     const locationSearchTargetsMobile = [
       ...locationSearchTargets,

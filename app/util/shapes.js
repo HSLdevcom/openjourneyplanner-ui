@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import PropTypes from 'prop-types';
 import { PlannerMessageType } from '../constants';
 

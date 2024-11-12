@@ -96,7 +96,13 @@ function VehicleRentalLeg(
       {vehicleRentalStation && (
         <div className="itinerary-transit-leg-route-bike">
           <div className="citybike-itinerary">
-            <div className={cx('citybike-icon', { small: mobileReturn })}>
+            <div
+              className={cx(
+                'citybike-icon',
+                { small: mobileReturn },
+                isScooter && 'scooter-icon',
+              )}
+            >
               <Icon
                 img={vehicleIcon}
                 width={1.655}

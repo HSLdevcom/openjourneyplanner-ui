@@ -119,6 +119,7 @@ export const shouldShowFarePurchaseInfo = (config, breakpoint, fares) => {
     !unknownFares &&
     fares?.length === 1 &&
     config.ticketPurchaseLink &&
+    config.ticketLinkOperatorCode &&
     breakpoint !== 'large'
   );
 };

@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 /**
  * Filters object that contains objects so that only objects that have
  * a certain key with the correct value defined are returned.

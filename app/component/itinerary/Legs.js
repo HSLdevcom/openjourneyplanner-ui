@@ -187,7 +187,14 @@ export default class Legs extends React.Component {
           leg.mode === 'FUNICULAR') &&
         !leg.interlineWithPreviousLeg
       ) {
-        const mode = getRouteMode({ mode: leg.mode, type: leg.route?.type });
+        const mode = getRouteMode(
+          {
+            mode: leg.mode,
+            type: leg.route?.type,
+            gtfsId: leg.route?.gtfsId,
+          },
+          this.context.config,
+        );
         legs.push(<TransitLeg mode={mode} {...transitLegProps} />);
       } else if (leg.mode === 'AIRPLANE') {
         legs.push(

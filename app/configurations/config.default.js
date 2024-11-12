@@ -10,7 +10,7 @@ const MAP_URL =
   process.env.MAP_URL || 'https://digitransit-dev-cdn-origin.azureedge.net';
 const MAP_VERSION = process.env.MAP_VERSION || 'v2';
 const POI_MAP_PREFIX = `${MAP_URL}/map/v3/finland`;
-const OTP_URL = process.env.OTP_URL || `${API_URL}/routing/v2/routers/finland/`;
+const OTP_URL = process.env.OTP_URL || `${API_URL}/routing/v2/finland/`;
 const STOP_TIMETABLES_URL =
   process.env.STOP_TIMETABLES_URL || 'https://dev.kartat.hsl.fi';
 const APP_PATH = process.env.APP_CONTEXT || '';
@@ -59,9 +59,6 @@ export default {
     },
     REALTIME_RENTAL_STATION_MAP: {
       default: `${POI_MAP_PREFIX}/fi/realtimeRentalStations/`,
-    },
-    RENTAL_VEHICLE_MAP: {
-      default: `${POI_MAP_PREFIX}/fi/rentalVehicles/`,
     },
     REALTIME_RENTAL_VEHICLE_MAP: {
       default: `${POI_MAP_PREFIX}/fi/realtimeRentalVehicles/`,
@@ -349,6 +346,9 @@ export default {
     },
     maxNearbyRentalVehicleAmount: 5,
     maxDistanceToRentalVehiclesInMeters: 100,
+    maxMinutesToRentalJourneyStart: 60,
+    maxMinutesToRentalJourneyEnd: 720,
+    allowDirectScooterJourneys: false,
   },
 
   // Lowest level for stops and terminals are rendered
@@ -371,6 +371,7 @@ export default {
 
   colors: {
     primary: '#000F94',
+    backgroundInfo: '#e5f2fa',
     iconColors: {
       'mode-airplane': '#0046ad',
       'mode-bus': '#0088ce',
@@ -379,7 +380,7 @@ export default {
       'mode-rail': '#af8dbc',
       'mode-ferry': '#247C7B',
       'mode-citybike': '#f2b62d',
-      'mode-scooter': '#BABABA',
+      'mode-scooter': '#C5CAD2',
     },
   },
   iconModeSet: 'digitransit',
@@ -835,4 +836,5 @@ export default {
       },
     },
   ],
+  navigation: false,
 };

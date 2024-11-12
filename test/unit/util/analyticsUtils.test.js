@@ -29,12 +29,22 @@ describe('analytics utils', () => {
   });
   describe('getAnalyticsInitCode', () => {
     it('should return a nonempty string when GTMid is given', () => {
-      const res = getAnalyticsInitCode(1);
+      const res = getAnalyticsInitCode({ GTMid: 1 });
       expect(res.length > 0).to.equal(true);
     });
-    it('should return an empty string when null GTMid is given', () => {
-      const res = getAnalyticsInitCode(null);
+    it('should return an empty string when null GTMid and no analyticsScript is given', () => {
+      const res = getAnalyticsInitCode(
+        { GTMid: null, analyticsScript: '' },
+        'hostname',
+      );
       expect(res.length).to.equal(0);
+    });
+    it('should return a nonempty string when analyticsScript and hostname are given', () => {
+      const res = getAnalyticsInitCode(
+        { analyticsScript: () => 'test' },
+        'hostname',
+      );
+      expect(res.length > 0).to.equal(true);
     });
   });
   describe('initAnalyticsClientSide', () => {

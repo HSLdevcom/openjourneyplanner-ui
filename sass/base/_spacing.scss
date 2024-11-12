@@ -1,0 +1,32 @@
+$fixed-space-xxs: 4px;
+$fixed-space-xs: 8px;
+$fixed-space-s: 16px;
+$fixed-space-m: 24px;
+$fixed-space-l: 32px;
+$fixed-space-xl: 48px;
+$fixed-space-xxl: 64px;
+$fixed-space-xxxl: 80px;
+
+:root {
+  --space-xxs: #{$fixed-space-xxs};
+  --space-xs: #{$fixed-space-xs};
+  --space-s: #{$fixed-space-s};
+  --space-m: #{$fixed-space-m};
+  --space-l: #{$fixed-space-l};
+  --space-xl: #{$fixed-space-xl};
+  --space-xxl: #{$fixed-space-xxl};
+  --space-xxxl: #{$fixed-space-xxxl};
+}
+
+@media screen and (max-width: 900px) {
+  :root {
+    --space-xxs: #{$fixed-space-xxs};
+    --space-xs: #{$fixed-space-xxs};
+    --space-s: #{$fixed-space-xs};
+    --space-m: #{$fixed-space-s};
+    --space-l: #{$fixed-space-m};
+    --space-xl: #{$fixed-space-l};
+    --space-xxl: #{$fixed-space-xl};
+    --space-xxxl: #{$fixed-space-xxl};
+  }
+}

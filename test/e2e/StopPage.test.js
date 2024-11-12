@@ -1,7 +1,6 @@
 /* eslint-disable compat/compat */
 /* eslint-disable no-undef */
 import StopPageMockData from './mock-data/StopPageContenQueryResponse.json';
-import StopPageBatchMockData from './mock-data/StopPageBatchQueryResponse.json';
 import getConfig from './helpers/image-snapshot-config';
 
 const config = process.env.CONFIG || 'hsl';
@@ -12,21 +11,7 @@ const platform = (process.env.MOBILE === 'true' && 'mobile') || 'desktop';
 const isMobile = platform === 'mobile';
 
 const mockRoutes = async page => {
-  await page.route('**/index/graphql/batch', async (route, request) => {
-    if (request.method() === 'POST') {
-      if (
-        request.postData().includes('stopRoutes_StopPageHeaderContainer_Query')
-      ) {
-        await route.fulfill({
-          headers: { 'access-control-allow-origin': '*' },
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify(StopPageBatchMockData),
-        });
-      }
-    }
-  });
-  await page.route('**/index/graphql', async (route, request) => {
+  await page.route('**/gtfs/v1', async (route, request) => {
     if (request.method() === 'POST') {
       if (request.postData().includes('StopPageContentContainerQuery')) {
         await route.fulfill({

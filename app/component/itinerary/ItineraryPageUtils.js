@@ -30,13 +30,25 @@ import { getTotalBikingDistance, compressLegs } from '../../util/legUtils';
 export function getSelectedItineraryIndex(
   { pathname, state } = {},
   edges = [],
-  defaultValue = 0,
 ) {
+  // path defines the selection in detail view
+  const lastURLSegment = pathname?.split('/').pop();
+  if (lastURLSegment !== '') {
+    const index = Number(pathname?.split('/').pop());
+    if (!Number.isNaN(index)) {
+      if (index >= edges.length) {
+        return 0;
+      }
+      return index;
+    }
+  }
+
+  // in summary view, look the location state
   if (state?.selectedItineraryIndex !== undefined) {
     if (state.selectedItineraryIndex < edges.length) {
       return state.selectedItineraryIndex;
     }
-    return defaultValue;
+    return 0;
   }
 
   /*
@@ -44,13 +56,6 @@ export function getSelectedItineraryIndex(
    * page by an external link, we check if an itinerary selection is
    * supplied in URL and make that the selection.
    */
-  const lastURLSegment = Number(pathname?.split('/').pop());
-  if (!Number.isNaN(lastURLSegment)) {
-    if (lastURLSegment >= edges.length) {
-      return defaultValue;
-    }
-    return lastURLSegment;
-  }
 
   return 0;
 }
@@ -82,14 +87,13 @@ export function addFeedbackly(context) {
   }
 }
 
-export function getTopics(config, edges, match) {
+export function getTopics(itinerary, config) {
   const itineraryTopics = [];
 
-  if (edges.length) {
+  if (itinerary) {
     const { realTime, feedIds } = config;
-    const selected = edges[getSelectedItineraryIndex(match.location, edges)];
 
-    selected.node.legs.forEach(leg => {
+    itinerary.node.legs.forEach(leg => {
       if (leg.transitLeg && leg.trip) {
         const feedId = leg.trip.gtfsId.split(':')[0];
         let topic;
@@ -358,10 +362,10 @@ export function transitEdges(edges) {
 /**
  * Filters away itineraries that
  * 1. don't use scooters
- * 2. only use scooters
+ * 2. only use scooters (unless allowed by allowDirectScooterJourneys)
  * 3. use scooters that are not vehicles
  */
-export function scooterEdges(edges) {
+export function scooterEdges(edges, allowDirectScooterJourneys) {
   if (!edges) {
     return [];
   }
@@ -385,7 +389,11 @@ export function scooterEdges(edges) {
       }
     });
 
-    if (hasScooterLeg && hasNonScooterLeg && allScooterLegsHaveRentalVehicle) {
+    if (
+      hasScooterLeg &&
+      allScooterLegsHaveRentalVehicle &&
+      (hasNonScooterLeg || allowDirectScooterJourneys)
+    ) {
       filteredEdges.push(edge);
     }
   });
@@ -462,9 +470,16 @@ export function mergeBikeTransitPlans(bikeParkPlan, bikeTransitPlan) {
 /**
  * Combine a scooter edge with the main transit edges.
  */
-export function mergeScooterTransitPlan(scooterPlan, transitPlan) {
+export function mergeScooterTransitPlan(
+  scooterPlan,
+  transitPlan,
+  allowDirectScooterJourneys,
+) {
   const transitPlanEdges = transitPlan.edges || [];
-  const scooterTransitEdges = scooterEdges(scooterPlan.edges);
+  const scooterTransitEdges = scooterEdges(
+    scooterPlan.edges,
+    allowDirectScooterJourneys,
+  );
   const maxTransitEdges =
     scooterTransitEdges.length > 0 ? 4 : transitPlanEdges.length;
 

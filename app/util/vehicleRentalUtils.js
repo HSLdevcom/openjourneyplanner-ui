@@ -131,33 +131,30 @@ const addAnalytics = (action, name) => {
  * Updates the list of allowed networks either by removing or adding.
  * Note: legacy settings had network names always in uppercase letters.
  *
- * @param currentSettings the current settings
- * @param newValue the network to be added/removed
- * @param config The configuration for the software installation
- * @param isUsingCitybike if citybike is enabled
+ * @param networks the previously selected networks
+ * @param networkName the network to be added/removed
+ * @param type the type of the network
  * @returns the updated citybike networks
  */
 
-export const updateVehicleNetworks = (currentSettings, newValue) => {
-  let chosenNetworks;
+export const updateVehicleNetworks = (networks, networkName, type) => {
+  let updatedNetworks;
+  let toggleAction;
 
-  if (currentSettings) {
-    chosenNetworks = currentSettings.find(
-      o => o.toLowerCase() === newValue.toLowerCase(),
-    )
-      ? without(currentSettings, newValue, newValue.toUpperCase())
-      : currentSettings.concat([newValue]);
+  if (networks.find(o => o.toLowerCase() === networkName.toLowerCase())) {
+    updatedNetworks = without(networks, networkName, networkName.toUpperCase());
+    toggleAction = 'Disable';
   } else {
-    chosenNetworks = [newValue];
+    updatedNetworks = networks.concat([networkName]);
+    toggleAction = 'Enable';
   }
 
-  if (Array.isArray(currentSettings) && Array.isArray(chosenNetworks)) {
-    const action = `Settings${
-      currentSettings.length > chosenNetworks.length ? 'Disable' : 'Enable'
-    }CityBikeNetwork`;
-    addAnalytics(action, newValue);
-  }
-  return chosenNetworks;
+  const action = `Settings${toggleAction}${
+    type === 'citybike' ? 'CityBikeNetwork' : 'ScooterNetwork'
+  }`;
+  addAnalytics(action, networkName);
+
+  return updatedNetworks;
 };
 
 export const getVehicleMinZoomOnStopsNearYou = (config, override) => {
@@ -184,11 +181,17 @@ export const hasVehicleRentalCode = rentalId => {
 };
 
 export const mapVehicleRentalFromStore = vehicleRentalStation => {
-  const network = vehicleRentalStation.networks[0];
+  const originalId = vehicleRentalStation.stationId;
+  const network =
+    vehicleRentalStation.networks?.[0] || originalId.split(':')[0];
+  const stationId = originalId.startsWith(network)
+    ? originalId
+    : `${network}:${originalId}`;
+
   const newStation = {
     ...vehicleRentalStation,
     network,
-    stationId: `${network}:${vehicleRentalStation.stationId}`,
+    stationId,
   };
   delete newStation.networks;
   return newStation;

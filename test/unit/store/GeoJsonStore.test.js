@@ -9,14 +9,18 @@ import GeoJsonStore, {
 describe('GeoJsonStore', () => {
   let store;
   const dispatcher = () => {};
+  before(() => fetchMock.mockGlobal());
 
   beforeEach(() => {
     store = new GeoJsonStore(dispatcher);
   });
 
   afterEach(() => {
-    fetchMock.reset();
+    fetchMock.removeRoutes();
+    fetchMock.clearHistory();
   });
+
+  after(() => fetchMock.unmockGlobal());
 
   describe('getGeoJsonConfig', () => {
     it('should return undefined if the url is falsey', async () => {
@@ -48,7 +52,7 @@ describe('GeoJsonStore', () => {
 
       const result1 = await store.getGeoJsonConfig(url);
       const result2 = await store.getGeoJsonConfig(url);
-      expect(fetchMock.calls().length).to.equal(1);
+      expect(fetchMock.callHistory.calls().length).to.equal(1);
       expect(result1).to.equal(result2);
     });
 
@@ -79,7 +83,7 @@ describe('GeoJsonStore', () => {
 
       const result1 = await store.getGeoJsonData(url, undefined, undefined);
       const result2 = await store.getGeoJsonData(url, undefined, undefined);
-      expect(fetchMock.calls().length).to.equal(1);
+      expect(fetchMock.callHistory.calls().length).to.equal(1);
       expect(result1).to.deep.equal(result2);
     });
 

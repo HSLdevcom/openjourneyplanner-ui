@@ -123,7 +123,7 @@ export function planQueryNeeded(
   {
     params: { from, to },
     location: {
-      query: { intermediatePlaces },
+      query: { intermediatePlaces, arriveBy, time },
     },
   },
   planType,
@@ -198,13 +198,20 @@ export function planQueryNeeded(
 
     case PLANTYPE.SCOOTERTRANSIT:
       /* special logic: relaxed scooter query is made only if no networks allowed */
+      /* special logic: scooter queries are not made if the search is n minutes or more into the future or if arrival time is too late */
       return (
         config.transportModes.scooter.availableForSelection &&
         transitModes.length > 0 &&
         !wheelchair &&
         (relaxSettings
           ? settings.scooterNetworks.length === 0
-          : settings.scooterNetworks.length > 0)
+          : settings.scooterNetworks.length > 0) &&
+        ((!arriveBy &&
+          (time - Date.now() / 1000) / 60 <
+            config.vehicleRental.maxMinutesToRentalJourneyStart) ||
+          (arriveBy &&
+            (time - Date.now() / 1000) / 60 <
+              config.vehicleRental.maxMinutesToRentalJourneyEnd))
       );
     case PLANTYPE.PARKANDRIDE:
       return (

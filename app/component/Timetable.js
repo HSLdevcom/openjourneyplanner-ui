@@ -82,17 +82,10 @@ class Timetable extends React.Component {
         }),
       ).isRequired,
     }).isRequired,
-    propsForDateSelect: PropTypes.shape({
-      startDate: PropTypes.string,
-      selectedDate: PropTypes.string,
-      onDateChange: PropTypes.func,
-    }).isRequired,
-    date: PropTypes.string,
+    startDate: PropTypes.string.isRequired,
+    onDateChange: PropTypes.func.isRequired,
+    date: PropTypes.string.isRequired,
     language: PropTypes.string.isRequired,
-  };
-
-  static defaultProps = {
-    date: undefined,
   };
 
   static contextTypes = {
@@ -183,7 +176,7 @@ class Timetable extends React.Component {
   };
 
   dateForPrinting = () => {
-    const selectedDate = moment(this.props.propsForDateSelect.selectedDate);
+    const selectedDate = moment(this.props.date);
     return (
       <div className="printable-date-container">
         <div className="printable-date-icon">
@@ -331,9 +324,7 @@ class Timetable extends React.Component {
       }${locationType.toLowerCase()}/${this.props.stop.gtfsId}`;
     const timeTableRows = this.createTimeTableRows(timetableMap);
     const timeDifferenceDays = moment
-      .duration(
-        moment(this.props.propsForDateSelect.selectedDate).diff(moment()),
-      )
+      .duration(moment(this.props.date).diff(moment()))
       .asDays();
     return (
       <>
@@ -349,10 +340,10 @@ class Timetable extends React.Component {
             ) : null}
             <div className="timetable-topbar">
               <DateSelect
-                startDate={this.props.propsForDateSelect.startDate}
-                selectedDate={this.props.propsForDateSelect.selectedDate}
+                startDate={this.props.startDate}
+                selectedDate={this.props.date}
                 onDateChange={e => {
-                  this.props.propsForDateSelect.onDateChange(e);
+                  this.props.onDateChange(e);
                   const showRoutes = this.state.showRoutes.length
                     ? this.state.showRoutes.join(',')
                     : undefined;

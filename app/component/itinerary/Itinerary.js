@@ -88,7 +88,7 @@ export function RouteLeg(
 ) {
   const isCallAgency = isCallAgencyPickupType(leg);
   let routeNumber;
-  const mode = getRouteMode(leg.route);
+  const mode = getRouteMode(leg.route, config);
 
   const getOccupancyStatus = () => {
     if (hasOneTransitLeg) {
@@ -118,7 +118,7 @@ export function RouteLeg(
       <RouteNumberContainer
         alertSeverityLevel={getActiveLegAlertSeverityLevel(leg)}
         route={leg.route}
-        className={cx('line', leg.mode.toLowerCase())}
+        className={cx('line', mode)}
         interliningWithRoute={interliningWithRoute}
         mode={mode}
         vertical
@@ -430,9 +430,11 @@ const Itinerary = (
       leg.rentedBike
     ) {
       const bikingTime = Math.floor(leg.duration / 60);
-      // eslint-disable-next-line prefer-destructuring
-      bikeNetwork = leg.from.vehicleRentalStation.rentalNetwork.networkId;
+      bikeNetwork =
+        leg.from.vehicleRentalStation?.rentalNetwork.networkId ||
+        leg.from.rentalVehicle?.rentalNetwork.networkId;
       if (
+        bikeNetwork &&
         config.vehicleRental.networks &&
         config.vehicleRental.networks[bikeNetwork]?.timeBeforeSurcharge &&
         config.vehicleRental.networks[bikeNetwork]?.durationInstructions

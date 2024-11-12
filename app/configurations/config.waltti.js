@@ -1,5 +1,5 @@
 const API_URL = process.env.API_URL || 'https://dev-api.digitransit.fi';
-const OTP_URL = process.env.OTP_URL || `${API_URL}/routing/v2/routers/waltti/`;
+const OTP_URL = process.env.OTP_URL || `${API_URL}/routing/v2/waltti/`;
 const MAP_URL =
   process.env.MAP_URL || 'https://digitransit-dev-cdn-origin.azureedge.net';
 const POI_MAP_PREFIX = `${MAP_URL}/map/v3/waltti`;
@@ -30,9 +30,6 @@ export default {
       default: `${POI_MAP_PREFIX}/en/vehicleParkingGroups/`,
       sv: `${POI_MAP_PREFIX}/sv/vehicleParkingGroups/`,
       fi: `${POI_MAP_PREFIX}/fi/vehicleParkingGroups/`,
-    },
-    RENTAL_VEHICLE_MAP: {
-      default: `${POI_MAP_PREFIX}/fi/rentalVehicles/`,
     },
     REALTIME_RENTAL_VEHICLE_MAP: {
       default: `${POI_MAP_PREFIX}/fi/realtimeRentalVehicles/`,
@@ -267,4 +264,24 @@ export default {
       value: 600,
     },
   ],
+  navigation: true,
+
+  ticketPurchaseLink: function purchaseTicketLink(fare, operatorCode) {
+    const fareId = fare.fareProducts[0].product.id;
+    const ticket = fareId?.substring
+      ? fareId.substring(fareId.indexOf(':') + 1)
+      : '';
+    let zones = '';
+    // Waltti wants zone ids, so map A to 01, B to 02 etc
+    for (let i = 0; i < ticket.length; i++) {
+      zones += `0${ticket.charCodeAt(i) - 64}`; // eslint-disable
+    }
+    return `https://waltti.fi/walttiapp/busTicket/?operator=${operatorCode}&ticketType=single&customerGroup=adult&zones=${zones}`;
+  },
+  ticketButtonTextId: 'buy-in-app',
+
+  analyticsScript: function createAnalyticsScript(hostname) {
+    // eslint-disable-next-line no-useless-escape
+    return `<script defer data-domain="${hostname}" src="https://plausible.io/js/script.js"><\/script>\n`;
+  },
 };

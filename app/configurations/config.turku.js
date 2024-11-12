@@ -40,7 +40,7 @@ const walttiConfig = require('./config.waltti').default;
 export default configMerger(walttiConfig, {
   CONFIG,
 
-  feedIds: ['FOLI', 'FUNI'],
+  feedIds: ['FOLI', 'FUNI', 'TurkuTest'],
 
   searchParams: {
     'boundary.rect.min_lat': 59.963388,

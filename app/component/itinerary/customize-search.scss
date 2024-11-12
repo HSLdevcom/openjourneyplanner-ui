@@ -482,10 +482,9 @@
 }
 
 .e-scooter-disclaimer {
-  border-bottom: 1px solid #e3e3e3;
   min-height: 120px;
-  border-radius: 5px;
-  background-color: #ffefe8;
+  border-radius: 8px;
+  background-color: #e5f2fa;
   padding: 16px;
   width: fit-content;
   margin-left: 14.72px;
@@ -516,13 +515,13 @@
   }
 
   .external-link {
-    color: #007ac9;
+    color: $link-color-accessible;
     text-decoration: none;
     font-weight: $font-weight-medium;
 
     .icon-container {
-      padding-left: 7px;
-      vertical-align: text-top;
+      padding-left: 8px;
+      vertical-align: text-bottom;
     }
   }
 

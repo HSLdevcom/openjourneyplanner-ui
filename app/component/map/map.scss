@@ -830,6 +830,10 @@ div.origin-popup {
   min-width: 50px;
   height: 18px;
 
+  &.only-icon {
+    min-width: 0;
+  }
+
   .wide {
     min-width: 64px;
   }
@@ -862,6 +866,10 @@ div.origin-popup {
       color: $white;
     }
 
+    .map-route-number.ferry-external {
+      color: $black;
+    }
+
     &::before {
       content: '';
       width: 0;
@@ -878,11 +886,19 @@ div.origin-popup {
   }
 }
 
+.map .arrow-bottomLeft.only-icon div::before {
+  border-right: 10px solid transparent;
+}
+
 .map .arrow-bottomRight {
   display: flex;
   align-items: center;
   min-width: 50px;
   height: 18px;
+
+  &.only-icon {
+    min-width: 0;
+  }
 
   .wide {
     min-width: 64px;
@@ -916,6 +932,10 @@ div.origin-popup {
       color: $white;
     }
 
+    .map-route-number.ferry-external {
+      color: $black;
+    }
+
     &::before {
       content: '';
       width: 0;
@@ -931,11 +951,19 @@ div.origin-popup {
   }
 }
 
+.map .arrow-bottomRight.only-icon div::before {
+  border-right: 9px solid transparent;
+}
+
 .map .arrow-topRight {
   display: flex;
   align-items: center;
   min-width: 50px;
   height: 18px;
+
+  &.only-icon {
+    min-width: 0;
+  }
 
   .wide {
     min-width: 64px;
@@ -969,6 +997,10 @@ div.origin-popup {
       color: $white;
     }
 
+    .map-route-number.ferry-external {
+      color: $black;
+    }
+
     &::before {
       content: '';
       width: 0;
@@ -985,11 +1017,20 @@ div.origin-popup {
   }
 }
 
+.map .arrow-topRight.only-icon div::before {
+  border-left: 15px solid transparent;
+  right: 11px;
+}
+
 .map .arrow-topLeft {
   display: flex;
   align-items: center;
   min-width: 50px;
   height: 18px;
+
+  &.only-icon {
+    min-width: 0;
+  }
 
   .wide {
     min-width: 64px;
@@ -1023,6 +1064,10 @@ div.origin-popup {
       color: $white;
     }
 
+    .map-route-number.ferry-external {
+      color: $black;
+    }
+
     &::before {
       content: '';
       width: 0;
@@ -1044,6 +1089,11 @@ div.origin-popup {
   align-items: center;
   min-width: 50px;
   height: 18px;
+
+  &.only-icon {
+    min-width: 0;
+    align-items: normal;
+  }
 
   .wide {
     min-width: 64px;
@@ -1210,6 +1260,10 @@ div.origin-popup {
       padding-right: 3px;
       color: $white;
     }
+
+    .map-route-number.ferry-external {
+      color: $black;
+    }
   }
 }
 
@@ -1248,6 +1302,14 @@ div.origin-popup {
 
 .map .thin {
   stroke-opacity: 0.5;
+}
+
+.map-line.ferry-external.leg {
+  color: $external-feed-map-color;
+}
+
+.map-line.scooter.leg {
+  color: $scooter-map-color;
 }
 
 /* Fix to default leaflet behavior */

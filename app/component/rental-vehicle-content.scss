@@ -40,6 +40,7 @@
       .icon-container {
         .icon {
           width: 2.25rem;
+          background-color: $scooter-color;
         }
       }
     }
@@ -186,11 +187,16 @@
             }
           }
 
+          .scooter-icon .icon-container .icon {
+            background-color: $scooter-color;
+            border-radius: 3px;
+          }
+
           .citybike-info {
             position: absolute;
             bottom: 74px;
           }
-        } // test end here....
+        }
       }
     }
 
@@ -252,11 +258,15 @@
     .icon-container .icon {
       width: 48px;
       height: 48px;
+      background-color: $scooter-color;
+      border-radius: 5px;
     }
 
     .back-button .icon-container .icon {
       width: 1.3em;
       height: 1.3em;
+      background-color: transparent;
+      border-radius: 0;
     }
   }
 }

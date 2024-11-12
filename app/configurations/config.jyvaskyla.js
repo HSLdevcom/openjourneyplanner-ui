@@ -172,47 +172,7 @@ export default configMerger(walttiConfig, {
     includeBikeSuggestions: false,
     transferPenalty: 1600,
   },
-
-  ticketPurchaseLink: function purchaseTicketLink(fare) {
-    const fareId = fare.fareProducts[0].product.id;
-    const ticket = fareId?.substring
-      ? fareId.substring(fareId.indexOf(':') + 1)
-      : '';
-    let zones = '';
-    // Waltti wants zone ids, so map A to 01, B to 02 etc
-    for (let i = 0; i < ticket.length; i++) {
-      zones += `0${ticket.charCodeAt(i) - 64}`; // eslint-disable
-    }
-    return `https://waltti.fi/walttiappfeat/busTicket/?operator=50209&ticketType=single&customerGroup=adult&zones=${zones}`;
-  },
-
-  fareMapping: function mapFareId(fareId) {
-    const id = fareId?.substring?.(fareId.indexOf(':') + 1);
-    switch (id) {
-      case 'A':
-        return 'Käteismaksu autossa, Vyöhyke A';
-      case 'AB':
-        return 'Käteismaksu autossa, Vyöhykkeet AB';
-      case 'ABC':
-        return 'Käteismaksu autossa, Vyöhykkeet ABC';
-      case 'ABCD':
-        return 'Käteismaksu autossa, Vyöhykkeet ABCD';
-      case 'B':
-        return 'Käteismaksu autossa, Vyöhyke B';
-      case 'BC':
-        return 'Käteismaksu autossa, Vyöhykkeet BC';
-      case 'BCD':
-        return 'Käteismaksu autossa, Vyöhykkeet BCD';
-      case 'C':
-        return 'Käteismaksu autossa, Vyöhyke C';
-      case 'CD':
-        return 'Käteismaksu autossa, Vyöhykkeet CD';
-      case 'D':
-        return 'Käteismaksu autossa, Vyöhyke D';
-      default:
-        return '';
-    }
-  },
+  ticketLinkOperatorCode: 50209,
 
   stopCard: {
     header: {

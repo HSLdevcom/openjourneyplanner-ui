@@ -13,6 +13,7 @@ $hsl-metro-orange: #ca4000;
 $hsl-bus-express: #ca4000;
 $hsl-rail-red: #8c4799;
 $hsl-ferry-blue: #007a97;
+$hsl-blue-accessible: #0074bf;
 
 /* Application palette */
 $primary-color: $hsl-blue;
@@ -31,6 +32,9 @@ $link-color: $primary-color;
 $desktop-title-color: #007ac9;
 $desktop-title-arrow-icon-color: $secondary-color;
 $top-bar-color: $primary-color;
+$disclaimer-background-color: #e5f2fa;
+$disclaimer-border-color: #e5f2fa;
+$link-color-accessible: $hsl-blue-accessible;
 
 /* Vehicle palette */
 $airplane-color: #0046ad;
@@ -56,3 +60,7 @@ $font-family-narrow: 'Gotham XNarrow SSm A', 'Gotham XNarrow SSm B',
 
 /* Spinner */
 $spinner-image: url('hsl-spinner.png');
+$font-weight-disclaimer: 400 !important;
+
+/* Borders */
+$border-radius-disclaimer: 8px;

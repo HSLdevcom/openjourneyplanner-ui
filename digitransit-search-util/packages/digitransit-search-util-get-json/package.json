@@ -22,6 +22,6 @@
   "license": "(AGPL-3.0 OR EUPL-1.2)",
   "dependencies": {
     "@digitransit-search-util/digitransit-search-util-serialize": "0.0.2",
-    "axios": "1.6.7"
+    "axios": "1.7.7"
   }
 }

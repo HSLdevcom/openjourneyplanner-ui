@@ -134,7 +134,9 @@ class LocationPopup extends React.Component {
     return (
       <Card>
         <PopupHeader header={address} subHeader={place}>
-          {zoneId && <ZoneIcon zoneId={zoneId} showUnknown={false} />}
+          {zoneId && zoneId !== place && (
+            <ZoneIcon zoneId={zoneId} showUnknown={false} />
+          )}
         </PopupHeader>
         {(this.props.locationPopup === 'all' ||
           this.props.locationPopup === 'origindestination') && (

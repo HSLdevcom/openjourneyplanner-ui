@@ -1,11 +1,40 @@
 import PropTypes from 'prop-types';
-import React, { useRef, useLayoutEffect, useState } from 'react';
-import { configShape } from '../util/shapes';
+import React, {
+  useRef,
+  useLayoutEffect,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+} from 'react';
+import { matchShape } from 'found';
 import MapBottomsheetContext from './map/MapBottomsheetContext';
 import MobileFooter from './MobileFooter';
+import { isBrowser } from '../util/browser';
 
-function slowlyScrollTo(el, to = 0, duration = 1000) {
+import {
+  PREFIX_ROUTES,
+  PREFIX_NEARYOU,
+  PREFIX_ITINERARY_SUMMARY,
+} from '../util/path';
+
+const noBottomSheetResetAtContentChange = [
+  PREFIX_ROUTES,
+  PREFIX_NEARYOU,
+  PREFIX_ITINERARY_SUMMARY,
+];
+
+const BOTTOM_SHEET_OFFSET = 20;
+const topBarHeight = 64;
+
+function getMiddlePosition() {
+  return isBrowser
+    ? Math.floor((window.innerHeight - topBarHeight) * 0.45)
+    : 400;
+}
+
+function slowlyScrollTo(el, to, done) {
   const element = el;
+  const duration = 500;
   const start = element.scrollTop;
   const change = to - start;
   const increment = 20;
@@ -20,6 +49,8 @@ function slowlyScrollTo(el, to = 0, duration = 1000) {
 
     if (currentTime < duration) {
       setTimeout(animateScroll, increment);
+    } else {
+      done();
     }
   };
 
@@ -36,101 +67,129 @@ Math.easeInOutQuad = function easeInOutQuad(a, b, c, d) {
   return (-c / 2) * (t * (t - 2) - 1) + b;
 };
 
-export default function MobileView({
-  header,
-  map,
-  content,
-  settingsDrawer,
-  selectFromMapHeader,
-  expandMap,
-  searchBox,
-}) {
-  if (settingsDrawer) {
-    return <div className="mobile">{settingsDrawer}</div>;
-  }
-  const scrollRef = useRef(null);
-  const topBarHeight = 64;
-  // pass these to map according to bottom sheet placement
-  const [bottomsheetState, changeBottomsheetState] = useState({
-    context: { mapBottomPadding: 0, buttonBottomPadding: 0 },
-  });
-
-  useLayoutEffect(() => {
-    if (map) {
-      const paddingHeight = (window.innerHeight - topBarHeight) * 0.9; // height of .drawer-padding, defined as 90% of map height
-      const newSheetPosition = paddingHeight / 2;
-      scrollRef.current.scrollTop = newSheetPosition;
-      changeBottomsheetState({
-        context: {
-          mapBottomPadding: newSheetPosition,
-          buttonBottomPadding: newSheetPosition,
-        },
-      });
+const MobileView = forwardRef(
+  (
+    {
+      header,
+      map,
+      content,
+      settingsDrawer,
+      selectFromMapHeader,
+      mapRef,
+      searchBox,
+      match,
+    },
+    ref,
+  ) => {
+    if (settingsDrawer) {
+      return <div className="mobile">{settingsDrawer}</div>;
     }
-  }, [header]);
+    const scrollRef = useRef(null);
+    const pathParts = match.location.pathname.split('/');
+    const pagePrefix = pathParts?.length > 1 ? pathParts[1] : undefined;
 
-  useLayoutEffect(() => {
-    if (map && expandMap) {
-      const newSheetPosition = 0;
-      slowlyScrollTo(scrollRef.current);
-      changeBottomsheetState({
-        context: {
-          mapBottomPadding: newSheetPosition,
-          buttonBottomPadding: newSheetPosition,
-        },
-      });
-    }
-  }, [expandMap]);
+    // pass these to map according to bottom sheet placement
+    const [bottomPadding, setBottomPadding] = useState(getMiddlePosition());
 
-  const onScroll = e => {
-    if (map) {
+    const onScroll = e => {
       if (e.target.className === 'drawer-container') {
-        const scroll = e.target.scrollTop;
-        changeBottomsheetState({
-          context: { ...bottomsheetState.context, buttonBottomPadding: scroll },
-        });
+        mapRef?.setBottomPadding(e.target.scrollTop);
+        setBottomPadding(e.target.scrollTop);
       }
-    }
-  };
+    };
 
-  return (
-    <div className="mobile">
-      {selectFromMapHeader}
-      {searchBox}
-      {map ? (
-        <>
-          <MapBottomsheetContext.Provider value={bottomsheetState.context}>
-            {map}
-          </MapBottomsheetContext.Provider>
-          <div
-            className="drawer-container"
-            onScroll={onScroll}
-            ref={scrollRef}
-            role="main"
-          >
-            <div className="drawer-padding" />
-            <div className="drawer-content">
-              <div className="drag-line" />
-              <div className="content-container">
-                {header}
-                {content}
+    const changeBottomPadding = (padding, slowly) => {
+      if (slowly) {
+        slowlyScrollTo(scrollRef.current, padding, () => {
+          mapRef?.forceRefresh();
+          mapRef?.setBottomPadding(padding);
+          setBottomPadding(padding);
+        });
+      } else {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = padding;
+        }
+        mapRef?.setBottomPadding(padding);
+        setBottomPadding(padding);
+      }
+    };
+
+    useImperativeHandle(ref, () => ({
+      setBottomSheet: (pos, slowly) => {
+        const pad =
+          pos === 'middle' ? getMiddlePosition() : BOTTOM_SHEET_OFFSET;
+        changeBottomPadding(pad, slowly);
+      },
+    }));
+
+    /* UI does not have a consistent way to render the map into mobile view.
+       Most views don't get a map reference. Itinerary page has the ref and knows
+       how to control bottom sheet whenever needed.
+
+       In most page transitions, we can only try to guess from props which view is
+       in question and what should happen when props change.
+    */
+
+    // effect below triggers when itinerary detail view opens
+    useLayoutEffect(() => {
+      if (pagePrefix === PREFIX_ITINERARY_SUMMARY) {
+        changeBottomPadding(getMiddlePosition());
+      }
+    }, [header]);
+
+    // always set bottom sheet when component mounts
+    useLayoutEffect(() => {
+      if (map) {
+        changeBottomPadding(getMiddlePosition());
+      }
+    }, []);
+
+    // set bottom sheet for most views at content change
+    useLayoutEffect(() => {
+      if (map && !noBottomSheetResetAtContentChange.includes(pagePrefix)) {
+        changeBottomPadding(getMiddlePosition());
+      }
+    }, [content]);
+
+    return (
+      <div className="mobile">
+        {selectFromMapHeader}
+        {searchBox}
+        {map ? (
+          <>
+            <MapBottomsheetContext.Provider value={bottomPadding}>
+              {map}
+            </MapBottomsheetContext.Provider>
+            <div
+              className="drawer-container"
+              onScroll={onScroll}
+              ref={scrollRef}
+              role="main"
+            >
+              <div className="drawer-padding" />
+              <div className="drawer-content">
+                <div className="drag-line" />
+                <div className="content-container">
+                  {header}
+                  {content}
+                </div>
               </div>
             </div>
-          </div>
-        </>
-      ) : (
-        <div role="main" className="mobile-main-container">
-          <div className="mobile-main-content-container">
-            {header}
-            {content}
-          </div>
+          </>
+        ) : (
+          <div role="main" className="mobile-main-container">
+            <div className="mobile-main-content-container">
+              {header}
+              {content}
+            </div>
 
-          <MobileFooter />
-        </div>
-      )}
-    </div>
-  );
-}
+            <MobileFooter />
+          </div>
+        )}
+      </div>
+    );
+  },
+);
 
 MobileView.propTypes = {
   header: PropTypes.node,
@@ -139,7 +198,9 @@ MobileView.propTypes = {
   settingsDrawer: PropTypes.node,
   selectFromMapHeader: PropTypes.node,
   searchBox: PropTypes.node,
-  expandMap: PropTypes.number,
+  // eslint-disable-next-line
+  mapRef: PropTypes.object,
+  match: matchShape.isRequired,
 };
 
 MobileView.defaultProps = {
@@ -149,9 +210,7 @@ MobileView.defaultProps = {
   settingsDrawer: undefined,
   selectFromMapHeader: undefined,
   searchBox: undefined,
-  expandMap: undefined,
+  mapRef: undefined,
 };
 
-MobileView.contextTypes = {
-  config: configShape.isRequired,
-};
+export default MobileView;

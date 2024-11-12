@@ -21,8 +21,6 @@ import {
 import PositionMarker from './PositionMarker';
 import VectorTileLayerContainer from './tile-layer/VectorTileLayerContainer';
 import { boundWithMinimumArea } from '../../util/geo-utils';
-import { isDebugTiles } from '../../util/browser';
-import { BreakpointConsumer } from '../../util/withBreakpoint';
 import events from '../../util/events';
 import { getLayerBaseUrl } from '../../util/mapLayerUtils';
 import GeoJSON from './GeoJSON';
@@ -30,7 +28,7 @@ import { mapLayerShape } from '../../store/MapLayerStore';
 
 const zoomOutText = `<svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-icon_minus"/></svg>`;
 const zoomInText = `<svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#icon-icon_plus"/></svg>`;
-
+const EXTRA_PADDING = 100;
 /* foo-eslint-disable react/sort-comp */
 
 const startClient = context => {
@@ -64,9 +62,6 @@ export default class Map extends React.Component {
     lon: PropTypes.number,
     zoom: PropTypes.number,
     bounds: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
-    boundsOptions: PropTypes.shape({
-      paddingBottomRight: PropTypes.arrayOf(PropTypes.number),
-    }),
     hilightedStops: PropTypes.arrayOf(PropTypes.string),
     stopsToShow: PropTypes.arrayOf(PropTypes.string),
     objectsToHide: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string)),
@@ -75,29 +70,29 @@ export default class Map extends React.Component {
     leafletEvents: PropTypes.object,
     leafletObjs: PropTypes.arrayOf(PropTypes.node),
     mergeStops: PropTypes.bool,
+    leafletMapRef: PropTypes.func,
     mapRef: PropTypes.func,
     locationPopup: PropTypes.string,
     onSelectLocation: PropTypes.func,
-    mapBottomPadding: PropTypes.number,
-    buttonBottomPadding: PropTypes.number,
+    bottomPadding: PropTypes.number,
     bottomButtons: PropTypes.node,
     topButtons: PropTypes.node,
     // eslint-disable-next-line
     geoJson: PropTypes.object,
     mapLayers: mapLayerShape,
+    breakpoint: PropTypes.string,
   };
 
   static defaultProps = {
     animate: true,
     mapRef: null,
+    leafletMapRef: null,
     lat: undefined,
     lon: undefined,
     zoom: undefined,
     bounds: undefined,
     locationPopup: 'reversegeocoding',
-    boundsOptions: {},
-    mapBottomPadding: 0,
-    buttonBottomPadding: 0,
+    bottomPadding: undefined,
     bottomButtons: null,
     topButtons: null,
     mergeStops: true,
@@ -109,6 +104,7 @@ export default class Map extends React.Component {
     leafletEvents: undefined,
     leafletObjs: undefined,
     objectsToHide: { vehicleRentalStations: [] },
+    breakpoint: undefined,
   };
 
   static contextTypes = {
@@ -121,6 +117,20 @@ export default class Map extends React.Component {
   constructor(props) {
     super(props);
     this.state = { zoom: 14 };
+    if (props.mapRef) {
+      props.mapRef(this);
+    }
+    if (this.props.breakpoint === 'large') {
+      this.boundsOptions = {
+        paddingTopLeft: [0, EXTRA_PADDING],
+        paddingBottomRight: [0, (window.innerHeight - 64) / 2],
+      };
+    } else {
+      this.boundsOptions = {
+        paddingTopLeft: [0, 0],
+        paddingBottomRight: [0, 0],
+      };
+    }
   }
 
   updateZoom = () => {
@@ -136,6 +146,9 @@ export default class Map extends React.Component {
       startClient(this.context);
     }
     this.updateZoom();
+    if (this.props.mapRef) {
+      this.props.mapRef(this);
+    }
   }
 
   // eslint-disable-next-line camelcase
@@ -156,11 +169,13 @@ export default class Map extends React.Component {
   componentDidUpdate() {
     // move leaflet attribution control elements according to given padding
     // leaflet api doesn't allow controlling element position so have to use this hack
-    const bottomControls = document.getElementsByClassName('leaflet-bottom');
-    Array.prototype.forEach.call(bottomControls, elem => {
-      // eslint-disable-next-line no-param-reassign
-      elem.style.transform = `translate(0, -${this.props.buttonBottomPadding}px)`;
-    });
+    if (this.props.bottomPadding !== undefined) {
+      const bottomControls = document.getElementsByClassName('leaflet-bottom');
+      Array.prototype.forEach.call(bottomControls, elem => {
+        // eslint-disable-next-line no-param-reassign
+        elem.style.transform = `translate(0, -${this.props.bottomPadding}px)`;
+      });
+    }
   }
 
   componentWillUnmount() {
@@ -175,26 +190,43 @@ export default class Map extends React.Component {
     this.updateZoom();
   };
 
+  // eslint-disable-next-line react/no-unused-class-component-methods
+  setBottomPadding = padding => {
+    this.boundsOptions.paddingBottomRight = [
+      0,
+      Math.max(
+        Math.min(padding, window.innerHeight - 2 * EXTRA_PADDING),
+        EXTRA_PADDING,
+      ),
+    ];
+  };
+
   render() {
     const {
       zoom,
       lat,
       lon,
-      boundsOptions,
       locationPopup,
       onSelectLocation,
       leafletObjs,
       geoJson,
       mapLayers,
+      bottomPadding,
     } = this.props;
     const { config } = this.context;
 
     const naviProps = {}; // these define map center and zoom
+    if (bottomPadding !== undefined) {
+      this.boundsOptions.paddingBottomRight = [
+        0,
+        Math.min(bottomPadding + EXTRA_PADDING, window.innerHeight - 60),
+      ];
+    }
     if (this.props.bounds) {
       // bounds overrule center & zoom
       naviProps.bounds = boundWithMinimumArea(this.props.bounds); // validate
     } else if (lat && lon) {
-      if (this.props.mapBottomPadding && this.props.mapBottomPadding > 0) {
+      if (this.boundsOptions.paddingBottomRight !== undefined) {
         // bounds fitting can take account the wanted padding, so convert to bounds
         naviProps.bounds = boundWithMinimumArea([[lat, lon]], zoom);
       } else {
@@ -227,12 +259,7 @@ export default class Map extends React.Component {
       return null;
     }
 
-    if (this.props.mapBottomPadding) {
-      boundsOptions.paddingBottomRight = [0, this.props.mapBottomPadding];
-    }
-    const mapBaseUrl =
-      (isDebugTiles && `${config.URL.OTP}inspector/tile/traversal/`) ||
-      getLayerBaseUrl(config.URL.MAP, this.props.lang);
+    const mapBaseUrl = getLayerBaseUrl(config.URL.MAP, this.props.lang);
     const mapUrl = config.hasAPISubscriptionQueryParameter
       ? `${mapBaseUrl}{z}/{x}/{y}{size}.png?${config.API_SUBSCRIPTION_QUERY_PARAMETER_NAME}=${config.API_SUBSCRIPTION_TOKEN}`
       : `${mapBaseUrl}{z}/{x}/{y}{size}.png`;
@@ -294,7 +321,7 @@ export default class Map extends React.Component {
         <span
           className="overlay-mover"
           style={{
-            transform: `translate(0, -${this.props.buttonBottomPadding}px)`,
+            transform: `translate(0, -${this.props.bottomPadding}px)`,
           }}
         >
           {this.props.bottomButtons}
@@ -306,8 +333,8 @@ export default class Map extends React.Component {
             keyboard={false}
             ref={el => {
               this.map = el;
-              if (this.props.mapRef) {
-                this.props.mapRef(el);
+              if (this.props.leafletMapRef) {
+                this.props.leafletMapRef(el);
               }
             }}
             minZoom={config.map.minZoom}
@@ -315,7 +342,7 @@ export default class Map extends React.Component {
             zoomControl={false}
             attributionControl={false}
             animate={this.props.animate}
-            boundsOptions={boundsOptions}
+            boundsOptions={this.boundsOptions}
             {...leafletEvents}
             onPopupopen={onPopupopen}
             closePopupOnClick={false}
@@ -325,51 +352,41 @@ export default class Map extends React.Component {
               tileSize={config.map.tileSize || 256}
               zoomOffset={config.map.zoomOffset || 0}
               updateWhenIdle={false}
-              size={
-                config.map.useRetinaTiles && L.Browser.retina && !isDebugTiles
-                  ? '@2x'
-                  : ''
-              }
+              size={config.map.useRetinaTiles && L.Browser.retina ? '@2x' : ''}
               minZoom={config.map.minZoom}
               maxZoom={config.map.maxZoom}
               attribution={attribution}
             />
-            <BreakpointConsumer>
-              {breakpoint =>
-                attribution && (
-                  <AttributionControl
-                    position={
-                      breakpoint === 'large' ? 'bottomright' : 'bottomleft'
-                    }
-                    prefix=""
-                  />
-                )
-              }
-            </BreakpointConsumer>
+            {attribution && (
+              <AttributionControl
+                position={
+                  this.props.breakpoint === 'large'
+                    ? 'bottomright'
+                    : 'bottomleft'
+                }
+                prefix=""
+              />
+            )}
             {config.map.showScaleBar && (
               <ScaleControl
                 imperial={false}
                 position={config.map.controls.scale.position}
               />
             )}
-            <BreakpointConsumer>
-              {breakpoint =>
-                breakpoint === 'large' &&
-                config.map.showZoomControl && (
-                  <ZoomControl
-                    position={config.map.controls.zoom.position}
-                    zoomInText={zoomInText}
-                    zoomOutText={zoomOutText}
-                    zoomInTitle={this.context.intl.formatMessage({
-                      id: 'map-zoom-in-button',
-                    })}
-                    zoomOutTitle={this.context.intl.formatMessage({
-                      id: 'map-zoom-out-button',
-                    })}
-                  />
-                )
-              }
-            </BreakpointConsumer>
+            {this.props.breakpoint === 'large' &&
+              config.map.showZoomControl && (
+                <ZoomControl
+                  position={config.map.controls.zoom.position}
+                  zoomInText={zoomInText}
+                  zoomOutText={zoomOutText}
+                  zoomInTitle={this.context.intl.formatMessage({
+                    id: 'map-zoom-in-button',
+                  })}
+                  zoomOutTitle={this.context.intl.formatMessage({
+                    id: 'map-zoom-out-button',
+                  })}
+                />
+              )}
             {leafletObjNew}
             <PositionMarker key="position" />
           </LeafletMap>
