@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { FormattedMessage } from 'react-intl';
@@ -16,15 +15,6 @@ const RentalVehiclePageMapContainer = ({ rentalVehicle }) => {
     />
   );
   return <StopPageMap stop={rentalVehicle} stopName={stopName} scooter />;
-};
-
-RentalVehiclePageMapContainer.contextTypes = {
-  config: PropTypes.shape({
-    map: PropTypes.shape({
-      tileSize: PropTypes.number,
-      zoom: PropTypes.number,
-    }),
-  }),
 };
 
 RentalVehiclePageMapContainer.propTypes = {

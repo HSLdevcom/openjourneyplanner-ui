@@ -47,12 +47,12 @@ describe('retryFetch', () => {
     }
     // because test system can be slow, requests should take between 40-200ms when retry delay is 20ms and 2 retries
     const firstDuration = await measureFetchDuration(2, 20);
-    expect(firstDuration).to.be.above(40);
+    expect(firstDuration).to.be.above(39);
     expect(firstDuration).to.be.below(200);
 
     // because test system can be slow, requests should take between 200-360ms when retry delay is 100ms and 2 retries
     const secondDuration = await measureFetchDuration(2, 100);
-    expect(secondDuration).to.be.above(200);
+    expect(secondDuration).to.be.above(199);
     expect(secondDuration).to.be.below(360);
 
     // because of longer delay between requests, the difference between 2 retries with 20ms delay

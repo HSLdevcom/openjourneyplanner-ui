@@ -62,6 +62,7 @@ import {
   getSelectedItineraryIndex,
   getTopics,
   isEqualItineraries,
+  isStoredItineraryRelevant,
   mergeBikeTransitPlans,
   mergeScooterTransitPlan,
   quitIteration,
@@ -73,9 +74,9 @@ import {
   updateClient,
 } from './ItineraryPageUtils';
 import ItineraryTabs from './ItineraryTabs';
-import NaviContainer from './NaviContainer';
-import NavigatorIntroModal from './NavigatorIntro/NavigatorIntroModal';
 import planConnection from './PlanConnection';
+import NaviContainer from './navigator/NaviContainer';
+import NavigatorIntroModal from './navigator/navigatorintro/NavigatorIntroModal';
 
 const MAX_QUERY_COUNT = 4; // number of attempts to collect enough itineraries
 
@@ -114,6 +115,8 @@ const emptyState = {
 const emptyPlan = { plan: {}, loading: LOADSTATE.DONE };
 const unset = { plan: {}, loading: LOADSTATE.UNSET };
 
+const noFocus = { center: undefined, zoom: undefined, bounds: undefined };
+
 export default function ItineraryPage(props, context) {
   const headerRef = useRef(null);
   const mwtRef = useRef();
@@ -150,6 +153,9 @@ export default function ItineraryPage(props, context) {
   const [topicsState, setTopicsState] = useState(null);
   const [mapState, setMapState] = useState({});
   const [naviMode, setNaviMode] = useState(false);
+  const [storedItinerary, setStoredItinerary] = useState(
+    getLatestNavigatorItinerary(),
+  );
 
   const { config, router } = context;
   const { match, breakpoint } = props;
@@ -647,16 +653,28 @@ export default function ItineraryPage(props, context) {
       mobileRef.current.setBottomSheet(isEnabled ? 'bottom' : 'middle');
     }
     if (!isEnabled) {
-      setMapState({ center: undefined, zoom: undefined, bounds: undefined });
+      setMapState(noFocus);
       navigateMap();
       clearLatestNavigatorItinerary();
-    } else {
-      const { combinedEdges, selectedIndex } = getItinerarySelection();
-      if (combinedEdges[selectedIndex]?.node) {
-        setLatestNavigatorItinerary(combinedEdges[selectedIndex]?.node);
-      }
     }
     setNaviMode(isEnabled);
+  };
+
+  const storeItineraryAndStartNavigation = itinerary => {
+    setNavigation(true);
+    const itineraryWithParams = {
+      itinerary,
+      params: {
+        from: params.from,
+        to: params.to,
+        arriveBy: query.arriveBy,
+        time: query.time,
+        hash,
+        secondHash,
+      },
+    };
+    setLatestNavigatorItinerary(itineraryWithParams);
+    setStoredItinerary(itineraryWithParams);
   };
 
   // save url-defined location to old searches
@@ -750,11 +768,11 @@ export default function ItineraryPage(props, context) {
     updateLocalStorage(true);
     addFeedbackly(context);
 
-    const storedItinerary = getLatestNavigatorItinerary();
-
-    setNavigation(
-      storedItinerary?.end && Date.parse(storedItinerary.end) > Date.now(),
-    );
+    if (isStoredItineraryRelevant(storedItinerary, match)) {
+      setNavigation(true);
+    } else {
+      clearLatestNavigatorItinerary();
+    }
 
     return () => {
       if (showVehicles()) {
@@ -786,7 +804,7 @@ export default function ItineraryPage(props, context) {
 
   useEffect(() => {
     navigateMap();
-    setMapState({ center: undefined, zoom: undefined, bounds: undefined });
+    setMapState(noFocus);
 
     if (detailView) {
       // If itinerary is not found in detail view, go back to summary view
@@ -797,6 +815,7 @@ export default function ItineraryPage(props, context) {
       // turn off tracking when user navigates away from tracking view
       setNavigation(false);
     }
+    setTimeout(() => mwtRef.current?.map?.updateZoom(), 1);
   }, [hash, secondHash]);
 
   useEffect(() => {
@@ -901,7 +920,8 @@ export default function ItineraryPage(props, context) {
         )
         .filter(a => a[0] && a[1]),
     );
-    setMapState({ bounds, center: undefined });
+    setMapState({ bounds, center: undefined, zoom: undefined });
+    setTimeout(() => mwtRef.current?.map?.updateZoom(), 1);
   };
 
   const changeHash = index => {
@@ -1024,6 +1044,12 @@ export default function ItineraryPage(props, context) {
       itineraryContainsDepartureFromVehicleRentalStation,
       planEdges?.[activeIndex]?.node,
     );
+
+    const explicitItinerary =
+      !!detailView && naviMode && !!storedItinerary.itinerary
+        ? storedItinerary.itinerary
+        : undefined;
+
     return (
       <ItineraryPageMap
         {...mwtProps}
@@ -1037,10 +1063,11 @@ export default function ItineraryPage(props, context) {
         planEdges={planEdges}
         topics={topicsState}
         active={activeIndex}
-        showActive={!!detailView}
+        showActiveOnly={!!detailView}
         showVehicles={showVehicles()}
         showDurationBubble={planEdges?.[0]?.node.legs?.length === 1}
         objectsToHide={objectsToHide}
+        itinerary={explicitItinerary}
       />
     );
   }
@@ -1140,8 +1167,8 @@ export default function ItineraryPage(props, context) {
     );
   } else if (detailView) {
     if (naviMode) {
-      const naviModeItinerary =
-        getLatestNavigatorItinerary() || combinedEdges[selectedIndex]?.node;
+      const itineraryForNavigator =
+        storedItinerary.itinerary || combinedEdges[selectedIndex]?.node;
 
       content = (
         <>
@@ -1153,7 +1180,7 @@ export default function ItineraryPage(props, context) {
             />
           )}
           <NaviContainer
-            itinerary={naviModeItinerary}
+            itinerary={itineraryForNavigator}
             focusToLeg={focusToLeg}
             relayEnvironment={props.relayEnvironment}
             setNavigation={setNavigation}
@@ -1166,8 +1193,11 @@ export default function ItineraryPage(props, context) {
       const pastSearch =
         Date.parse(combinedEdges[selectedIndex]?.node.end) < Date.now();
       const navigateHook =
-        !desktop && config.navigation && !pastSearch
-          ? setNavigation
+        !desktop && config.experimental.navigation && !pastSearch
+          ? () =>
+              storeItineraryAndStartNavigation(
+                combinedEdges[selectedIndex]?.node,
+              )
           : undefined;
       carEmissions = carEmissions ? Math.round(carEmissions) : undefined;
       content = (
@@ -1183,7 +1213,7 @@ export default function ItineraryPage(props, context) {
           bikeAndPublicItineraryCount={bikePublicPlan.bikePublicItineraryCount}
           openSettings={showSettingsPanel}
           relayEnvironment={props.relayEnvironment}
-          setNavigation={navigateHook}
+          startNavigation={navigateHook}
         />
       );
     }

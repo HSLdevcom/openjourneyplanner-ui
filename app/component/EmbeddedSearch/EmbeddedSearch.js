@@ -7,7 +7,10 @@ import CtrlPanel from '@digitransit-component/digitransit-component-control-pane
 import i18next from 'i18next';
 import { configShape } from '../../util/shapes';
 import { getRefPoint } from '../../util/apiUtils';
-import withSearchContext from '../WithSearchContext';
+import {
+  withSearchContext,
+  getLocationSearchTargets,
+} from '../WithSearchContext';
 import {
   buildQueryString,
   buildURL,
@@ -20,6 +23,8 @@ import { addAnalyticsEvent } from '../../util/analyticsUtils';
 import useUTMCampaignParams from './hooks/useUTMCampaignParams';
 
 const LocationSearch = withSearchContext(DTAutosuggestPanel, true);
+
+const sources = ['Favourite', 'History', 'Datasource'];
 
 const translations = {
   fi: {
@@ -173,13 +178,6 @@ const EmbeddedSearch = (props, context) => {
     titleText = i18next.t('find-route');
   }
 
-  const locationSearchTargets = [
-    'Locations',
-    'CurrentPosition',
-    'FutureRoutes',
-    'Stops',
-  ];
-  const sources = ['Favourite', 'History', 'Datasource'];
   const refPoint = getRefPoint(origin, destination, {});
 
   const onSelectLocation = (item, id) => {
@@ -215,6 +213,7 @@ const EmbeddedSearch = (props, context) => {
     destination,
     lang,
     sources,
+    targets: getLocationSearchTargets(config, false),
     color,
     hoverColor,
     refPoint,
@@ -325,10 +324,7 @@ const EmbeddedSearch = (props, context) => {
           <span className="sr-only">
             {i18next.t('search-fields-sr-instructions')}
           </span>
-          <LocationSearch
-            targets={locationSearchTargets}
-            {...locationSearchProps}
-          />
+          <LocationSearch {...locationSearchProps} />
           <div className="embedded-search-button-container">
             {logo ? (
               <img

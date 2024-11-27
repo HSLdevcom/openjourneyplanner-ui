@@ -6,19 +6,16 @@ import DTAutosuggest from '@digitransit-component/digitransit-component-autosugg
 import { configShape } from '../util/shapes';
 import EmbeddedSearch from './EmbeddedSearch';
 import { EMBEDDED_SEARCH_PATH } from '../util/path';
-import withSearchContext from './WithSearchContext';
 import { getRefPoint } from '../util/apiUtils';
 import withBreakpoint from '../util/withBreakpoint';
+import {
+  withSearchContext,
+  getLocationSearchTargets,
+} from './WithSearchContext';
 import { isBrowser } from '../util/browser';
 
 const LocationSearch = withSearchContext(DTAutosuggest, true);
 
-const locationSearchTargets = [
-  'Locations',
-  'CurrentPosition',
-  'Stations',
-  'Stops',
-];
 const sources = ['Favourite', 'History', 'Datasource'];
 
 const languages = [
@@ -83,7 +80,7 @@ const EmbeddedSearchGenerator = (props, context) => {
     refPoint,
     lang,
     sources,
-    targets: locationSearchTargets,
+    targets: getLocationSearchTargets(config, false),
     isMobile: breakpoint !== 'large',
     color: colors.primary,
     hoverColor: colors.hover,
@@ -356,7 +353,6 @@ const EmbeddedSearchGenerator = (props, context) => {
             {searchOriginDefined && (
               <div className="location-search-wrapper">
                 <LocationSearch
-                  targets={locationSearchTargets}
                   id="origin"
                   placeholder="search-origin-index"
                   className="origin-search"
@@ -393,7 +389,6 @@ const EmbeddedSearchGenerator = (props, context) => {
             {searchDestinationDefined && (
               <div className="location-search-wrapper">
                 <LocationSearch
-                  targets={locationSearchTargets}
                   id="destination"
                   placeholder="search-destination-index"
                   className="destination-search"

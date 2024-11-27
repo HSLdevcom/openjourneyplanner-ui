@@ -161,3 +161,10 @@ export function timeStr(dateTime) {
   const time = parts[1].split(':');
   return `${time[0]}:${time[1]}`;
 }
+
+/**
+ * Epoch ms to ISO-8601/RFC3339 datetime str
+ */
+export function epochToIso(ms) {
+  return moment(ms).format();
+}

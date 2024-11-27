@@ -394,7 +394,6 @@ export default function BicycleLeg(
               <div className="link-to-e-scooter-operator">
                 <Icon
                   img="icon-icon_arrow-collapse--right"
-                  color="#007ac9"
                   height={1}
                   width={1}
                 />

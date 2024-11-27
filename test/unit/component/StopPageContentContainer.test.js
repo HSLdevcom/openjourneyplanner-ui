@@ -4,7 +4,7 @@ import { describe, it } from 'mocha';
 
 import { mockMatch, mockRouter } from '../helpers/mock-router';
 import { shallowWithIntl } from '../helpers/mock-intl-enzyme';
-import { Component as StopPageContentContainer } from '../../../app/component/StopPageContentContainer';
+import { Component as StopPageContentContainer } from '../../../app/component/stop/StopPageContentContainer';
 
 describe('<StopPageContentContainer />', () => {
   it("should show a 'no departures' indicator", () => {

@@ -16,7 +16,7 @@ $body-font-weight: $font-weight-medium;
 
 // Some of these files override sass variables Foundation uses,
 // so they must be loaded before the relevant foundation modules
-@import '../app/component/stop-cards';
+@import '../app/component/stop/stop-cards';
 @import '../app/component/alert-banner';
 @import '../app/component/map/map';
 @import '../app/component/map/popups/marker-popup';
@@ -27,10 +27,10 @@ $body-font-weight: $font-weight-medium;
 @import '../app/component/routepage/route';
 @import '../app/component/checkbox';
 @import '../app/component/toggle';
-@import '../app/component/stops-near-you';
+@import '../app/component/nearyou/stops-near-you';
 @import '../app/component/disruption';
 @import '../app/component/departure';
-@import '../app/component/stop';
+@import '../app/component/stop/stop';
 @import '../app/component/util';
 @import '../app/component/city-bike';
 @import '../app/component/favourite-icon-table';
@@ -63,8 +63,8 @@ $body-font-weight: $font-weight-medium;
 @import '../app/component/itinerary/settings-panel';
 @import '../app/component/itinerary/mobile-ticket-purchase-information';
 @import 'base/button';
-@import '../app/component/itinerary/navigator';
-@import '../app/component/itinerary/NavigatorIntro/navigator-intro';
+@import '../app/component/itinerary/navigator/navigator';
+@import '../app/component/itinerary/navigator/navigatorintro/navigator-intro';
 
 /* Modal */
 @import '~foundation-apps/scss/helpers/breakpoints';

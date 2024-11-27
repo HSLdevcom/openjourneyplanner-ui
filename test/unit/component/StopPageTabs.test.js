@@ -3,7 +3,7 @@ import { describe, it } from 'mocha';
 import React from 'react';
 
 import { shallowWithIntl } from '../helpers/mock-intl-enzyme';
-import { Component as StopPageTabs } from '../../../app/component/StopPageTabs';
+import { Component as StopPageTabs } from '../../../app/component/stop/StopPageTabs';
 
 const context = {
   match: {

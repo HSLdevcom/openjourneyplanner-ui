@@ -237,7 +237,6 @@ export const legShape = PropTypes.shape({
   intermediatePlaces: PropTypes.arrayOf(
     PropTypes.shape({
       arrival: legTimeShape,
-      stop: stopShape.isRequired,
     }),
   ),
   interlineWithPreviousLeg: PropTypes.bool,

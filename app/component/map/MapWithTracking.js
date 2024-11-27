@@ -16,7 +16,6 @@ import { isBrowser } from '../../util/browser';
 import PositionStore from '../../store/PositionStore';
 import { mapLayerShape } from '../../store/MapLayerStore';
 import BubbleDialog from '../BubbleDialog';
-// eslint-disable-next-line import/no-named-as-default
 import PreferencesStore from '../../store/PreferencesStore';
 import MapLayersDialogContent from '../MapLayersDialogContent';
 import MenuDrawer from '../MenuDrawer';
@@ -280,6 +279,7 @@ class MapWithTrackingStateHandler extends React.Component {
       (!isEqual(this.oldBounds, this.props.bounds) || this.refresh)
     ) {
       this.naviProps.bounds = cloneDeep(this.props.bounds);
+      delete this.naviProps.zoom;
       if (this.refresh) {
         // bounds is defined by [min, max] point pair. Substract min lat a bit
         this.naviProps.bounds[0][0] -= 0.000001 * Math.random();

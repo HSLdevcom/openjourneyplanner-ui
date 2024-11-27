@@ -1,21 +1,21 @@
-import isEqual from 'lodash/isEqual';
-import isEmpty from 'lodash/isEmpty';
-import pick from 'lodash/pick';
 import get from 'lodash/get';
+import isEmpty from 'lodash/isEmpty';
+import isEqual from 'lodash/isEqual';
+import pick from 'lodash/pick';
 import polyline from 'polyline-encoded';
 import SunCalc from 'suncalc';
-import { boundWithMinimumArea } from '../../util/geo-utils';
-import { addAnalyticsEvent } from '../../util/analyticsUtils';
-import { getStartTimeWithColon } from '../../util/timeUtils';
-import { getSettings, getDefaultSettings } from '../../util/planParamUtil';
-import { PlannerMessageType } from '../../constants';
 import {
+  changeRealTimeClientTopics,
   startRealTimeClient,
   stopRealTimeClient,
-  changeRealTimeClientTopics,
 } from '../../action/realTimeClientAction';
+import { PlannerMessageType } from '../../constants';
+import { addAnalyticsEvent } from '../../util/analyticsUtils';
+import { boundWithMinimumArea } from '../../util/geo-utils';
+import { compressLegs, getTotalBikingDistance } from '../../util/legUtils';
 import { getMapLayerOptions } from '../../util/mapLayerUtils';
-import { getTotalBikingDistance, compressLegs } from '../../util/legUtils';
+import { getDefaultSettings, getSettings } from '../../util/planParamUtil';
+import { getStartTimeWithColon } from '../../util/timeUtils';
 
 /**
  * Returns the index of selected itinerary. Attempts to look for
@@ -535,3 +535,29 @@ export function quitIteration(plan, newPlan, planParams, startTime) {
   }
   return false;
 }
+
+/**
+ * Enables Navigator assisted journey on itinerary selection if all of the following resolve as true:
+ * - a stored itinerary exists
+ * - the stored itinerary ends in future
+ * - the params stored along itinerary are identical to current URL parameters
+ *
+ * @param {{itinerary: itineraryShape, params: {from: string, to: string, time: number, arriveBy: boolean, index: string}}} itinerary matchContext with URL params
+ * @param {matchShape} match matchContext with URL params
+ * @returns true if Navigator can be initialized with stored itinerary
+ */
+export const isStoredItineraryRelevant = ({ itinerary, params }, match) => {
+  if (!itinerary || !params) {
+    return false;
+  }
+
+  return (
+    Date.parse(itinerary.end) > Date.now() &&
+    params.from === match.params.from &&
+    params.to === match.params.to &&
+    params.time === match.location?.query?.time &&
+    params.arriveBy === match.location?.query?.arriveBy &&
+    params.hash === match.params.hash &&
+    params.secondHash === match.params.secondHash
+  );
+};

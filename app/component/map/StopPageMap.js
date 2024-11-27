@@ -1,10 +1,9 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useContext, useState } from 'react';
 import { matchShape, routerShape } from 'found';
-import moment from 'moment';
 import { connectToStores } from 'fluxible-addons-react';
 import distance from '@digitransit-search-util/digitransit-search-util-distance';
-import { graphql, fetchQuery } from 'react-relay';
+import { fetchQuery } from 'react-relay';
 import ReactRelayContext from 'react-relay/lib/ReactRelayContext';
 import {
   configShape,
@@ -12,7 +11,6 @@ import {
   mapLayerOptionsShape,
 } from '../../util/shapes';
 import { getSettings } from '../../util/planParamUtil';
-import TimeStore from '../../store/TimeStore';
 import PositionStore from '../../store/PositionStore';
 import MapLayerStore, { mapLayerShape } from '../../store/MapLayerStore';
 import MapWithTracking from './MapWithTracking';
@@ -21,13 +19,13 @@ import SelectedStopPopupContent from '../SelectedStopPopupContent';
 import withBreakpoint from '../../util/withBreakpoint';
 import VehicleMarkerContainer from './VehicleMarkerContainer';
 import BackButton from '../BackButton';
-import { locationToUri } from '../../util/otpStrings';
 import ItineraryLine from './ItineraryLine';
 import Loading from '../Loading';
 import { getMapLayerOptions } from '../../util/mapLayerUtils';
 import MapRoutingButton from '../MapRoutingButton';
 import CookieSettingsButton from '../CookieSettingsButton';
 import { PREFIX_CARPARK, PREFIX_BIKEPARK } from '../../util/path';
+import { walkQuery } from './WalkQuery';
 
 const getModeFromProps = props => {
   if (props.citybike) {
@@ -49,15 +47,7 @@ const getModeFromProps = props => {
 };
 
 function StopPageMap(
-  {
-    stop,
-    breakpoint,
-    currentTime,
-    locationState,
-    mapLayers,
-    mapLayerOptions,
-    stopName,
-  },
+  { stop, breakpoint, locationState, mapLayers, mapLayerOptions, stopName },
   { config, match },
 ) {
   if (!stop) {
@@ -66,67 +56,48 @@ function StopPageMap(
 
   const maxShowRouteDistance = breakpoint === 'large' ? 900 : 470;
   const { environment } = useContext(ReactRelayContext);
-  const [plan, setPlan] = useState({ plan: {}, isFetching: false });
+  const [walk, setWalk] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
-    const fetchPlan = async targetStop => {
+    const fetchWalk = async targetStop => {
       if (locationState.hasLocation && locationState.address) {
         if (distance(locationState, stop) < maxShowRouteDistance) {
-          const toPlace = {
-            address: targetStop.name ? targetStop.name : 'stop',
-            lon: targetStop.lon,
-            lat: targetStop.lat,
-          };
           const settings = getSettings(config);
           const variables = {
-            fromPlace: locationToUri(locationState),
-            toPlace: locationToUri(toPlace),
-            date: moment(currentTime * 1000).format('YYYY-MM-DD'),
-            time: moment(currentTime * 1000).format('HH:mm:ss'),
+            origin: {
+              location: {
+                coordinate: {
+                  latitude: locationState.lat,
+                  longitude: locationState.lon,
+                },
+              },
+            },
+            destination: {
+              location: {
+                coordinate: {
+                  latitude: targetStop.lat,
+                  longitude: targetStop.lon,
+                },
+              },
+            },
             walkSpeed: settings.walkSpeed,
             wheelchair: !!settings.accessibilityOption,
           };
-          const query = graphql`
-            query StopPageMapQuery(
-              $fromPlace: String!
-              $toPlace: String!
-              $date: String!
-              $time: String!
-              $walkSpeed: Float
-              $wheelchair: Boolean
-            ) {
-              plan: plan(
-                fromPlace: $fromPlace
-                toPlace: $toPlace
-                date: $date
-                time: $time
-                transportModes: [{ mode: WALK }]
-                walkSpeed: $walkSpeed
-                wheelchair: $wheelchair
-              ) {
-                itineraries {
-                  legs {
-                    mode
-                    ...ItineraryLine_legs
-                  }
-                }
-              }
-            }
-          `;
-          fetchQuery(environment, query, variables)
+          fetchQuery(environment, walkQuery, variables)
             .toPromise()
-            .then(({ plan: result }) => {
+            .then(result => {
               if (isMounted) {
-                setPlan({ plan: result, isFetching: false });
+                setWalk(
+                  result.plan.edges.length ? result.plan.edges?.[0].node : null,
+                );
               }
             });
         }
       }
     };
     if (stop && locationState.hasLocation) {
-      setPlan({ plan: plan.plan, isFetching: true });
-      fetchPlan(stop);
+      fetchWalk(stop);
     }
     return () => {
       isMounted = false;
@@ -161,18 +132,15 @@ function StopPageMap(
     );
   }
 
-  if (plan.plan.itineraries) {
+  if (walk) {
     leafletObjs.push(
-      ...plan.plan.itineraries.map((itinerary, i) => (
-        <ItineraryLine
-          key="itinerary"
-          hash={i}
-          legs={itinerary.legs}
-          passive={false}
-          showIntermediateStops={false}
-          streetMode="walk"
-        />
-      )),
+      <ItineraryLine
+        key="walk"
+        legs={walk.legs}
+        passive={false}
+        showIntermediateStops={false}
+        streetMode="walk"
+      />,
     );
   }
   const id = match.params.stopId || match.params.terminalId || match.params.id;
@@ -229,7 +197,6 @@ StopPageMap.propTypes = {
   }),
   breakpoint: PropTypes.string.isRequired,
   locationState: locationShape.isRequired,
-  currentTime: PropTypes.number.isRequired,
   mapLayers: mapLayerShape.isRequired,
   mapLayerOptions: mapLayerOptionsShape.isRequired,
   parkType: PropTypes.string,
@@ -246,9 +213,8 @@ const componentWithBreakpoint = withBreakpoint(StopPageMap);
 
 const StopPageMapWithStores = connectToStores(
   componentWithBreakpoint,
-  [TimeStore, PositionStore, MapLayerStore],
+  [PositionStore, MapLayerStore],
   ({ config, getStore }, props) => {
-    const currentTime = getStore(TimeStore).getCurrentTime();
     const locationState = getStore(PositionStore).getLocationState();
     const ml = config.showVehiclesOnStopPage ? { notThese: ['vehicles'] } : {};
     if (props.citybike) {
@@ -266,7 +232,6 @@ const StopPageMapWithStores = connectToStores(
     });
     return {
       locationState,
-      currentTime,
       mapLayers,
       mapLayerOptions,
     };

@@ -8,7 +8,7 @@ import {
   AlertEntityType,
 } from '../../../app/constants';
 import AlertList from '../../../app/component/AlertList';
-import StopAlerts from '../../../app/component/StopAlerts';
+import StopAlerts from '../../../app/component/stop/StopAlerts';
 
 describe('<StopAlerts />', () => {
   it("should indicate that there are no alerts if the stop's routes have no alerts and the stop has no canceled stoptimes", () => {

@@ -145,7 +145,6 @@ function VehicleRentalLeg(
             <Link to={rentalStationLink}>
               <Icon
                 img="icon-icon_arrow-collapse--right"
-                color="#007ac9"
                 height={1.3}
                 width={1.3}
               />

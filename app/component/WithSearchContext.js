@@ -6,6 +6,7 @@ import suggestionToLocation from '@digitransit-search-util/digitransit-search-ut
 import connectToStores from 'fluxible-addons-react/connectToStores';
 import { configShape, locationStateShape } from '../util/shapes';
 import { addAnalyticsEvent } from '../util/analyticsUtils';
+import { useCitybikes } from '../util/modeUtils';
 import {
   PREFIX_ITINERARY_SUMMARY,
   PREFIX_STOPS,
@@ -25,10 +26,33 @@ const PATH_OPTS = {
   itinerarySummaryPrefix: PREFIX_ITINERARY_SUMMARY,
 };
 
-export default function withSearchContext(
-  WrappedComponent,
-  embeddedSearch = false,
-) {
+export function getLocationSearchTargets(config, isMobile) {
+  let locationSearchTargets = ['Locations', 'CurrentPosition'];
+
+  if (config.locationSearchTargetsFromOTP) {
+    // configurable setup
+    locationSearchTargets = [
+      ...locationSearchTargets,
+      ...config.locationSearchTargetsFromOTP,
+    ];
+  } else {
+    // default setup
+    locationSearchTargets.push('Stations');
+    locationSearchTargets.push('Stops');
+    if (useCitybikes(config.vehicleRental?.networks, config)) {
+      locationSearchTargets.push('VehicleRentalStations');
+    }
+    if (config.includeParkAndRideSuggestions) {
+      locationSearchTargets.push('ParkingAreas');
+    }
+  }
+  if (isMobile) {
+    locationSearchTargets.push('MapPosition');
+  }
+  return locationSearchTargets;
+}
+
+export function withSearchContext(WrappedComponent, embeddedSearch = false) {
   class ComponentWithSearchContext extends React.Component {
     static contextTypes = {
       config: configShape.isRequired,

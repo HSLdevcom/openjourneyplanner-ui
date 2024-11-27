@@ -1,36 +1,33 @@
 import PropTypes from 'prop-types';
 /* eslint-disable react/no-array-index-key */
 
-import React from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
 import polyUtil from 'polyline-encoded';
-import { intlShape } from 'react-intl';
-import { configShape, legShape } from '../../util/shapes';
-import { getRouteMode } from '../../util/modeUtils';
-import StopMarker from './non-tile-layer/StopMarker';
-import Line from './Line';
-import VehicleMarker from './non-tile-layer/VehicleMarker';
-import { getMiddleOf } from '../../util/geo-utils';
+import React from 'react';
 import { isBrowser } from '../../util/browser';
+import { getMiddleOf } from '../../util/geo-utils';
 import {
-  isCallAgencyPickupType,
-  getLegText,
   getInterliningLegs,
+  getLegText,
+  isCallAgencyPickupType,
 } from '../../util/legUtils';
-import SpeechBubble from './SpeechBubble';
+import { getRouteMode } from '../../util/modeUtils';
+import { configShape, legShape } from '../../util/shapes';
 import { durationToString } from '../../util/timeUtils';
+import Line from './Line';
+import StopMarker from './non-tile-layer/StopMarker';
 import TransitLegMarkers from './non-tile-layer/TransitLegMarkers';
+import VehicleMarker from './non-tile-layer/VehicleMarker';
+import SpeechBubble from './SpeechBubble';
 
 class ItineraryLine extends React.Component {
   static contextTypes = {
     config: configShape.isRequired,
-    intl: intlShape.isRequired,
   };
 
   static propTypes = {
     legs: PropTypes.arrayOf(legShape).isRequired,
     passive: PropTypes.bool,
-    hash: PropTypes.number.isRequired,
+    hash: PropTypes.number,
     showTransferLabels: PropTypes.bool,
     showIntermediateStops: PropTypes.bool,
     showDurationBubble: PropTypes.bool,
@@ -38,6 +35,7 @@ class ItineraryLine extends React.Component {
   };
 
   static defaultProps = {
+    hash: 0,
     passive: false,
     streetMode: undefined,
     showTransferLabels: false,
@@ -73,7 +71,6 @@ class ItineraryLine extends React.Component {
         {
           mode: leg.mode,
           type: leg.route?.type,
-          gtfsId: leg.route?.gtfsId,
         },
         this.context.config,
       );
@@ -242,107 +239,4 @@ class ItineraryLine extends React.Component {
   }
 }
 
-export default createFragmentContainer(ItineraryLine, {
-  legs: graphql`
-    fragment ItineraryLine_legs on Leg @relay(plural: true) {
-      mode
-      rentedBike
-      start {
-        scheduledTime
-        estimated {
-          time
-        }
-      }
-      end {
-        scheduledTime
-        estimated {
-          time
-        }
-      }
-      duration
-      distance
-      legGeometry {
-        points
-      }
-      transitLeg
-      interlineWithPreviousLeg
-      route {
-        gtfsId
-        shortName
-        color
-        type
-        agency {
-          name
-        }
-      }
-      from {
-        lat
-        lon
-        name
-        vertexType
-        vehicleRentalStation {
-          lat
-          lon
-          stationId
-          rentalNetwork {
-            networkId
-          }
-          availableVehicles {
-            total
-          }
-        }
-        rentalVehicle {
-          vehicleId
-          rentalNetwork {
-            networkId
-          }
-        }
-        stop {
-          gtfsId
-          code
-          platformCode
-        }
-      }
-      to {
-        lat
-        lon
-        name
-        vertexType
-        vehicleRentalStation {
-          lat
-          lon
-          stationId
-          rentalNetwork {
-            networkId
-          }
-          availableVehicles {
-            total
-          }
-        }
-        stop {
-          gtfsId
-          code
-          platformCode
-        }
-      }
-      trip {
-        stoptimes {
-          stop {
-            gtfsId
-          }
-          pickupType
-        }
-      }
-      intermediatePlaces {
-        stop {
-          gtfsId
-          lat
-          lon
-          name
-          code
-          platformCode
-        }
-      }
-    }
-  `,
-});
+export default ItineraryLine;

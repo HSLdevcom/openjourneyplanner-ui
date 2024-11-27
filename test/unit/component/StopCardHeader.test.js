@@ -3,7 +3,7 @@ import React from 'react';
 import { shallowWithIntl } from '../helpers/mock-intl-enzyme';
 import ZoneIcon from '../../../app/component/ZoneIcon';
 
-import StopCardHeader from '../../../app/component/StopCardHeader';
+import StopCardHeader from '../../../app/component/stop/StopCardHeader';
 import ExternalLink from '../../../app/component/ExternalLink';
 import { mockContext, mockChildContextTypes } from '../helpers/mock-context';
 

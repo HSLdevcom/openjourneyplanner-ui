@@ -51,7 +51,7 @@ const asDepartures = stoptimes =>
           (!canceled
             ? stoptime.realtimeDeparture
             : stoptime.scheduledDeparture);
-        const stoptimeTime = isArrival ? arrivalTime : departureTime;
+        const time = isArrival ? arrivalTime : departureTime;
 
         const { pattern } = stoptime.trip;
         return {
@@ -60,7 +60,7 @@ const asDepartures = stoptimes =>
           hasNoStop,
           hasOnlyDropoff,
           isLastStop,
-          stoptime: stoptimeTime,
+          time,
           stop: stoptime.stop,
           realtime: stoptime.realtime,
           pattern,
@@ -246,7 +246,7 @@ class DepartureListContainer extends Component {
     let dayCutoff = moment.unix(currentTime).startOf('day').unix();
     const departures = asDepartures(stoptimes)
       .filter(departure => !(isTerminal && departure.isArrival))
-      .filter(departure => currentTime < departure.stoptime)
+      .filter(departure => currentTime < departure.time)
       .slice(0, limit);
 
     // Add day dividers when day changes and add service day divider after service day changes.
@@ -254,13 +254,13 @@ class DepartureListContainer extends Component {
     const departuresWithDayDividers = departures.map(departure => {
       const serviceDate = moment.unix(departure.serviceDay).format('DDMMYYYY');
       const dayCutoffDate = moment.unix(dayCutoff).format('DDMMYYYY');
-      const stoptimeDate = moment.unix(departure.stoptime).format('DDMMYYYY');
+      const date = moment.unix(departure.time).format('DDMMYYYY');
       const serviceDayCutoffDate = moment
         .unix(serviceDayCutoff)
         .format('DDMMYYYY');
 
-      if (stoptimeDate !== dayCutoffDate && departure.stoptime > dayCutoff) {
-        dayCutoff = moment.unix(departure.stoptime).startOf('day').unix();
+      if (date !== dayCutoffDate && departure.time > dayCutoff) {
+        dayCutoff = moment.unix(departure.time).startOf('day').unix();
         // eslint-disable-next-line no-param-reassign
         departure.addDayDivider = true;
       }
@@ -283,14 +283,14 @@ class DepartureListContainer extends Component {
 
     let firstDayDepartureCount = 0;
     departuresWithDayDividers.forEach((departure, index) => {
-      const departureDate = moment.unix(departure.stoptime).format('DDMMYYYY');
+      const departureDate = moment.unix(departure.time).format('DDMMYYYY');
       const nextDay = moment.unix(currentTime).add(1, 'day').unix();
-      if (departure.stoptime < nextDay) {
+      if (departure.time < nextDay) {
         firstDayDepartureCount += 1;
       }
 
       // If next 24h has more than 10 departures only show stops for the next 24h
-      if (departure.stoptime > nextDay && firstDayDepartureCount >= 10) {
+      if (departure.time > nextDay && firstDayDepartureCount >= 10) {
         return;
       }
 
@@ -299,7 +299,7 @@ class DepartureListContainer extends Component {
           <tr key={departureDate}>
             <td colSpan={isTerminal ? 4 : 3}>
               <div className="date-row border-bottom">
-                {moment.unix(departure.stoptime).format('dddd D.M.YYYY')}
+                {moment.unix(departure.time).format('dddd D.M.YYYY')}
               </div>
             </td>
           </tr>,
@@ -314,7 +314,7 @@ class DepartureListContainer extends Component {
         );
       }
 
-      const id = `${departure.pattern.code}:${departure.stoptime}`;
+      const id = `${departure.pattern.code}:${departure.time}:${departure.trip.gtfsId}`;
       const dropoffMessage = getDropoffMessage(
         departure.hasOnlyDropoff,
         departure.hasNoStop,
@@ -344,7 +344,7 @@ class DepartureListContainer extends Component {
         <DepartureRow
           key={id}
           departure={row}
-          departureTime={departure.stoptime}
+          departureTime={departure.time}
           currentTime={this.props.currentTime}
           showPlatformCode={isTerminal}
           canceled={departure.canceled}

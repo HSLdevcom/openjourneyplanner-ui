@@ -41,7 +41,7 @@ import { shouldShowFareInfo } from '../../util/fareUtils';
 import { AlertEntityType, AlertSeverityLevelType } from '../../constants';
 import { legShape, configShape } from '../../util/shapes';
 import ZoneIcon from '../ZoneIcon';
-import StopInfo from '../StopInfo';
+import StopInfo from './StopInfo';
 import InterlineInfo from './InterlineInfo';
 import AlternativeLegsInfo from './AlternativeLegsInfo';
 import LegInfo from './LegInfo';

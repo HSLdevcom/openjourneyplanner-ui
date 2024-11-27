@@ -13,7 +13,10 @@ import inside from 'point-in-polygon';
 import { configShape, locationShape } from '../util/shapes';
 import storeOrigin from '../action/originActions';
 import storeDestination from '../action/destinationActions';
-import withSearchContext from './WithSearchContext';
+import {
+  withSearchContext,
+  getLocationSearchTargets,
+} from './WithSearchContext';
 import {
   getPathWithEndpointObjects,
   getStopRoutePath,
@@ -300,35 +303,18 @@ class IndexPage extends React.Component {
     const destination = this.pendingDestination || this.props.destination;
     const sources = ['Favourite', 'History', 'Datasource'];
     const stopAndRouteSearchTargets = ['Stations', 'Stops', 'Routes'];
-    let locationSearchTargets = [
-      'Locations',
-      'CurrentPosition',
-      'FutureRoutes',
-    ];
+    const targets = getLocationSearchTargets(config, breakpoint !== 'large');
 
-    if (config.locationSearchTargetsFromOTP) {
-      // configurable setup
-      locationSearchTargets = [
-        ...locationSearchTargets,
-        ...config.locationSearchTargetsFromOTP,
-      ];
-    } else {
-      // default setup
-      locationSearchTargets.push('Stations');
-      locationSearchTargets.push('Stops');
+    targets.push('FutureRoutes');
+
+    if (!config.targetsFromOTP) {
       if (useCitybikes(config.vehicleRental?.networks, config)) {
         stopAndRouteSearchTargets.push('VehicleRentalStations');
-        locationSearchTargets.push('VehicleRentalStations');
       }
       if (config.includeParkAndRideSuggestions) {
         stopAndRouteSearchTargets.push('ParkingAreas');
-        locationSearchTargets.push('ParkingAreas');
       }
     }
-    const locationSearchTargetsMobile = [
-      ...locationSearchTargets,
-      'MapPosition',
-    ];
 
     const showSpinner =
       (origin.type === 'CurrentLocation' && !origin.address) ||
@@ -340,6 +326,7 @@ class IndexPage extends React.Component {
       destination,
       lang,
       sources,
+      targets,
       color,
       hoverColor,
       accessiblePrimaryColor,
@@ -426,10 +413,7 @@ class IndexPage extends React.Component {
                       defaultMessage="The search is triggered automatically when origin and destination are set. Changing any search parameters triggers a new search"
                     />
                   </span>
-                  <LocationSearch
-                    targets={locationSearchTargets}
-                    {...locationSearchProps}
-                  />
+                  <LocationSearch {...locationSearchProps} />
                   <div className="datetimepicker-container">
                     <DatetimepickerContainer realtime color={color} />
                   </div>
@@ -483,7 +467,6 @@ class IndexPage extends React.Component {
                   <LocationSearch
                     disableAutoFocus
                     isMobile
-                    targets={locationSearchTargetsMobile}
                     {...locationSearchProps}
                   />
                   <div className="datetimepicker-container">

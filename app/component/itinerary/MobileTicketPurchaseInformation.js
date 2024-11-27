@@ -22,7 +22,9 @@ export default function MobileTicketPurchaseInformation(
     config.availableTickets,
   );
   const price =
-    fare.price > 0 ? `${fare.price.toFixed(2)} €`.replace('.', ',') : '';
+    config.showTicketPrice && fare.price > 0
+      ? `${fare.price.toFixed(2)} €`.replace('.', ',')
+      : '';
 
   const faresInfo = () => {
     const header = `${intl.formatMessage({

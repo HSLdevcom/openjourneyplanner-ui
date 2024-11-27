@@ -11,7 +11,10 @@ import {
   locationShape,
 } from '../../util/shapes';
 import { addAnalyticsEvent } from '../../util/analyticsUtils';
-import withSearchContext from '../WithSearchContext';
+import {
+  withSearchContext,
+  getLocationSearchTargets,
+} from '../WithSearchContext';
 import {
   setIntermediatePlaces,
   updateItinerarySearch,
@@ -21,7 +24,6 @@ import { getIntermediatePlaces, locationToOTP } from '../../util/otpStrings';
 import { setViaPoints } from '../../action/ViaPointActions';
 import { LightenDarkenColor } from '../../util/colorUtils';
 import { getRefPoint } from '../../util/apiUtils';
-import { useCitybikes } from '../../util/modeUtils';
 
 const DTAutosuggestPanelWithSearchContext =
   withSearchContext(DTAutosuggestPanel);
@@ -129,11 +131,6 @@ class OriginDestinationBar extends React.Component {
       props.destination,
       props.locationState,
     );
-    const desktopTargets = ['Locations', 'CurrentPosition', 'Stops'];
-    if (useCitybikes(config.vehicleRental?.networks, config)) {
-      desktopTargets.push('VehicleRentalStations');
-    }
-    const mobileTargets = [...desktopTargets, 'MapPosition'];
     const filter = config.stopSearchFilter
       ? results => results.filter(config.stopSearchFilter)
       : undefined;
@@ -162,7 +159,7 @@ class OriginDestinationBar extends React.Component {
             'Datasource',
             props.showFavourites ? 'Favourite' : '',
           ]}
-          targets={props.isMobile ? mobileTargets : desktopTargets}
+          targets={getLocationSearchTargets(config, props.isMobile)}
           lang={props.language}
           disableAutoFocus={props.isMobile}
           isMobile={props.isMobile}

@@ -6,7 +6,7 @@ import Select from 'react-select';
 
 import { mountWithIntl, shallowWithIntl } from '../helpers/mock-intl-enzyme';
 import configureMoment from '../../../app/util/configure-moment';
-import DateSelect from '../../../app/component/DateSelect';
+import DateSelect from '../../../app/component/stop/DateSelect';
 
 describe('<DateSelect />', () => {
   const defaultProps = {

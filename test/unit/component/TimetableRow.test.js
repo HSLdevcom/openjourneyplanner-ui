@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 
 import { shallowWithIntl } from '../helpers/mock-intl-enzyme';
-import TimetableRow from '../../../app/component/TimetableRow';
+import TimetableRow from '../../../app/component/stop/TimetableRow';
 
 import data from '../test-data/dt2720';
 

@@ -279,19 +279,17 @@ export default class Legs extends React.Component {
 
     // This solves edge case when itinerary ends at the stop without walking.
     // There should be WalkLeg rendered before EndLeg.
-    if (
-      compressedLegs[numberOfLegs - 1].transitLeg &&
-      compressedLegs[numberOfLegs - 1].to.stop
-    ) {
+    const lastLeg = compressedLegs[numberOfLegs - 1];
+    if (lastLeg.transitLeg && lastLeg.to.stop) {
       legs.push(
         <WalkLeg
           index={numberOfLegs}
-          leg={compressedLegs[numberOfLegs - 1]}
-          previousLeg={compressedLegs[numberOfLegs - 2]}
-          focusAction={this.focus(compressedLegs[numberOfLegs - 1].to)}
-          focusToLeg={this.focusToLeg(compressedLegs[numberOfLegs - 1])}
+          leg={lastLeg}
+          previousLeg={lastLeg}
+          focusAction={this.focus(lastLeg.to)}
+          focusToLeg={this.focusToLeg(lastLeg)}
         >
-          {stopCode(compressedLegs[numberOfLegs - 1].to.stop)}
+          {stopCode(lastLeg.to.stop)}
         </WalkLeg>,
       );
     }
@@ -300,8 +298,8 @@ export default class Legs extends React.Component {
       <EndLeg
         index={numberOfLegs}
         endTime={itinerary.end}
-        focusAction={this.focus(compressedLegs[numberOfLegs - 1].to)}
-        to={compressedLegs[numberOfLegs - 1].to}
+        focusAction={this.focus(lastLeg.to)}
+        to={lastLeg.to}
       />,
     );
 

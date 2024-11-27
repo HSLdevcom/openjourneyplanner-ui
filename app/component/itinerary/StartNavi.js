@@ -4,7 +4,7 @@ import { FormattedMessage, intlShape } from 'react-intl';
 import { configShape } from '../../util/shapes';
 import Icon from '../Icon';
 
-const StartNavi = ({ setNavigation }, context) => {
+const StartNavi = ({ startNavigation }, context) => {
   const { config, intl } = context;
 
   const color =
@@ -12,7 +12,7 @@ const StartNavi = ({ setNavigation }, context) => {
 
   return (
     <div className="navi-start-container">
-      <button type="button" onClick={() => setNavigation(true)}>
+      <button type="button" onClick={startNavigation}>
         <Icon img="icon-icon_navigation" color={color} height={2} width={2} />
         <div className="content">
           <FormattedMessage tagName="div" id="new-feature" />
@@ -31,7 +31,7 @@ const StartNavi = ({ setNavigation }, context) => {
 };
 
 StartNavi.propTypes = {
-  setNavigation: PropTypes.func.isRequired,
+  startNavigation: PropTypes.func.isRequired,
 };
 
 StartNavi.contextTypes = {

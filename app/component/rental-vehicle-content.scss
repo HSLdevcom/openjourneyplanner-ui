@@ -108,6 +108,7 @@
 
         .link-to-e-scooter-operator {
           margin: auto 10px auto auto;
+          color: $link-color;
         }
 
         .citybike-itinerary {
@@ -201,7 +202,7 @@
     }
 
     .external-link {
-      color: #007ac9;
+      color: $link-color;
       text-decoration: none;
       font-weight: $font-weight-medium;
 

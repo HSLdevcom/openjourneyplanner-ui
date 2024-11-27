@@ -4,7 +4,7 @@
 @import '../default/theme';
 
 /* Operator palette */
-$hsl-blue: #007ac9;
+$hsl-blue: #0074bf;
 $hsl-dark-blue: #0062a1;
 $hsl-pink: #f092cd;
 $hsl-alert: #dc0451;
@@ -13,7 +13,6 @@ $hsl-metro-orange: #ca4000;
 $hsl-bus-express: #ca4000;
 $hsl-rail-red: #8c4799;
 $hsl-ferry-blue: #007a97;
-$hsl-blue-accessible: #0074bf;
 
 /* Application palette */
 $primary-color: $hsl-blue;
@@ -34,7 +33,6 @@ $desktop-title-arrow-icon-color: $secondary-color;
 $top-bar-color: $primary-color;
 $disclaimer-background-color: #e5f2fa;
 $disclaimer-border-color: #e5f2fa;
-$link-color-accessible: $hsl-blue-accessible;
 
 /* Vehicle palette */
 $airplane-color: #0046ad;
