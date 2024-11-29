@@ -4,9 +4,10 @@ import { legTime } from '../../../util/legUtils';
 import { timeStr } from '../../../util/timeUtils';
 import { getFaresFromLegs } from '../../../util/fareUtils';
 import { ExtendedRouteTypes } from '../../../constants';
+import { getItineraryPagePath } from '../../../util/path';
 
 const TRANSFER_SLACK = 60000;
-
+const DISPLAY_MESSAGE_THRESHOLD = 120 * 1000; // 2 minutes
 function findTransferProblem(legs) {
   for (let i = 1; i < legs.length - 1; i++) {
     const prev = legs[i - 1];
@@ -33,12 +34,21 @@ function findTransferProblem(legs) {
   }
   return null;
 }
-
+export const getLocalizedMode = (mode, intl) => {
+  return intl.formatMessage({
+    id: `${mode.toLowerCase()}`,
+    defaultMessage: `${mode}`,
+  });
+};
+export function getFirstLastLegs(legs) {
+  const first = legs[0];
+  const last = legs[legs.length - 1];
+  return { first, last };
+}
 export const getAdditionalMessages = (leg, time, intl, config, messages) => {
   const msgs = [];
-  const ticketDisplay = 120 * 1000; // 2 minutes
   const ticketMsg = messages.get('ticket');
-  if (!ticketMsg && legTime(leg.start) - time < ticketDisplay) {
+  if (!ticketMsg && legTime(leg.start) - time < DISPLAY_MESSAGE_THRESHOLD) {
     // Todo: multiple fares?
     const fare = getFaresFromLegs([leg], config)[0];
     msgs.push({
@@ -57,8 +67,8 @@ export const getAdditionalMessages = (leg, time, intl, config, messages) => {
   return msgs;
 };
 
-export const getTransitLegState = (leg, intl, messages) => {
-  const { start, realtimeState, from, mode, legId } = leg;
+export const getTransitLegState = (leg, intl, messages, time) => {
+  const { start, realtimeState, from, mode, legId, route } = leg;
   const { scheduledTime, estimated } = start;
   if (mode === 'WALK') {
     return null;
@@ -66,20 +76,32 @@ export const getTransitLegState = (leg, intl, messages) => {
   const previousMessage = messages.get(legId);
   const prevSeverity = previousMessage ? previousMessage.severity : null;
 
-  const late = estimated?.delay > 0;
-  const localizedMode = intl.formatMessage({
-    id: `${mode.toLowerCase()}`,
-    defaultMessage: `${mode}`,
-  });
+  const late =
+    estimated?.delay > DISPLAY_MESSAGE_THRESHOLD ||
+    estimated?.delay < -DISPLAY_MESSAGE_THRESHOLD;
+  const localizedMode = getLocalizedMode(mode, intl);
   let content;
   let severity;
   const isRealTime = realtimeState === 'UPDATED';
 
-  if (late && prevSeverity !== 'ALERT') {
-    // todo: Do this when design is ready.
-    severity = 'ALERT';
-    content = <div className="navi-info-content"> Kulkuneuvo on myöhässä </div>;
-  } else if (!isRealTime && prevSeverity !== 'WARNING') {
+  if (late && prevSeverity !== 'WARNING') {
+    const lMode = getLocalizedMode(mode, intl);
+    const routeName = `${lMode} ${route.shortName}`;
+    const { delay } = estimated;
+
+    const id = `navigation-mode-${delay > 0 ? 'late' : 'early'}`;
+
+    content = (
+      <div className="navi-alert-content">
+        <FormattedMessage id={id} values={{ mode: routeName }} />
+      </div>
+    );
+    severity = 'WARNING';
+  } else if (
+    !isRealTime &&
+    prevSeverity !== 'WARNING' &&
+    legTime(start) - time < DISPLAY_MESSAGE_THRESHOLD
+  ) {
     severity = 'WARNING';
     content = (
       <div className="navi-info-content">
@@ -117,38 +139,109 @@ export const getTransitLegState = (leg, intl, messages) => {
     severity = 'INFO';
   }
   const state = severity
-    ? { severity, content, id: legId, expiresOn: 'legChange' }
-    : null;
+    ? [{ severity, content, id: legId, expiresOn: 'legChange' }]
+    : [];
   return state;
 };
 
-// We'll need the intl later.
-// eslint-disable-next-line no-unused-vars
-export const getItineraryAlerts = (realTimeLegs, intl, messages) => {
-  const alerts = [];
-  const canceled = realTimeLegs.filter(leg => leg.realtimeState === 'CANCELED');
-  const transferProblem = findTransferProblem(realTimeLegs);
-  const late = realTimeLegs.filter(leg => leg.start.estimate?.delay > 0);
+export const getItineraryAlerts = (legs, intl, messages, location, router) => {
+  const canceled = legs.filter(leg => leg.realtimeState === 'CANCELED');
   let content;
-  // TODO: Proper ID handling
-  if (canceled.length > 0 && !messages.get('canceled')) {
-    content = <div className="notifiler">Osa matkan lähdöistä on peruttu</div>;
-    // Todo: No current design
-    // todo find modes that are canceled
-    alerts.push({
-      severity: 'ALERT',
-      content,
-      id: 'canceled',
+  const alerts = legs.flatMap(leg => {
+    return leg.alerts
+      .filter(alert => {
+        const { first } = getFirstLastLegs(legs);
+        const startTime = legTime(first.start) / 1000;
+        if (messages.get(alert.id)) {
+          return false;
+        }
+        // show only alerts that are active when
+        // the journey starts
+        if (startTime < alert.effectiveStartDate) {
+          return false;
+        }
+        if (
+          alert.alertSeverityLevel === 'WARNING' ||
+          alert.alertSeverityLevel === 'SEVERE'
+        ) {
+          return true;
+        }
+        return false;
+      })
+      .map(alert => ({
+        severity: 'ALERT',
+        content: (
+          <div className="navi-alert-content">
+            <span className="header"> {alert.alertHeaderText}</span>
+          </div>
+        ),
+        id: alert.id,
+      }));
+  });
+  const transferProblem = findTransferProblem(legs);
+  const abortTrip = <FormattedMessage id="navigation-abort-trip" />;
+  const withShowRoutesBtn = children => (
+    <div className="alt-btn">
+      {children}
+      <button
+        className="show-options"
+        type="button"
+        onClick={() => router.push(getItineraryPagePath('POS', location.to))}
+      >
+        <FormattedMessage id="settings-dropdown-open-label" />
+      </button>
+    </div>
+  );
+
+  if (canceled) {
+    // show routes button only for first canceled leg.
+    canceled.forEach((leg, i) => {
+      const { legId, mode, route } = leg;
+
+      const lMode = getLocalizedMode(mode, intl);
+      const routeName = `${lMode} ${route.shortName}`;
+      const m = (
+        <FormattedMessage
+          id="navigation-mode-canceled"
+          values={{ mode: routeName }}
+        />
+      );
+      // we want to show the show routes button only for the first canceled leg.
+      if (i === 0) {
+        content = withShowRoutesBtn(
+          <div className="navi-alert-content">
+            {m}
+            {abortTrip}
+          </div>,
+        );
+      } else {
+        content = <div className="navi-alert-content">{m}</div>;
+      }
+      if (!messages.get(`canceled-${legId}`)) {
+        alerts.push({
+          severity: 'ALERT',
+          content,
+          id: `canceled-${legId}`,
+        });
+      }
     });
   }
+
   if (transferProblem !== null) {
     const transferId = `transfer-${transferProblem[0].legId}-${transferProblem[1].legId}}`;
     if (!messages.get(transferId)) {
-      // todo no current design
-      content = (
-        <div className="notifiler">{`Vaihto ${transferProblem[0].route.shortName} - ${transferProblem[1].route.shortName} ei onnistu reittisuunnitelman mukaisesti`}</div>
+      content = withShowRoutesBtn(
+        <div className="navi-alert-content">
+          <FormattedMessage
+            id="navigation-transfer-problem"
+            values={{
+              route1: transferProblem[0].route.shortName,
+              route2: transferProblem[1].route.shortName,
+            }}
+          />
+          {abortTrip}
+        </div>,
       );
-
       alerts.push({
         severity: 'ALERT',
         content,
@@ -156,17 +249,6 @@ export const getItineraryAlerts = (realTimeLegs, intl, messages) => {
       });
     }
   }
-  if (late.length && !messages.get('late')) {
-    // Todo: No current design
-    // Todo add mode and delay time to this message
-    content = <div className="notifiler">Kulkuneuvo on myöhässä</div>;
-    alerts.push({
-      severity: 'ALERT',
-      content,
-      id: 'late',
-    });
-  }
-
   return alerts;
 };
 

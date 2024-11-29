@@ -16,7 +16,21 @@ const legQuery = graphql`
           time
         }
       }
-
+      alerts {
+        alertSeverityLevel
+        effectiveStartDate
+        alertDescriptionText
+        alertHeaderText
+        id
+      }
+      intermediatePlaces {
+        arrival {
+          scheduledTime
+          estimated {
+            time
+          }
+        }
+      }
       to {
         vehicleRentalStation {
           availableVehicles {

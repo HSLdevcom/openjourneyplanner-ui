@@ -74,6 +74,14 @@ const planConnection = graphql`
             interlineWithPreviousLeg
             headsign
             realtimeState
+            alerts {
+              alertSeverityLevel
+              effectiveStartDate
+              effectiveEndDate
+              alertDescriptionText
+              alertHeaderText
+              id
+            }
             intermediatePlaces {
               arrival {
                 scheduledTime

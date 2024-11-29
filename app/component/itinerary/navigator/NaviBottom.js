@@ -4,8 +4,11 @@ import { FormattedMessage } from 'react-intl';
 import { configShape } from '../../../util/shapes';
 import { epochToTime } from '../../../util/timeUtils';
 
-export default function NaviBottom({ setNavigation, arrival }, { config }) {
-  const remainingDuration = Math.ceil((arrival - Date.now()) / 60000); // ms to minutes
+export default function NaviBottom(
+  { setNavigation, arrival, time },
+  { config },
+) {
+  const remainingDuration = Math.ceil((arrival - time) / 60000); // ms to minutes
   return (
     <div className="navibottomsheet">
       <div className="divider" />
@@ -51,6 +54,7 @@ export default function NaviBottom({ setNavigation, arrival }, { config }) {
 NaviBottom.propTypes = {
   setNavigation: PropTypes.func.isRequired,
   arrival: PropTypes.number.isRequired,
+  time: PropTypes.number.isRequired,
 };
 
 NaviBottom.contextTypes = {

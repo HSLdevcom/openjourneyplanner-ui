@@ -5,16 +5,18 @@ import cx from 'classnames';
 import { legShape, configShape } from '../../../util/shapes';
 import { legDestination, legTimeStr, legTime } from '../../../util/legUtils';
 import RouteNumber from '../../RouteNumber';
-import { LEGTYPE } from './NaviUtils';
+import { LEGTYPE, getLocalizedMode } from './NaviUtils';
 import { displayDistance } from '../../../util/geo-utils';
 import { durationToString } from '../../../util/timeUtils';
 
 export default function NaviInstructions(
-  { leg, nextLeg, instructions, legType },
+  { leg, nextLeg, instructions, legType, time },
   { intl, config },
 ) {
   const [fadeOut, setFadeOut] = useState(false);
-
+  const withRealTime = (rt, children) => (
+    <span className={cx('bold', { realtime: rt })}>{children}</span>
+  );
   useEffect(() => {
     const timer = setTimeout(() => {
       setFadeOut(true);
@@ -44,21 +46,16 @@ export default function NaviInstructions(
     );
   }
   if (legType === LEGTYPE.WAIT && nextLeg.mode !== 'WALK') {
-    const { mode, headsign, route, end, start } = nextLeg;
+    const { mode, headsign, route, start } = nextLeg;
     const hs = headsign || nextLeg.trip?.tripHeadsign;
     const color = route.color || 'currentColor';
-    const localizedMode = intl.formatMessage({
-      id: `to-${mode.toLowerCase()}`,
-      defaultMessage: `${mode}`,
-    });
-    const t = leg ? legTime(end) : legTime(start);
-    const remainingDuration = Math.ceil((t - Date.now()) / 60000); // ms to minutes
+    const localizedMode = getLocalizedMode(mode, intl);
+
+    const remainingDuration = Math.ceil((legTime(start) - time) / 60000); // ms to minutes
     const rt = nextLeg.realtimeState === 'UPDATED';
     const values = {
-      duration: (
-        <span className={cx({ realtime: rt })}> {remainingDuration} </span>
-      ),
-      legTime: <span className={cx({ realtime: rt })}>{legTimeStr(end)}</span>,
+      duration: withRealTime(rt, remainingDuration),
+      legTime: withRealTime(rt, legTimeStr(start)),
     };
     return (
       <>
@@ -83,7 +80,7 @@ export default function NaviInstructions(
           <div className="wait-duration">
             <FormattedMessage
               id="navileg-arrive-at"
-              defaultMessage="{duration}min päästä klo {legTime}"
+              defaultMessage="{duration} min päästä klo {legTime}"
               values={values}
             />
           </div>
@@ -93,25 +90,20 @@ export default function NaviInstructions(
   }
 
   if (legType === LEGTYPE.TRANSIT) {
+    const rt = leg.realtimeState === 'UPDATED';
+
     const t = legTime(leg.end);
     const stopOrStation = leg.to.stop.parentStation
       ? intl.formatMessage({ id: 'navileg-from-station' })
       : intl.formatMessage({ id: 'navileg-from-stop' });
-    const rt = leg.realtimeState === 'UPDATED';
-    const localizedMode = intl.formatMessage({
-      id: `${leg.mode.toLowerCase()}`,
-      defaultMessage: `${leg.mode}`,
-    });
-    const remainingDuration = Math.ceil((t - Date.now()) / 60000); // ms to minutes
+    const localizedMode = getLocalizedMode(leg.mode, intl);
+
+    const remainingDuration = Math.ceil((t - time) / 60000); // ms to minutes
     const values = {
       stopOrStation,
       stop: leg.to.stop.name,
-      duration: (
-        <span className={cx({ realtime: rt })}> {remainingDuration} </span>
-      ),
-      legTime: (
-        <span className={cx({ realtime: rt })}>{legTimeStr(leg.end)}</span>
-      ),
+      duration: withRealTime(rt, remainingDuration),
+      legTime: withRealTime(rt, legTimeStr(leg.end)),
     };
 
     return (
@@ -141,6 +133,7 @@ NaviInstructions.propTypes = {
   nextLeg: legShape,
   instructions: PropTypes.string.isRequired,
   legType: PropTypes.string,
+  time: PropTypes.number.isRequired,
 };
 
 NaviInstructions.defaultProps = {

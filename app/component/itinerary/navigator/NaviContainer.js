@@ -42,14 +42,18 @@ function NaviContainer(
     <>
       <NaviCardContainer
         itinerary={itinerary}
-        realTimeLegs={realTimeLegs}
+        legs={realTimeLegs}
         focusToLeg={
           mapRef?.state.mapTracking || isPositioningAllowed ? null : focusToLeg
         }
         time={time}
         position={position}
       />
-      <NaviBottom setNavigation={setNavigation} arrival={arrivalTime} />
+      <NaviBottom
+        setNavigation={setNavigation}
+        arrival={arrivalTime}
+        time={time}
+      />
     </>
   );
 }

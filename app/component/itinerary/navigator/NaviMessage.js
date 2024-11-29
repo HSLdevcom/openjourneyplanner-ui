@@ -20,7 +20,7 @@ function NaviMessage({ severity, children, index, handleRemove }, { config }) {
   let color;
   switch (severity) {
     case 'INFO':
-      iconId = 'icon-icon_info';
+      iconId = 'notification-bell';
       color = '#0074BF';
       break;
     case 'WARNING':
@@ -32,7 +32,7 @@ function NaviMessage({ severity, children, index, handleRemove }, { config }) {
       color = '#DC0451';
       break;
     default:
-      iconId = 'icon-icon_info';
+      iconId = 'notification-bell';
       color = '#0074BF';
   }
   return (
@@ -43,13 +43,7 @@ function NaviMessage({ severity, children, index, handleRemove }, { config }) {
         `${severity.toLowerCase()}`,
       )}
     >
-      <Icon
-        img={iconId}
-        height={1.4}
-        width={1.4}
-        className="info-icon"
-        color={color}
-      />
+      <Icon img={iconId} height={1.4} width={1.4} color={color} />
       {children}
       <button
         type="button"
@@ -57,9 +51,8 @@ function NaviMessage({ severity, children, index, handleRemove }, { config }) {
         onClick={() => handleRemoveClick()}
       >
         <Icon
-          img="icon-icon_close"
-          height={0.8}
-          width={0.8}
+          img="notification-close"
+          className="notification-close"
           color={config.colors.primary}
         />
       </button>
