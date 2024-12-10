@@ -45,7 +45,9 @@ function withGeojsonObjects(Component) {
           );
           const newGeoJson = {};
           json.forEach(({ url, data, isOffByDefault }) => {
-            newGeoJson[url] = { ...data, isOffByDefault };
+            if (data) {
+              newGeoJson[url] = { ...data, isOffByDefault };
+            }
           });
           updateGeoJson(newGeoJson);
         }

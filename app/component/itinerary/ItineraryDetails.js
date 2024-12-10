@@ -19,7 +19,7 @@ import {
   getTotalWalkingDistance,
   getTotalWalkingDuration,
   getZones,
-  isCallAgencyPickupType,
+  isCallAgencyLeg,
   legContainsBikePark,
   legContainsRentalBike,
 } from '../../util/legUtils';
@@ -215,7 +215,7 @@ class ItineraryDetails extends React.Component {
       });
 
       const info = config.callAgencyInfo?.[currentLanguage];
-      if (info && itinerary.legs.some(leg => isCallAgencyPickupType(leg))) {
+      if (info && itinerary.legs.some(leg => isCallAgencyLeg(leg))) {
         disclaimers.push(
           <FareDisclaimer
             key={disclaimers.length}

@@ -8,7 +8,7 @@ import { getJson } from '../util/xhrPromise';
 const metaTags = ['textOnly', 'name', 'popupContent'];
 const MapJSON = (data, meta) => {
   if (isEmpty(meta)) {
-    return;
+    return data;
   }
   const tagMap = metaTags.filter(t => !!meta[t]);
 
@@ -22,6 +22,7 @@ const MapJSON = (data, meta) => {
       });
     }
   });
+  return data;
 };
 
 const styleFeatures = data => {
@@ -68,12 +69,15 @@ class GeoJsonStore extends Store {
     if (!url) {
       return undefined;
     }
-
     if (!this.layers) {
-      const response = await getJson(url);
-      const root = response.geoJson || response.geojson;
-      if (root && Array.isArray(root.layers)) {
-        this.layers = root.layers;
+      try {
+        const response = await getJson(url);
+        const root = response.geoJson || response.geojson;
+        if (root && Array.isArray(root.layers)) {
+          this.layers = root.layers;
+        }
+      } catch (error) {
+        this.layers = [];
       }
     }
 
@@ -104,23 +108,29 @@ class GeoJsonStore extends Store {
     }
     if (!this.geoJsonData[id]) {
       this.geoJsonData[id] = 'pending';
-      const responses = await Promise.all(urlArr.map(u => getJson(u)));
-      const mapped = responses.map(r => {
-        if (metadata) {
-          MapJSON(r, metadata);
-        }
-        return styleFeatures(r);
-      });
-      for (let i = 1; i < mapped.length; i++) {
-        mapped[0].features = mapped[0].features.concat(mapped[i].features);
+      try {
+        const responses = await Promise.all(urlArr.map(u => getJson(u)));
+
+        let mapped;
+        responses.forEach(r => {
+          const styled = styleFeatures(r);
+          if (!mapped) {
+            mapped = MapJSON(styled, metadata);
+          } else {
+            mapped.features.push(...styled.features);
+          }
+        });
+        const data = {
+          name: name || id,
+          data: mapped,
+        };
+        this.geoJsonData[id] = data;
+      } catch (error) {
+        // store non falsy value to avoid new fetch
+        this.geoJsonData[id] = {};
       }
-      const data = {
-        name: name || id,
-        data: mapped[0],
-      };
-      this.geoJsonData[id] = data;
     }
-    return { ...this.geoJsonData[id] };
+    return this.geoJsonData[id].name ? { ...this.geoJsonData[id] } : null;
   };
 }
 

@@ -385,7 +385,7 @@ export default config => {
         path={config.URL.EMBEDDED_SEARCH_GENERATION}
         getComponent={() =>
           import(
-            /* webpackChunkName: "embedded-search-generator" */ './component/EmbeddedSearchGenerator'
+            /* webpackChunkName: "embedded-search-generator" */ './component/embedded/EmbeddedSearchGenerator'
           ).then(getDefault)
         }
       />
@@ -393,7 +393,7 @@ export default config => {
         path={EMBEDDED_SEARCH_PATH}
         getComponent={() =>
           import(
-            /* webpackChunkName: "embedded-search" */ './component/EmbeddedSearchContainer'
+            /* webpackChunkName: "embedded-search" */ './component/embedded/EmbeddedSearchContainer'
           ).then(getDefault)
         }
         topBarOptions={{ hidden: true }}

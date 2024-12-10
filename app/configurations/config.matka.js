@@ -124,11 +124,6 @@ export default {
     keywords: `reitti,reitit,opas,reittiopas,joukkoliikenne`,
   },
 
-  routeTimetables: {
-    // route timetable data needs to be up-to-date before this is enabled
-    //  HSL: HSLRouteTimetable,
-  },
-
   menu: {
     copyright: { label: `© Matka.fi ${YEAR}` },
     content: [
@@ -163,6 +158,7 @@ export default {
       corner2: [55.99, 17.75],
     },
   },
+
   suggestBikeMaxDistance: 2000000,
 
   vehicleRental: {

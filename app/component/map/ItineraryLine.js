@@ -8,7 +8,7 @@ import { getMiddleOf } from '../../util/geo-utils';
 import {
   getInterliningLegs,
   getLegText,
-  isCallAgencyPickupType,
+  isCallAgencyLeg,
 } from '../../util/legUtils';
 import { getRouteMode } from '../../util/modeUtils';
 import { configShape, legShape } from '../../util/shapes';
@@ -86,7 +86,7 @@ class ItineraryLine extends React.Component {
         mode = 'CITYBIKE';
       }
 
-      const modePlusClass = isCallAgencyPickupType(leg)
+      const modePlusClass = isCallAgencyLeg(leg)
         ? 'call'
         : mode.toLowerCase() + (this.props.passive ? ' passive' : '');
       const geometry = polyUtil.decode(leg.legGeometry.points);
@@ -117,7 +117,7 @@ class ItineraryLine extends React.Component {
           color={leg.route && leg.route.color ? `#${leg.route.color}` : null}
           key={`${this.props.hash}_${i}_${mode}`}
           geometry={geometry}
-          mode={isCallAgencyPickupType(leg) ? 'call' : mode.toLowerCase()}
+          mode={isCallAgencyLeg(leg) ? 'call' : mode.toLowerCase()}
           passive={this.props.passive}
         />,
       );
@@ -188,7 +188,7 @@ class ItineraryLine extends React.Component {
               end,
               nextLeg,
               index: i,
-              mode: isCallAgencyPickupType(leg) ? 'call' : mode.toLowerCase(),
+              mode: isCallAgencyLeg(leg) ? 'call' : mode.toLowerCase(),
               legName: name,
               zIndexOffset: 300,
               interliningWithRoute,
@@ -205,7 +205,7 @@ class ItineraryLine extends React.Component {
                 platformCode: leg.from.stop.platformCode,
                 transfer: true,
               }}
-              mode={isCallAgencyPickupType(leg) ? 'call' : mode.toLowerCase()}
+              mode={isCallAgencyLeg(leg) ? 'call' : mode.toLowerCase()}
               renderText={leg.transitLeg && this.props.showTransferLabels}
             />,
           );
@@ -220,7 +220,7 @@ class ItineraryLine extends React.Component {
                 platformCode: leg.to.stop.platformCode,
                 transfer: true,
               }}
-              mode={isCallAgencyPickupType(leg) ? 'call' : mode.toLowerCase()}
+              mode={isCallAgencyLeg(leg) ? 'call' : mode.toLowerCase()}
               renderText={leg.transitLeg && this.props.showTransferLabels}
             />,
           );

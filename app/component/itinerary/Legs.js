@@ -22,7 +22,7 @@ import ViaLeg from './ViaLeg';
 import CallAgencyLeg from './CallAgencyLeg';
 import {
   compressLegs,
-  isCallAgencyPickupType,
+  isCallAgencyLeg,
   isLegOnFoot,
   legTime,
 } from '../../util/legUtils';
@@ -164,7 +164,7 @@ export default class Legs extends React.Component {
           );
         }
       }
-      if (leg.mode !== 'WALK' && isCallAgencyPickupType(leg)) {
+      if (leg.mode !== 'WALK' && isCallAgencyLeg(leg)) {
         legs.push(<CallAgencyLeg {...transitLegProps} />);
       } else if (leg.intermediatePlace) {
         legs.push(<ViaLeg {...legProps} arrival={startTime} />);

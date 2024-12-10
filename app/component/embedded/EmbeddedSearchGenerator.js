@@ -3,16 +3,16 @@ import React, { useState, useRef } from 'react';
 import { FormattedMessage, intlShape } from 'react-intl';
 import connectToStores from 'fluxible-addons-react/connectToStores';
 import DTAutosuggest from '@digitransit-component/digitransit-component-autosuggest';
-import { configShape } from '../util/shapes';
+import { configShape } from '../../util/shapes';
 import EmbeddedSearch from './EmbeddedSearch';
-import { EMBEDDED_SEARCH_PATH } from '../util/path';
-import { getRefPoint } from '../util/apiUtils';
-import withBreakpoint from '../util/withBreakpoint';
+import { EMBEDDED_SEARCH_PATH } from '../../util/path';
+import { getRefPoint } from '../../util/apiUtils';
+import withBreakpoint from '../../util/withBreakpoint';
 import {
   withSearchContext,
   getLocationSearchTargets,
-} from './WithSearchContext';
-import { isBrowser } from '../util/browser';
+} from '../WithSearchContext';
+import { isBrowser } from '../../util/browser';
 
 const LocationSearch = withSearchContext(DTAutosuggest, true);
 

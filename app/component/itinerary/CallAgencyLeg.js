@@ -22,15 +22,17 @@ const CallAgencyLeg = ({ leg, ...props }) => {
             defaultMessage="Only on demand: {routeName}, which needs to be booked in advance."
           />
           <div className="itinerary-warning-agency-container" />
-          <div className="call-button">
-            <a href={`tel:${leg.route.agency.phone}`}>
-              <FormattedMessage
-                id="call"
-                defaultMessage="Call"
-                values={{ number: leg.route.agency.phone }}
-              />
-            </a>
-          </div>
+          {leg.route.agency.phone && (
+            <div className="call-button">
+              <a href={`tel:${leg.route.agency.phone}`}>
+                <FormattedMessage
+                  id="call"
+                  defaultMessage="Call"
+                  values={{ number: leg.route.agency.phone }}
+                />
+              </a>
+            </div>
+          )}
         </span>
       </div>
     </TransitLeg>

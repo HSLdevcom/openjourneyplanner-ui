@@ -13,6 +13,7 @@ $body-font-weight: $font-weight-medium;
 @import '~zurb-foundation-5/scss/foundation/components/grid';
 @import 'base/helper-classes-after-foundations';
 @import 'base/spacing';
+@import 'base/radius';
 
 // Some of these files override sass variables Foundation uses,
 // so they must be loaded before the relevant foundation modules
@@ -43,8 +44,8 @@ $body-font-weight: $font-weight-medium;
 @import '../app/component/zone-icon';
 @import '../app/component/date-select';
 @import '../app/component/routepage/route-schedule-dropdown';
-@import '../app/component/embedded-search';
-@import '../app/component/embedded-search-generator';
+@import '../app/component/embedded/embedded-search';
+@import '../app/component/embedded/embedded-search-generator';
 @import '../app/component/from-map-modal';
 @import '../app/component/app-bar-hsl';
 @import '../app/component/itinerary/itinerary';
@@ -65,6 +66,7 @@ $body-font-weight: $font-weight-medium;
 @import 'base/button';
 @import '../app/component/itinerary/navigator/navigator';
 @import '../app/component/itinerary/navigator/navigatorintro/navigator-intro';
+@import '../app/component/itinerary/navigator/navigatoroutro/navigator-outro';
 
 /* Modal */
 @import '~foundation-apps/scss/helpers/breakpoints';

@@ -419,3 +419,54 @@ export function getClosestPoint(a, b, c) {
   }
   return distA < distB ? a : b;
 }
+
+// WGS84 to local planar coordinates
+// Usage: origin = GeodeticToEcef(lat0,  lon0);
+// { x, y } = GeodeticToEnu(lat, lon, origin);
+
+const a = 6378137.0; // WGS-84 Earth semimajor axis (m)
+const b = 6356752.314245; // Derived Earth semiminor axis (m)
+const f = (a - b) / a; // Ellipsoid Flatness
+const e_sq = f * (2 - f); // Square of Eccentricity
+const inv_e_sq = 1 - e_sq;
+
+// Converts WGS-84 Geodetic point (lat, lon) at ground level 0 to
+// Earth-Centered Earth-Fixed (ECEF) coordinates (x, y, z)
+export function GeodeticToEcef(lat, lon) {
+  const lambda = toRad(lat);
+  const phi = toRad(lon);
+  const sin_lambda = Math.sin(lambda);
+  const cos_lambda = Math.cos(lambda);
+  const cos_phi = Math.cos(phi);
+  const sin_phi = Math.sin(phi);
+  const N = a / Math.sqrt(1 - e_sq * sin_lambda * sin_lambda);
+
+  const x = N * cos_lambda * cos_phi;
+  const y = N * cos_lambda * sin_phi;
+  const z = N * inv_e_sq * sin_lambda;
+
+  return { x, y, z, sin_lambda, cos_lambda, cos_phi, sin_phi };
+}
+
+// Converts the earth-centered earth-fixed (ECEF) coordinates (x, y, z) to
+// east-north coordinates in a local tangent plane defined by an ECEF point origin
+function EcefToEnu(e, origin) {
+  const xd = e.x - origin.x;
+  const yd = e.y - origin.y;
+  const zd = e.z - origin.z;
+
+  const xEast = -origin.sin_phi * xd + origin.cos_phi * yd;
+  const yNorth =
+    -origin.cos_phi * origin.sin_lambda * xd -
+    origin.sin_lambda * origin.sin_phi * yd +
+    origin.cos_lambda * zd;
+
+  return { x: xEast, y: yNorth };
+}
+
+// Converts the geodetic WGS-84 coordinated (lat, lon) at ground level to
+// east-north coordinates in a local tangent plane defined by an ECEF point origin
+export function GeodeticToEnu(lat, lon, origin) {
+  const ecef = GeodeticToEcef(lat, lon);
+  return EcefToEnu(ecef, origin);
+}

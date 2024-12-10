@@ -751,6 +751,7 @@ export default {
   startSearchFromUserLocation: true,
 
   navigationLogo: 'hsl/navigator-logo.svg',
+  thumbsUpGraphic: 'hsl/thumbs-up.svg',
 
   // features that should not be deployed to production
   experimental: {

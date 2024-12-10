@@ -1,34 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { FormattedMessage, intlShape } from 'react-intl';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
+import { GeodeticToEnu, displayDistance } from '../../../util/geo-utils';
 import { legShape, configShape } from '../../../util/shapes';
 import { legDestination, legTimeStr, legTime } from '../../../util/legUtils';
 import RouteNumber from '../../RouteNumber';
-import { LEGTYPE, getLocalizedMode } from './NaviUtils';
-import { displayDistance } from '../../../util/geo-utils';
+import { LEGTYPE, getLocalizedMode, pathProgress } from './NaviUtils';
 import { durationToString } from '../../../util/timeUtils';
 
 export default function NaviInstructions(
-  { leg, nextLeg, instructions, legType, time },
+  { leg, nextLeg, instructions, legType, time, position, origin },
   { intl, config },
 ) {
-  const [fadeOut, setFadeOut] = useState(false);
   const withRealTime = (rt, children) => (
     <span className={cx('bold', { realtime: rt })}>{children}</span>
   );
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setFadeOut(true);
-    }, 10000);
-    return () => {
-      setFadeOut(false);
-      clearTimeout(timer);
-    };
-  }, [leg]);
 
   if (legType === LEGTYPE.MOVE) {
-    const { distance, duration } = leg;
+    let remainingTraversal;
+
+    if (position?.lat && position?.lon) {
+      // TODO: maybe apply only when distance is close enough to the path
+      const posXY = GeodeticToEnu(position.lat, position.lon, origin);
+      const { traversed } = pathProgress(posXY, leg.geometry);
+      remainingTraversal = 1.0 - traversed;
+    } else {
+      // estimate from elapsed time
+      remainingTraversal = Math.max(
+        (legTime(leg.end) - time) / (leg.duration * 1000),
+        0,
+      );
+    }
+    const duration = leg.duration * remainingTraversal;
+    const distance = leg.distance * remainingTraversal;
+
     return (
       <>
         <div className="destination-header">
@@ -36,12 +42,11 @@ export default function NaviInstructions(
           &nbsp;
           {legDestination(intl, leg, null, nextLeg)}
         </div>
-        {distance && duration && (
-          <div className={cx('duration', fadeOut && 'fade-out')}>
-            {displayDistance(distance, config, intl.formatNumber)} &nbsp; (
-            {durationToString(duration * 1000)})
-          </div>
-        )}
+
+        <div className={cx('duration')}>
+          {displayDistance(distance, config, intl.formatNumber)} (
+          {durationToString(duration * 1000)})
+        </div>
       </>
     );
   }
@@ -134,12 +139,21 @@ NaviInstructions.propTypes = {
   instructions: PropTypes.string.isRequired,
   legType: PropTypes.string,
   time: PropTypes.number.isRequired,
+  position: PropTypes.shape({
+    lat: PropTypes.number,
+    lon: PropTypes.number,
+  }),
+  origin: PropTypes.shape({
+    x: PropTypes.number.isRequired,
+    y: PropTypes.number.isRequired,
+  }).isRequired,
 };
 
 NaviInstructions.defaultProps = {
   legType: '',
   leg: undefined,
   nextLeg: undefined,
+  position: undefined,
 };
 NaviInstructions.contextTypes = {
   intl: intlShape.isRequired,

@@ -25,9 +25,7 @@ describe('<NavigatorIntro />', () => {
       },
     );
 
-    expect(
-      wrapper.find('div.navigator-intro-modal-content img'),
-    ).to.have.lengthOf(1);
+    expect(wrapper.find('div.intro-body img')).to.have.lengthOf(1);
   });
 
   it('should not render logo if prop is missing', () => {
@@ -38,51 +36,6 @@ describe('<NavigatorIntro />', () => {
       childContextTypes: { ...mockChildContextTypes },
     });
 
-    assert(wrapper.find('div.navigator-intro-modal-content img'), undefined);
-  });
-
-  it('should render login tip if login is allowed and user is not logged in', () => {
-    const wrapper = mountWithIntl(
-      <NavigatorIntro {...defaultProps} isLoggedIn={false} />,
-      {
-        context: {
-          ...mockContext,
-          config: { CONFIG: 'default', allowLogin: true },
-        },
-        childContextTypes: { ...mockChildContextTypes },
-      },
-    );
-
-    expect(wrapper.find('div.login-tip')).to.have.lengthOf(1);
-  });
-
-  it('should not render login tip if login is not allowed and user is not logged in', () => {
-    const wrapper = mountWithIntl(
-      <NavigatorIntro {...defaultProps} isLoggedIn={false} />,
-      {
-        context: {
-          ...mockContext,
-          config: { CONFIG: 'default', allowLogin: true },
-        },
-        childContextTypes: { ...mockChildContextTypes },
-      },
-    );
-
-    assert(wrapper.find('div.login-tip'), undefined);
-  });
-
-  it('should not render login tip if login is allowed and user logged in', () => {
-    const wrapper = mountWithIntl(
-      <NavigatorIntro {...defaultProps} isLoggedIn />,
-      {
-        context: {
-          ...mockContext,
-          config: { CONFIG: 'default', allowLogin: true },
-        },
-        childContextTypes: { ...mockChildContextTypes },
-      },
-    );
-
-    assert(wrapper.find('div.login-tip'), undefined);
+    assert(wrapper.find('div.intro-body img'), undefined);
   });
 });

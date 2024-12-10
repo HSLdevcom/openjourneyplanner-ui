@@ -22,7 +22,7 @@ const RouteNumberContainer = (
     <RouteNumber
       alertSeverityLevel={alertSeverityLevel}
       className={className}
-      isCallAgency={isCallAgency || route.type === 715}
+      isCallAgency={isCallAgency}
       color={route.color ? `#${route.color}` : null}
       mode={mode !== undefined ? mode : route.mode}
       text={getLegText(route, config, interliningWithRoute)}

@@ -1,0 +1,60 @@
+.navigator-modal-content {
+  .outro-logo-container {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    img {
+      background-color: white; /* Just for visualization */
+      border-radius: var(--radius-pill);
+    }
+  }
+
+  .outro-body {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: stretch;
+    align-content: center;
+    padding-top: var(--space-xl);
+    gap: var(--space-xs);
+
+    h2,
+    p {
+      margin: unset;
+      align-self: center;
+    }
+
+    .destination {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: calc(var(--space-xxs) / 2);
+
+      .place {
+        color: $black;
+      }
+
+      .address {
+        color: $gray;
+      }
+    }
+  }
+
+  .outro-buttons {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: var(--space-s);
+
+    .close-button {
+      background-color: $realtime-color;
+
+      &:hover,
+      &:active {
+        background-color: #316a00;
+      }
+    }
+  }
+}

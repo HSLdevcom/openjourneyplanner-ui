@@ -18,7 +18,7 @@ import {
   getLegMode,
   compressLegs,
   getLegBadgeProps,
-  isCallAgencyPickupType,
+  isCallAgencyLeg,
   getInterliningLegs,
   getTotalDistance,
   legTime,
@@ -86,7 +86,7 @@ export function RouteLeg(
   },
   { config },
 ) {
-  const isCallAgency = isCallAgencyPickupType(leg);
+  const isCallAgency = isCallAgencyLeg(leg);
   let routeNumber;
   const mode = getRouteMode(leg.route, config);
 

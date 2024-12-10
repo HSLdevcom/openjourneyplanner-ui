@@ -122,6 +122,7 @@ export default function ItineraryPage(props, context) {
   const mwtRef = useRef();
   const mobileRef = useRef();
   const ariaRef = useRef('summary-page.title');
+  const mapLayerRef = useRef();
   const [state, setState] = useState({
     ...emptyState,
     loading: LOADSTATE.UNSET,
@@ -1059,6 +1060,7 @@ export default function ItineraryPage(props, context) {
         mapLayers={props.mapLayers}
         mapLayerOptions={mapLayerOptions}
         setMWTRef={setMWTRef}
+        mapLayerRef={mapLayerRef}
         breakpoint={breakpoint}
         planEdges={planEdges}
         topics={topicsState}
@@ -1085,7 +1087,6 @@ export default function ItineraryPage(props, context) {
 
   const cancelNavigatorUsage = () => {
     setNavigation(false);
-    toggleNavigatorIntro();
   };
 
   const walkPlan = altStates[PLANTYPE.WALK][0].plan;
@@ -1181,11 +1182,13 @@ export default function ItineraryPage(props, context) {
             />
           )}
           <NaviContainer
-            itinerary={itineraryForNavigator}
+            legs={itineraryForNavigator.legs}
             focusToLeg={focusToLeg}
             relayEnvironment={props.relayEnvironment}
             setNavigation={setNavigation}
             mapRef={mwtRef.current}
+            mapLayerRef={mapLayerRef}
+            isNavigatorIntroDismissed={isNavigatorIntroDismissed}
           />
         </>
       );
@@ -1194,7 +1197,7 @@ export default function ItineraryPage(props, context) {
       const pastSearch =
         Date.parse(combinedEdges[selectedIndex]?.node.end) < Date.now();
       const navigateHook =
-        !desktop && config.experimental.navigation && !pastSearch
+        !desktop && config.experimental?.navigation && !pastSearch
           ? () =>
               storeItineraryAndStartNavigation(
                 combinedEdges[selectedIndex]?.node,

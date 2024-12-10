@@ -12,6 +12,7 @@ const NaviStack = ({ messages, handleRemove, topPosition }) => {
           severity={notification.severity}
           index={index}
           handleRemove={handleRemove}
+          hideClose={notification.hideClose}
         >
           {notification.content}
         </NaviMessage>

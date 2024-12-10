@@ -11,7 +11,7 @@ const NavigatorIntroFeature = ({
   body,
 }) => {
   return (
-    <div className="content-box">
+    <div className="feature">
       {icon && (
         <Icon
           img={icon}

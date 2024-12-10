@@ -16,7 +16,7 @@ import LocationMarker from './LocationMarker';
 import MapWithTracking from './MapWithTracking';
 import VehicleMarkerContainer from './VehicleMarkerContainer';
 
-const POINT_FOCUS_ZOOM = 16; // default
+const POINT_FOCUS_ZOOM = 17; // default
 
 function ItineraryPageMap(
   {

@@ -1,43 +1,16 @@
-.navigator-intro-modal-overlay {
-  position: fixed;
-  height: 100%;
-  width: 100%;
-  top: 0;
-  left: 0;
-  background-color: rgba(0, 0, 0, 0.2);
-  z-index: 1000; // higher than navbar
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-}
-
-.navigator-intro-modal {
-  position: fixed;
-  background: white;
-  width: 100%;
-  border-radius: 30px 30px 0 0;
-  box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.2);
-}
-
-.navigator-intro-modal-content {
-  display: flex;
-  flex-direction: column;
-  padding: 0 var(--space-s);
-
-  .body {
+.navigator-modal-content {
+  .intro-body {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
     align-items: stretch;
-    padding: var(--space-xl) 0 var(--space-s) 0;
+    align-content: center;
     gap: var(--space-m);
 
-    h2 {
-      align-self: center;
-    }
-
+    h2,
     p {
       margin: unset;
+      align-self: center;
     }
 
     .login-tip {
@@ -46,19 +19,17 @@
       flex-wrap: nowrap;
       justify-content: center;
       gap: var(--space-xs);
-      padding: var(--space-xxs) var(--space-l);
     }
 
-    .navigation-intro-body {
+    .content {
       display: flex;
       flex-wrap: wrap;
       flex-direction: column;
       align-content: center;
       align-items: stretch;
       gap: var(--space-m);
-      padding: 0 var(--space-m);
 
-      .content-box {
+      .feature {
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -74,11 +45,10 @@
     }
   }
 
-  .buttons {
+  .intro-buttons {
     display: flex;
     flex-direction: column;
     width: 100%;
-    gap: var(--space-xs);
-    padding: var(--space-s) var(--space-s) var(--space-m) var(--space-s);
+    gap: var(--space-s);
   }
 }

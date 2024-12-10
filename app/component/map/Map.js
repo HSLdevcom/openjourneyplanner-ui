@@ -72,6 +72,7 @@ export default class Map extends React.Component {
     mergeStops: PropTypes.bool,
     leafletMapRef: PropTypes.func,
     mapRef: PropTypes.func,
+    mapLayerRef: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
     locationPopup: PropTypes.string,
     onSelectLocation: PropTypes.func,
     bottomPadding: PropTypes.number,
@@ -86,6 +87,7 @@ export default class Map extends React.Component {
   static defaultProps = {
     animate: true,
     mapRef: null,
+    mapLayerRef: null,
     leafletMapRef: null,
     lat: undefined,
     lon: undefined,
@@ -206,6 +208,7 @@ export default class Map extends React.Component {
       geoJson,
       mapLayers,
       bottomPadding,
+      mapLayerRef,
     } = this.props;
     const { config } = this.context;
 
@@ -310,7 +313,7 @@ export default class Map extends React.Component {
     };
 
     return (
-      <div>
+      <div ref={mapLayerRef}>
         <span>{this.props.topButtons}</span>
         <span
           className="overlay-mover"

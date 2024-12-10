@@ -6,7 +6,10 @@ import { configShape } from '../../../util/shapes';
 
 import Icon from '../../Icon';
 
-function NaviMessage({ severity, children, index, handleRemove }, { config }) {
+function NaviMessage(
+  { severity, children, index, handleRemove, hideClose },
+  { config },
+) {
   const [removingIndex, setRemovingIndex] = useState(null);
 
   const handleRemoveClick = () => {
@@ -45,17 +48,19 @@ function NaviMessage({ severity, children, index, handleRemove }, { config }) {
     >
       <Icon img={iconId} height={1.4} width={1.4} color={color} />
       {children}
-      <button
-        type="button"
-        className="info-close"
-        onClick={() => handleRemoveClick()}
-      >
-        <Icon
-          img="notification-close"
-          className="notification-close"
-          color={config.colors.primary}
-        />
-      </button>
+      {!hideClose && (
+        <button
+          type="button"
+          className="info-close"
+          onClick={() => handleRemoveClick()}
+        >
+          <Icon
+            img="notification-close"
+            className="notification-close"
+            color={config.colors.primary}
+          />
+        </button>
+      )}
     </div>
   );
 }
@@ -65,6 +70,11 @@ NaviMessage.propTypes = {
   children: PropTypes.node.isRequired,
   index: PropTypes.number.isRequired,
   handleRemove: PropTypes.func.isRequired,
+  hideClose: PropTypes.bool,
+};
+
+NaviMessage.defaultProps = {
+  hideClose: false,
 };
 
 NaviMessage.contextTypes = {

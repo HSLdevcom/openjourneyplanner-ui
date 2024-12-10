@@ -45,10 +45,6 @@ function filterLegStops(leg, filter) {
   return false;
 }
 
-export function isCallAgencyDeparture(departure) {
-  return departure.pickupType === 'CALL_AGENCY';
-}
-
 function sameBicycleNetwork(leg1, leg2) {
   if (leg1.from.vehicleRentalStation && leg2.from.vehicleRentalStation) {
     return (
@@ -126,8 +122,9 @@ export function getLegMode(legOrMode) {
  *   stop.gtfsId
  *   pickupType
  */
-export function isCallAgencyPickupType(leg) {
+export function isCallAgencyLeg(leg) {
   return (
+    leg.route?.type === 715 ||
     filterLegStops(leg, stoptime => stoptime.pickupType === 'CALL_AGENCY')
       .length > 0
   );

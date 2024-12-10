@@ -68,7 +68,7 @@ export const getAdditionalMessages = (leg, time, intl, config, messages) => {
 };
 
 export const getTransitLegState = (leg, intl, messages, time) => {
-  const { start, realtimeState, from, mode, legId, route } = leg;
+  const { start, realtimeState, from, mode, legId, route, end } = leg;
   const { scheduledTime, estimated } = start;
   if (mode === 'WALK') {
     return null;
@@ -139,7 +139,7 @@ export const getTransitLegState = (leg, intl, messages, time) => {
     severity = 'INFO';
   }
   const state = severity
-    ? [{ severity, content, id: legId, expiresOn: 'legChange' }]
+    ? [{ severity, content, id: legId, expiresOn: legTime(end) }]
     : [];
   return state;
 };
@@ -222,6 +222,7 @@ export const getItineraryAlerts = (legs, intl, messages, location, router) => {
           severity: 'ALERT',
           content,
           id: `canceled-${legId}`,
+          hideClose: true,
         });
       }
     });
@@ -246,6 +247,7 @@ export const getItineraryAlerts = (legs, intl, messages, location, router) => {
         severity: 'ALERT',
         content,
         id: transferId,
+        hideClose: true,
       });
     }
   }
@@ -343,3 +345,73 @@ export const LEGTYPE = {
   PENDING: 'PENDING',
   END: 'END',
 };
+
+function dist(p1, p2) {
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function vSub(p1, p2) {
+  const dx = p1.x - p2.x;
+  const dy = p1.y - p2.y;
+  return { dx, dy };
+}
+
+// compute how big part of a path has been traversed
+// returns position's projection to path, distance from path
+// and the ratio traversed/full length
+export function pathProgress(pos, geom) {
+  const lengths = [];
+
+  let p1 = geom[0];
+  let distance = dist(pos, p1);
+  let minI = 0;
+  let minF = 0;
+  let totalLength = 0;
+
+  for (let i = 0; i < geom.length - 1; i++) {
+    const p2 = geom[i + 1];
+    const { dx, dy } = vSub(p2, p1);
+    const d = Math.sqrt(dx * dx + dy * dy);
+    lengths.push(d);
+    totalLength += d;
+
+    if (d > 0.001) {
+      // interval distance in meters, safety check
+      const dlt = vSub(pos, p1);
+      const dp = dlt.dx * dx + dlt.dy * dy; // dot prod
+
+      if (dp > 0) {
+        let f;
+        let cDist;
+        if (dp > 1) {
+          cDist = dist(p2, pos);
+          f = 1;
+        } else {
+          f = dp / d; // normalize
+          cDist = Math.sqrt(dlt.x * dlt.x + dlt.y * dlt.y - f * f); // pythag.
+        }
+        if (cDist < distance) {
+          distance = cDist;
+          minI = i;
+          minF = f;
+        }
+      }
+    }
+    p1 = p2;
+  }
+
+  let traversed = minF * lengths[minI]; // last partial segment
+  for (let i = 0; i < minI; i++) {
+    traversed += lengths[i];
+  }
+  traversed /= totalLength;
+  const { dx, dy } = vSub(geom[minI + 1], geom[minI]);
+  const projected = {
+    x: geom[minI].x + minF * dx,
+    y: geom[minI].y + minF * dy,
+  };
+
+  return { projected, distance, traversed };
+}

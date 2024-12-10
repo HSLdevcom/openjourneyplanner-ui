@@ -28,6 +28,8 @@ export default function NaviCard({
   cardExpanded,
   startTime,
   time,
+  position,
+  origin,
 }) {
   if (legType === LEGTYPE.PENDING) {
     return (
@@ -69,13 +71,15 @@ export default function NaviCard({
             instructions={instructions}
             legType={legType}
             time={time}
+            position={position}
+            origin={origin}
           />
-          <div type="button" className="navitop-arrow">
-            <Icon
-              img="icon-icon_arrow-collapse"
-              className={`cursor-pointer ${cardExpanded ? 'inverted' : ''}`}
-            />
-          </div>
+        </div>
+        <div type="button" className="navitop-arrow">
+          <Icon
+            img="icon-icon_arrow-collapse"
+            className={`cursor-pointer ${cardExpanded ? 'inverted' : ''}`}
+          />
         </div>
       </div>
       {cardExpanded && (
@@ -97,10 +101,19 @@ NaviCard.propTypes = {
   cardExpanded: PropTypes.bool,
   startTime: PropTypes.string,
   time: PropTypes.number.isRequired,
+  position: PropTypes.shape({
+    lat: PropTypes.number,
+    lon: PropTypes.number,
+  }),
+  origin: PropTypes.shape({
+    x: PropTypes.number.isRequired,
+    y: PropTypes.number.isRequired,
+  }).isRequired,
 };
 NaviCard.defaultProps = {
   cardExpanded: false,
   leg: undefined,
   nextLeg: undefined,
   startTime: '',
+  position: undefined,
 };
