@@ -168,8 +168,6 @@ export default configMerger(walttiConfig, {
   zoneIdMapping: {
     1: 'A',
     2: 'B',
-    3: 'C',
-    4: 'D',
   },
   vehicles: true,
   showVehiclesOnStopPage: true,
@@ -177,5 +175,18 @@ export default configMerger(walttiConfig, {
   zones: {
     stops: true,
     itinerary: true,
+  },
+
+  geoJson: {
+    layers: [
+      {
+        name: {
+          fi: 'Vyöhykkeet',
+          sv: 'Zoner',
+          en: 'Zones',
+        },
+        url: '/assets/geojson/kotka_zone_lines_20241218.geojson',
+      },
+    ],
   },
 });
