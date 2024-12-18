@@ -16,6 +16,7 @@ import RouteNumberContainer from '../RouteNumberContainer';
 import { getActiveLegAlertSeverityLevel } from '../../util/alertUtils';
 import {
   getLegMode,
+  splitLegsAtViaPoints,
   compressLegs,
   getLegBadgeProps,
   isCallAgencyLeg,
@@ -287,7 +288,8 @@ const Itinerary = (
   const mobile = bp => !(bp === 'large');
   const legs = [];
   let noTransitLegs = true;
-  const compressedLegs = compressLegs(itinerary.legs).map(leg => ({
+  const splitLegs = splitLegsAtViaPoints(itinerary.legs, intermediatePlaces);
+  const compressedLegs = compressLegs(splitLegs).map(leg => ({
     ...leg,
   }));
   let intermediateSlack = 0;
@@ -389,9 +391,14 @@ const Itinerary = (
       renderBar = false;
       addition += legLength; // carry over the length of the leg to the next
     }
+    // There are two places which inject ViaLegs in this logic, but we certainly
+    // don't want to add it twice in the same place with the same key, so we
+    // record whether we added it here at the first place.
+    let viaAdded = false;
     if (leg.intermediatePlace) {
       onlyIconLegs += 1;
       legs.push(<ViaLeg key={`via_${leg.mode}_${startMs}`} />);
+      viaAdded = true;
     }
     if (isLegOnFoot(leg) && renderBar) {
       const walkingTime = Math.floor(leg.duration / 60);
@@ -555,7 +562,8 @@ const Itinerary = (
       if (
         previousLeg &&
         !previousLeg.intermediatePlace &&
-        connectsFromViaPoint(leg, intermediatePlaces)
+        connectsFromViaPoint(leg, intermediatePlaces) &&
+        !viaAdded
       ) {
         legs.push(<ViaLeg key={`via_${leg.mode}_${startMs}`} />);
       }
@@ -970,6 +978,7 @@ Itinerary.propTypes = {
   intermediatePlaces: PropTypes.arrayOf(locationShape),
   hideSelectionIndicator: PropTypes.bool,
   lowestCo2value: PropTypes.number,
+  viaPoints: PropTypes.arrayOf(locationShape),
 };
 
 Itinerary.defaultProps = {
@@ -977,6 +986,7 @@ Itinerary.defaultProps = {
   intermediatePlaces: [],
   hideSelectionIndicator: true,
   lowestCo2value: 0,
+  viaPoints: [],
 };
 
 Itinerary.contextTypes = {
@@ -1021,6 +1031,16 @@ const containerComponent = createFragmentContainer(ItineraryWithBreakpoint, {
         intermediatePlaces {
           stop {
             zoneId
+            gtfsId
+            parentStation {
+              gtfsId
+            }
+          }
+          arrival {
+            scheduledTime
+            estimated {
+              time
+            }
           }
         }
         route {
@@ -1056,6 +1076,9 @@ const containerComponent = createFragmentContainer(ItineraryWithBreakpoint, {
           name
           stop {
             gtfsId
+            parentStation {
+              gtfsId
+            }
             zoneId
             alerts {
               alertSeverityLevel
@@ -1075,6 +1098,9 @@ const containerComponent = createFragmentContainer(ItineraryWithBreakpoint, {
         to {
           stop {
             gtfsId
+            parentStation {
+              gtfsId
+            }
             zoneId
             alerts {
               alertSeverityLevel

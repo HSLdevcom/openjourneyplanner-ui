@@ -508,6 +508,9 @@ const withRelay = createFragmentContainer(
                   }
                 }
               }
+              parentStation {
+                gtfsId
+              }
             }
           }
           to {
@@ -553,6 +556,9 @@ const withRelay = createFragmentContainer(
                   }
                 }
               }
+              parentStation {
+                gtfsId
+              }
             }
             vehicleParking {
               vehicleParkingId
@@ -574,6 +580,9 @@ const withRelay = createFragmentContainer(
               code
               platformCode
               zoneId
+              parentStation {
+                gtfsId
+              }
             }
           }
           realTime

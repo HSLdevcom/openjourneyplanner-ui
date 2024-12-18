@@ -9,8 +9,8 @@ import NaviBottom from './NaviBottom';
 import NaviCardContainer from './NaviCardContainer';
 import { useRealtimeLegs } from './hooks/useRealtimeLegs';
 import NavigatorOutroModal from './navigatoroutro/NavigatorOutroModal';
+import { DESTINATION_RADIUS } from './NaviUtils';
 
-const DESTINATION_RADIUS = 20; // meters
 const ADDITIONAL_ARRIVAL_TIME = 60000; // 60 seconds in ms
 
 function NaviContainer(
@@ -27,7 +27,10 @@ function NaviContainer(
 ) {
   const [isPositioningAllowed, setPositioningAllowed] = useState(false);
 
-  const position = getStore('PositionStore').getLocationState();
+  let position = getStore('PositionStore').getLocationState();
+  if (!position.hasLocation) {
+    position = null;
+  }
 
   const {
     realTimeLegs,
@@ -41,7 +44,7 @@ function NaviContainer(
   } = useRealtimeLegs(relayEnvironment, legs);
 
   useEffect(() => {
-    if (position.hasLocation) {
+    if (position) {
       mapRef?.enableMapTracking();
       setPositioningAllowed(true);
     } else {
@@ -107,7 +110,8 @@ NaviContainer.propTypes = {
   isNavigatorIntroDismissed: PropTypes.bool,
   // eslint-disable-next-line
   mapRef: PropTypes.object,
-  mapLayerRef: PropTypes.func.isRequired,
+  mapLayerRef: PropTypes.oneOfType([PropTypes.func, PropTypes.object])
+    .isRequired,
 };
 
 NaviContainer.contextTypes = {

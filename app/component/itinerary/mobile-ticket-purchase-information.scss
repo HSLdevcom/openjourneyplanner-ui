@@ -32,21 +32,15 @@
   }
 
   .app-link {
-    .external-link-container {
-      border: 0;
-      line-height: 25px;
-      padding: 0 10px;
-
-      a.external-link {
-        font-size: 16px;
-        color: $primary-color;
-      }
-    }
-
+    line-height: 30px;
+    padding: 0 10px;
+    font-size: 16px;
+    color: $primary-color;
+    border: 0;
     position: absolute;
     right: 24px;
-    display: flex;
     justify-content: space-evenly;
+    display: flex;
     align-items: center;
     min-width: 140px;
     height: 40px;
@@ -54,5 +48,10 @@
     font-weight: $font-weight-medium;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     border-radius: 20px;
+
+    a {
+      display: inline-block;
+      text-decoration: none;
+    }
   }
 }

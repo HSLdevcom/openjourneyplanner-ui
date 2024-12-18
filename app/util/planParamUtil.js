@@ -267,6 +267,11 @@ export function getPlanParams(
   const intermediateLocations = getIntermediatePlaces({
     intermediatePlaces,
   });
+  const via = intermediateLocations.map(loc => ({
+    passThrough: {
+      stopLocationIds: [loc.gtfsId],
+    },
+  }));
   const distance = estimateItineraryDistance(
     fromLocation,
     toLocation,
@@ -401,5 +406,6 @@ export function getPlanParams(
     modes,
     planType,
     noIterationsForShortTrips,
+    via,
   };
 }

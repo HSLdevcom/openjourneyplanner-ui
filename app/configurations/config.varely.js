@@ -88,6 +88,10 @@ export default configMerger(walttiConfig, {
     [maxLon, minLat],
   ],
 
+  map: {
+    minZoom: 7,
+  },
+
   menu: {
     copyright: { label: `© Seutu+ ${walttiConfig.YEAR}` },
     content: [

@@ -63,7 +63,10 @@ export function locationToOTP(location) {
   if (location.lat) {
     const address = location.address || '';
     const slack = location.locationSlack ? `::${location.locationSlack}` : '';
-    return `${address}::${location.lat},${location.lon}${slack}`;
+    const addressParts = location.gtfsId
+      ? `${address}**${location.gtfsId}`
+      : address;
+    return `${addressParts}::${location.lat},${location.lon}${slack}`;
   }
   if (location.type === 'SelectFromMap') {
     return location.type;

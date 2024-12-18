@@ -261,6 +261,7 @@ class DTAutosuggestPanel extends React.Component {
     isEmbedded: PropTypes.bool,
     showSwapControl: PropTypes.bool,
     showViapointControl: PropTypes.bool,
+    showSlackControl: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -297,6 +298,7 @@ class DTAutosuggestPanel extends React.Component {
     isEmbedded: false,
     showSwapControl: false,
     showViapointControl: false,
+    showSlackControl: false,
   };
 
   constructor(props) {
@@ -566,7 +568,7 @@ class DTAutosuggestPanel extends React.Component {
                       }
                       lang={this.props.lang}
                       sources={this.props.sources}
-                      targets={this.props.targets}
+                      targets={['Stops', 'Stations']}
                       filterResults={this.props.filterResults}
                       getAutoSuggestIcons={this.props.getAutoSuggestIcons}
                       isMobile={this.props.isMobile}
@@ -578,24 +580,26 @@ class DTAutosuggestPanel extends React.Component {
                       showScroll={this.props.showScroll}
                     />
                   </div>
-                  <ItinerarySearchControl
-                    className={styles['add-via-point-slack']}
-                    enabled={this.props.showViapointControl}
-                    onClick={() => this.handleToggleViaPointSlackClick(i)}
-                    onKeyPress={e =>
-                      isKeyboardSelectionEvent(e) &&
-                      this.handleToggleViaPointSlackClick(i)
-                    }
-                    aria-label={i18next.t(
-                      isViaPointSlackTimeInputActive(i)
-                        ? 'add-via-duration-button-label-open'
-                        : 'add-via-duration-button-label-close',
-                      { index: i + 1 },
-                    )}
-                    wide
-                  >
-                    <Icon img="time" color={this.props.color} />
-                  </ItinerarySearchControl>
+                  {this.props.showSlackControl && (
+                    <ItinerarySearchControl
+                      className={styles['add-via-point-slack']}
+                      enabled={this.props.showViapointControl}
+                      onClick={() => this.handleToggleViaPointSlackClick(i)}
+                      onKeyPress={e =>
+                        isKeyboardSelectionEvent(e) &&
+                        this.handleToggleViaPointSlackClick(i)
+                      }
+                      aria-label={i18next.t(
+                        isViaPointSlackTimeInputActive(i)
+                          ? 'add-via-duration-button-label-open'
+                          : 'add-via-duration-button-label-close',
+                        { index: i + 1 },
+                      )}
+                      wide
+                    >
+                      <Icon img="time" color={this.props.color} />
+                    </ItinerarySearchControl>
+                  )}
                 </div>
                 {!isViaPointSlackTimeInputActive(i) &&
                   viaPoints[i] &&
@@ -643,7 +647,7 @@ class DTAutosuggestPanel extends React.Component {
                   index: i + 1,
                 })}
               >
-                <Icon img="close" color={this.props.color} />
+                <Icon img="trash" color={this.props.color} />
               </ItinerarySearchControl>
             </div>
           ))}

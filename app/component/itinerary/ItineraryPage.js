@@ -801,6 +801,7 @@ export default function ItineraryPage(props, context) {
     params.to,
     query.time,
     query.arriveBy,
+    query.intermediatePlaces,
   ]);
 
   useEffect(() => {
@@ -831,13 +832,14 @@ export default function ItineraryPage(props, context) {
       const selected = combinedEdges.length
         ? combinedEdges[selectedIndex]
         : null;
-      const itineraryTopics = getTopics(selected, config);
+
+      const itineraryTopics = getTopics(selected?.node.legs, config);
       const { client } = context.getStore('RealTimeInformationStore');
       // Client may not be initialized yet if there was an client before ComponentDidMount
-      if (!isEqual(itineraryTopics, topicsState) || !client) {
+      if (!naviMode && (!isEqual(itineraryTopics, topicsState) || !client)) {
         updateClient(itineraryTopics, context);
       }
-      if (!isEqual(itineraryTopics, topicsState)) {
+      if (!isEqual(itineraryTopics, topicsState) && !naviMode) {
         // eslint-disable-next-line react/no-did-update-set-state
         setTopicsState(itineraryTopics);
       }
@@ -852,6 +854,7 @@ export default function ItineraryPage(props, context) {
     altStates[PLANTYPE.PARKANDRIDE][0].plan,
     location.state?.selectedItineraryIndex,
     relaxScooterState.plan,
+    naviMode,
   ]);
 
   useEffect(() => {

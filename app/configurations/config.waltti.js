@@ -287,10 +287,17 @@ export default {
   },
   ticketButtonTextId: 'buy-in-app',
 
-  analyticsScript: function createAnalyticsScript(hostname) {
+  analyticsScript: function createAnalyticsScript(
+    hostname,
+    sendAnalyticsCustomEventGoals,
+  ) {
+    const address = sendAnalyticsCustomEventGoals
+      ? 'https://plausible.io/js/script.tagged-events.js'
+      : 'https://plausible.io/js/script.js';
     // eslint-disable-next-line no-useless-escape
-    return `<script defer data-domain="${hostname}" src="https://plausible.io/js/script.js"><\/script>\n`;
+    return `<script defer data-domain="${hostname}" src="${address}"><\/script>\n`;
   },
+  analyticsClass: 'plausible-event-name=Ticket+Purchase+Link',
 
   // features that should not be deployed to production
   experimental: {

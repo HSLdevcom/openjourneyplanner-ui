@@ -45,6 +45,7 @@ class TileLayerContainer extends GridLayer {
     tileSize: PropTypes.number.isRequired,
     zoomOffset: PropTypes.number.isRequired,
     locationPopup: PropTypes.string, // all, none, reversegeocoding, origindestination
+    allowViaPoint: PropTypes.bool, // temporary, until OTP2 handles arbitrary via points
     onSelectLocation: PropTypes.func,
     mergeStops: PropTypes.bool,
     mapLayers: mapLayerShape.isRequired,
@@ -70,6 +71,7 @@ class TileLayerContainer extends GridLayer {
   static defaultProps = {
     onSelectLocation: undefined,
     locationPopup: undefined,
+    allowViaPoint: false,
     objectsToHide: { vehicleRentalStations: [] },
     hilightedStops: undefined,
     stopsToShow: undefined,
@@ -353,6 +355,10 @@ class TileLayerContainer extends GridLayer {
     let contents;
     const breakpoint = getClientBreakpoint();
     let showPopup = true;
+    const locationPopup =
+      this.props.allowViaPoint || this.props.locationPopup !== 'all'
+        ? this.props.locationPopup
+        : 'origindestination';
 
     if (typeof this.state.selectableTargets !== 'undefined') {
       if (this.state.selectableTargets.length === 1) {
@@ -434,7 +440,7 @@ class TileLayerContainer extends GridLayer {
         ) {
           showPopup = false;
         }
-        popup = this.props.locationPopup !== 'none' && (
+        popup = locationPopup !== 'none' && (
           <Popup
             key={this.state.coords.toString()}
             {...this.PopupOptions}
@@ -442,16 +448,14 @@ class TileLayerContainer extends GridLayer {
             maxWidth="auto"
             position={this.state.coords}
             className={`${this.PopupOptions.className} ${
-              this.props.locationPopup === 'all'
-                ? 'single-popup'
-                : 'narrow-popup'
+              locationPopup === 'all' ? 'single-popup' : 'narrow-popup'
             }`}
           >
             <LocationPopup
               lat={this.state.coords.lat}
               lon={this.state.coords.lng}
               onSelectLocation={this.props.onSelectLocation}
-              locationPopup={this.props.locationPopup}
+              locationPopup={locationPopup}
             />
           </Popup>
         );

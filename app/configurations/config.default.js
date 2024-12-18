@@ -785,7 +785,7 @@ export default {
     itinerary: false,
   },
 
-  viaPointsEnabled: false,
+  viaPointsEnabled: true,
 
   // Toggling this off shows the alert bodytext instead of the header
   showAlertHeader: true,
@@ -837,4 +837,5 @@ export default {
     },
   ],
   navigation: false,
+  sendAnalyticsCustomEventGoals: false,
 };

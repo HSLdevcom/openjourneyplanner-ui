@@ -138,7 +138,7 @@ export default configMerger(walttiConfig, {
     ],
   },
   zoneIdMapping: {
-    1: 'Oulu',
+    1: 'OSL',
   },
   zones: {
     stops: true,

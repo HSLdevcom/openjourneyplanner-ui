@@ -265,6 +265,14 @@
           color: $bus-color;
         }
 
+        &.bus-express {
+          color: $bus-express-color;
+        }
+
+        &.speedtram {
+          color: $speedtram-color;
+        }
+
         &.tram-stop {
           color: $tram-color;
         }

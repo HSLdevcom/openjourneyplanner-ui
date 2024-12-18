@@ -135,6 +135,10 @@ export default configMerger(walttiConfig, {
     [23.1, 60.6],
   ],
 
+  map: {
+    minZoom: 6,
+  },
+
   showDisclaimer: true,
 
 });

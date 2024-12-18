@@ -18,6 +18,7 @@ const planConnection = graphql`
     $first: Int
     $before: String
     $last: Int
+    $via: [PlanViaLocationInput!]
   ) {
     plan: planConnection(
       dateTime: $datetime
@@ -28,6 +29,7 @@ const planConnection = graphql`
       origin: $fromPlace
       destination: $toPlace
       modes: $modes
+      via: $via
       preferences: {
         accessibility: { wheelchair: { enabled: $wheelchair } }
         street: {
@@ -118,6 +120,7 @@ const planConnection = graphql`
               color
               gtfsId
               type
+              mode
               agency {
                 name
               }
@@ -130,6 +133,7 @@ const planConnection = graphql`
                   gtfsId
                 }
                 scheduledDeparture
+                serviceDay
               }
               stoptimes {
                 stop {

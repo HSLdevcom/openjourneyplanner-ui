@@ -9,6 +9,7 @@ import { getZoneLabel, legTime } from '../../../util/legUtils';
 import ZoneIcon from '../../ZoneIcon';
 import { legShape, configShape } from '../../../util/shapes';
 import { getDestinationProperties, LEGTYPE } from './NaviUtils';
+import { getRouteMode } from '../../../util/modeUtils';
 
 import RouteNumberContainer from '../../RouteNumberContainer';
 
@@ -34,7 +35,7 @@ const NaviCardExtension = ({ legType, leg, nextLeg, time }, { config }) => {
   }
 
   if (legType === LEGTYPE.TRANSIT) {
-    const { intermediatePlaces, headsign, trip, realtimeState } = leg;
+    const { intermediatePlaces, headsign, trip, realtimeState, route } = leg;
     const hs = headsign || trip.tripHeadsign;
     const idx = intermediatePlaces.findIndex(p => legTime(p.arrival) > time);
     const count = idx > -1 ? intermediatePlaces.length - idx : 0;
@@ -45,7 +46,8 @@ const NaviCardExtension = ({ legType, leg, nextLeg, time }, { config }) => {
     );
     const translationId =
       count === 1 ? 'navileg-one-stop-remaining' : 'navileg-stops-remaining';
-    const mode = leg.mode.toLowerCase();
+    const mode = getRouteMode(route, config);
+
     return (
       <div className="extension">
         <div className="extension-divider" />
