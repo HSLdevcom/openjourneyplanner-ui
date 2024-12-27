@@ -2,8 +2,8 @@ import React from 'react';
 import distance from '@digitransit-search-util/digitransit-search-util-distance';
 import { FormattedMessage } from 'react-intl';
 import { GeodeticToEnu } from '../../../util/geo-utils';
-import { legTime } from '../../../util/legUtils';
-import { timeStr } from '../../../util/timeUtils';
+import { legTime, legTimeAcc } from '../../../util/legUtils';
+import { timeStr, epochToIso } from '../../../util/timeUtils';
 import { getFaresFromLegs } from '../../../util/fareUtils';
 import { ExtendedRouteTypes } from '../../../constants';
 import { getItineraryPagePath } from '../../../util/path';
@@ -12,6 +12,28 @@ const TRANSFER_SLACK = 60000;
 const DISPLAY_MESSAGE_THRESHOLD = 120 * 1000; // 2 minutes
 
 export const DESTINATION_RADIUS = 20; // meters
+
+export function summaryString(legs, time, previousLeg, currentLeg, nextLeg) {
+  const parts = epochToIso(time).split('T')[1].split('+');
+  let msg = `${parts[0]}`;
+  const colors = [];
+
+  legs.forEach(l => {
+    if (legTime(l.start) <= time && time <= legTime(l.end)) {
+      colors.push('color:green');
+    } else if (l.transitLeg) {
+      colors.push('color: #aaaaff');
+    } else {
+      colors.push('color: #aaaaaa');
+    }
+    msg += `%c ${legTimeAcc(l.start)}-${legTimeAcc(l.end)}`;
+  });
+  colors.push('color: #bbbbbb');
+  msg += `%c ${previousLeg?.mode} ${currentLeg?.mode} ${nextLeg?.mode}`;
+  colors.unshift(msg);
+
+  return colors;
+}
 
 function dist(p1, p2) {
   const dx = p2.x - p1.x;
@@ -91,7 +113,8 @@ export function getRemainingTraversal(leg, pos, origin, time) {
     return 1.0 - traversed;
   }
   // estimate from elapsed time
-  return Math.max((legTime(leg.end) - time) / (leg.duration * 1000), 0);
+  const duration = Math.max(legTime(leg.end) - legTime(leg.start), 1); // min 1 ms
+  return Math.min(Math.max((legTime(leg.end) - time) / duration, 0), 1.0);
 }
 
 function findTransferProblems(legs, time, position, origin) {
@@ -179,12 +202,24 @@ export function getFirstLastLegs(legs) {
   const last = legs[legs.length - 1];
   return { first, last };
 }
-export const getAdditionalMessages = (leg, time, intl, config, messages) => {
+export const getAdditionalMessages = (
+  leg,
+  nextLeg,
+  firstLeg,
+  time,
+  intl,
+  config,
+  messages,
+) => {
   const msgs = [];
   const closed = messages.get('ticket')?.closed;
-  if (!closed && legTime(leg.start) - time < DISPLAY_MESSAGE_THRESHOLD) {
+  if (
+    !closed &&
+    leg === firstLeg &&
+    legTime(leg.end) - time < DISPLAY_MESSAGE_THRESHOLD
+  ) {
     // Todo: multiple fares?
-    const fare = getFaresFromLegs([leg], config)[0];
+    const fare = getFaresFromLegs([nextLeg], config)[0];
     msgs.push({
       severity: 'INFO',
       content: (
@@ -321,7 +356,7 @@ export const getItineraryAlerts = (
             <span className="header"> {alert.alertHeaderText}</span>
           </div>
         ),
-        id: alert.id,
+        id: `${alert.effectiveStartDate}-${alert.alertDescriptionText}`,
       }));
   });
   const abortTrip = <FormattedMessage id="navigation-abort-trip" />;
@@ -368,6 +403,7 @@ export const getItineraryAlerts = (
           content,
           id: `canceled-${legId}`,
           hideClose: true,
+          expiresOn: alert.effectiveEndDate * 1000,
         });
       }
     });

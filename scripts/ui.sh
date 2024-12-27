@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# See the themeMap in app/configurations/config.default.js for configuration options.
+
 ui () {
     if [ "$SUBSCRIPTION_KEY" = "" -a "$NO_SUBSCRIPTION_KEY" != "true" ]; then
         echo "In order to use the UI you need to set the SUBSCRIPTION_KEY environment variable."
@@ -10,13 +12,5 @@ ui () {
 }
 
 uiotp () {
-    if [ "$1" = "hsl" ]; then
-        OTP_URL=http://localhost:9080/otp/ ui hsl
-    elif [ "$1" = "matka" ]; then
-        OTP_URL=http://localhost:9080/otp/ ui matka
-    elif [ "$1" = "kela" ]; then
-        OTP_URL=http://localhost:9080/otp/ ui kela
-    else
-        OTP_URL=http://localhost:9080/otp/ ui $1
-    fi
+    OTP_URL=http://localhost:9080/otp/ ui $1
 }

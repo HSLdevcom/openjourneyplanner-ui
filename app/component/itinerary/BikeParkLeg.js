@@ -72,18 +72,22 @@ const BikeParkLeg = (
             focusAction={focusAction}
           />
         </div>
-        <div className={cx('itinerary-leg-action', 'bike')}>
-          <div className="itinerary-leg-action-content">
-            <FormattedMessage
-              id="walk-distance-duration"
-              values={{ distance, duration }}
-              defaultMessage="Walk {distance} ({duration})"
-            />
-            <ItineraryMapAction
-              target={leg.from.name || ''}
-              focusAction={focusAction}
-            />
-          </div>
+        <div
+          className={cx(
+            'itinerary-leg-action',
+            'bike',
+            'itinerary-leg-action-content',
+          )}
+        >
+          <FormattedMessage
+            id="walk-distance-duration"
+            values={{ distance, duration }}
+            defaultMessage="Walk {distance} ({duration})"
+          />
+          <ItineraryMapAction
+            target={leg.from.name || ''}
+            focusAction={focusAction}
+          />
         </div>
       </div>
     </div>

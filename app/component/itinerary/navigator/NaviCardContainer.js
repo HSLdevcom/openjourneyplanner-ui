@@ -18,12 +18,34 @@ import { updateClient, getTopics } from '../ItineraryPageUtils';
 
 const TIME_AT_DESTINATION = 3; // * 10 seconds
 const TOPBAR_PADDING = 8; // pixels
+const HIDE_TOPCARD_DURATION = 2000; // milliseconds
 
 function addMessages(incominMessages, newMessages) {
   newMessages.forEach(m => {
     incominMessages.set(m.id, m);
   });
 }
+
+const handleLegChange = (leg, firstLeg, time) => {
+  let legType;
+  if (time < legTime(firstLeg.start)) {
+    legType = LEGTYPE.PENDING;
+  } else if (leg) {
+    if (!leg.transitLeg) {
+      if (leg.current >= TIME_AT_DESTINATION) {
+        legType = LEGTYPE.WAIT;
+      } else {
+        legType = LEGTYPE.MOVE;
+      }
+    } else {
+      legType = LEGTYPE.TRANSIT;
+    }
+  } else {
+    legType = LEGTYPE.WAIT;
+  }
+  return legType;
+};
+
 function NaviCardContainer(
   {
     focusToLeg,
@@ -36,6 +58,7 @@ function NaviCardContainer(
     nextLeg,
     firstLeg,
     lastLeg,
+    previousLeg,
     isJourneyCompleted,
   },
   context,
@@ -45,8 +68,7 @@ function NaviCardContainer(
   const [messages, setMessages] = useState(new Map());
   // notifications that are shown to the user.
   const [activeMessages, setActiveMessages] = useState([]);
-  const [topPosition, setTopPosition] = useState(0);
-
+  const [legChanging, setLegChanging] = useState(false);
   const legRef = useRef(currentLeg);
   const focusRef = useRef(false);
   // Destination counter. How long user has been at the destination. * 10 seconds
@@ -64,22 +86,15 @@ function NaviCardContainer(
   };
 
   // track only relevant vehicles for the journey.
-  const topics = getTopics(
-    legs.filter(leg => legTime(leg.end) >= time),
-    config,
-  );
+  const getNaviTopics = () =>
+    getTopics(
+      legs.filter(leg => legTime(leg.end) >= time),
+      config,
+    );
 
   useEffect(() => {
-    updateClient(topics, context);
+    updateClient(getNaviTopics(), context);
   }, []);
-
-  useEffect(() => {
-    if (cardRef.current) {
-      const contentHeight = cardRef.current.getBoundingClientRect();
-      // Navistack top position depending on main card height.
-      setTopPosition(contentHeight.bottom + TOPBAR_PADDING);
-    }
-  }, [currentLeg, cardExpanded]);
 
   useEffect(() => {
     const incomingMessages = new Map();
@@ -110,21 +125,35 @@ function NaviCardContainer(
       // Messages for NaviStack.
       addMessages(incomingMessages, [
         ...getTransitLegState(nextLeg, intl, messages, time),
-        ...getAdditionalMessages(nextLeg, time, intl, config, messages),
+        ...getAdditionalMessages(
+          currentLeg,
+          nextLeg,
+          firstLeg,
+          time,
+          intl,
+          config,
+          messages,
+        ),
       ]);
     }
+    let timeoutId;
     if (legChanged) {
-      updateClient(topics, context);
+      updateClient(getNaviTopics(), context);
       setCardExpanded(false);
+      setLegChanging(true);
+      timeoutId = setTimeout(() => {
+        setLegChanging(false);
+      }, HIDE_TOPCARD_DURATION);
       if (currentLeg) {
         focusToLeg?.(currentLeg);
       }
     }
-    if (incomingMessages.size || legChanged) {
-      // Handle messages when new messages arrives.
 
+    // Update messages if there are changes
+    const expired = activeMessages.find(m => m.expiresOn < time);
+    if (incomingMessages.size || expired) {
       // Current active messages. Filter away expired messages.
-      const previousValidMessages = legChanged
+      const previousValidMessages = expired
         ? activeMessages.filter(m => !m.expiresOn || m.expiresOn > time)
         : activeMessages;
 
@@ -161,32 +190,27 @@ function NaviCardContainer(
       // Todo: this works in transit legs, but do we need additional logic for bikes / scooters?
       destCountRef.current = 0;
     }
+
+    return () => clearTimeout(timeoutId);
   }, [time]);
 
-  let legType;
-
-  if (time < legTime(firstLeg.start)) {
-    legType = LEGTYPE.PENDING;
-  } else if (currentLeg) {
-    if (!currentLeg.transitLeg) {
-      if (destCountRef.current >= TIME_AT_DESTINATION) {
-        legType = LEGTYPE.WAIT;
-      } else {
-        legType = LEGTYPE.MOVE;
-      }
-    } else {
-      legType = LEGTYPE.TRANSIT;
-    }
-  } else {
-    legType = LEGTYPE.WAIT;
-  }
+  // LegChange fires animation, we need to keep the old data until card goes out of the view.
+  const l = legChanging ? previousLeg : currentLeg;
+  const legType = handleLegChange(l, firstLeg, time);
 
   const containerTopPosition =
     mapLayerRef.current.getBoundingClientRect().top + TOPBAR_PADDING;
-
+  let className;
+  if (isJourneyCompleted) {
+    className = 'slide-out';
+  } else if (legChanging) {
+    className = 'hide-card';
+  } else {
+    className = 'show-card';
+  }
   return (
     <div
-      className={`navi-card-container ${isJourneyCompleted ? 'slide-out' : ''}`}
+      className={`navi-card-container ${className}`}
       style={{ top: containerTopPosition }}
     >
       <button
@@ -197,7 +221,7 @@ function NaviCardContainer(
       >
         <div className="content">
           <NaviCard
-            leg={currentLeg}
+            leg={l}
             nextLeg={nextLeg}
             cardExpanded={cardExpanded}
             legType={legType}
@@ -209,11 +233,7 @@ function NaviCardContainer(
         </div>
       </button>
       {activeMessages.length > 0 && (
-        <NaviStack
-          messages={activeMessages}
-          handleRemove={handleRemove}
-          topPosition={topPosition}
-        />
+        <NaviStack messages={activeMessages} handleRemove={handleRemove} />
       )}
     </div>
   );
@@ -237,6 +257,7 @@ NaviCardContainer.propTypes = {
   nextLeg: legShape,
   firstLeg: legShape,
   lastLeg: legShape,
+  previousLeg: legShape,
   isJourneyCompleted: PropTypes.bool,
 
   /*
@@ -251,6 +272,7 @@ NaviCardContainer.defaultProps = {
   nextLeg: undefined,
   firstLeg: undefined,
   lastLeg: undefined,
+  previousLeg: undefined,
   isJourneyCompleted: false,
 };
 

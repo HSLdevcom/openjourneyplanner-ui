@@ -16,7 +16,6 @@ function NaviMessage(
     setRemovingIndex(index);
     setTimeout(() => {
       handleRemove(index);
-      setRemovingIndex(null);
     }, 500);
   };
   let iconId;

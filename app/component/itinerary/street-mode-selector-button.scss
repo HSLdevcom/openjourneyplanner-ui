@@ -98,6 +98,15 @@
         }
       }
 
+      &.car-and-vehicle-primary {
+        .icon-container {
+          .icon {
+            width: 27px;
+            height: 27px;
+          }
+        }
+      }
+
       &.secondary-icon {
         margin-bottom: 20px;
         margin-left: -18px;

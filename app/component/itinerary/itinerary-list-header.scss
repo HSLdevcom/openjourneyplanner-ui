@@ -30,28 +30,41 @@
     }
   }
 
-  .with-bike-info-notification-icon {
-    align-self: baseline;
-    margin-top: 5px;
+  .with-bike-info-notification {
+    flex: 1;
+    color: #333;
+    margin: 5px 4px 4px 8px;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: -0.39px;
+  }
+}
+
+.with-car-info {
+  border-radius: 5px;
+  border: solid 1px #ddd;
+  margin: 8px 60px 8px 0;
+  background-color: #e5f2fa;
+  display: flex;
+
+  .with-car-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    margin: 4px 0 8px 8px;
+
+    .inline-icon {
+      margin-left: 0;
+    }
   }
 
-  .with-bike-info-notification {
-    margin-top: 5px;
-
-    .with-bike-info-content {
-      flex: 1;
-      color: #333;
-      margin: 0 4px 4px 8px;
-      font-style: normal;
-      line-height: normal;
-      letter-spacing: -0.39px;
-    }
-
-    .with-bike-info-header {
-      font-size: $font-size-xsmall;
-      font-weight: bold;
-      margin: 0 4px 0 8px;
-    }
+  .with-car-info-notification {
+    flex: 1;
+    color: #333;
+    margin: 5px 4px 4px 8px;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: -0.39px;
   }
 }
 

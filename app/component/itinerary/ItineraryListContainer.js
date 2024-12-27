@@ -36,6 +36,7 @@ function ItineraryListContainer(
     const modesWithSubpath = [
       streetHash.bikeAndVehicle,
       streetHash.parkAndRide,
+      streetHash.carAndVehicle,
     ];
     const { hash } = params;
     if (modesWithSubpath.includes(hash)) {

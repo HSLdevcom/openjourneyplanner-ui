@@ -72,6 +72,10 @@ $itinerary-tab-switch-height: 48px;
     @include getCircleSvg($car-color, $fill);
   }
 
+  &.car_boarding {
+    @include getCircleSvg($car-color, $fill);
+  }
+
   &.via {
     @include getCircleSvg($walk-color, $fill);
   }
@@ -864,6 +868,10 @@ $itinerary-tab-switch-height: 48px;
       @include setModeCircles($car-color);
     }
 
+    &.car_boarding {
+      @include setModeCircles($car-color);
+    }
+
     &.via {
       @include setModeCircles($walk-color);
     }
@@ -918,23 +926,112 @@ $itinerary-tab-switch-height: 48px;
     }
 
     &.long {
-      .leg-before-line {
-        background-position-y: 0;
-        height: 20%;
+      &.bicycle {
+        .leg-before-line {
+          background-position-y: 0;
+          height: 20%;
 
-        &.top {
-          height: 22%;
-          top: 16%;
+          &.top {
+            height: 22%;
+            top: 16%;
+          }
+
+          &.middle {
+            top: 59%;
+            height: 13%;
+          }
+
+          &.bottom {
+            top: 92%;
+            height: 10%;
+          }
+
+          &.between-transit {
+            &.top {
+              height: 16%;
+              top: 12%;
+            }
+
+            &.middle {
+              top: 44%;
+              height: 11%;
+            }
+
+            &.second-middle {
+              top: 69%;
+              height: 11%;
+            }
+
+            &.bottom {
+              top: 94%;
+              height: 9%;
+            }
+          }
         }
+      }
 
-        &.middle {
-          top: 59%;
-          height: 13%;
-        }
+      &.car {
+        .leg-before-line {
+          background-position-y: 0;
+          height: 20%;
 
-        &.bottom {
-          top: 92%;
-          height: 10%;
+          &.before-transit {
+            &.top {
+              height: 22%;
+              top: 16%;
+            }
+
+            &.middle {
+              top: 59%;
+              height: 30%;
+            }
+
+            &.bottom {
+              top: 92%;
+              height: 10%;
+              background-position-y: 0;
+              border-radius: 0;
+            }
+          }
+
+          &.after-transit {
+            &.top {
+              height: 10%;
+              top: 16%;
+            }
+
+            &.middle {
+              top: 28%;
+              height: 45%;
+            }
+
+            &.bottom {
+              top: 92%;
+              height: 10%;
+            }
+          }
+
+          &.between-transit {
+            &.top {
+              height: 10%;
+              top: 12%;
+            }
+
+            &.middle {
+              top: 21%;
+              height: 34%;
+            }
+
+            &.second-middle {
+              top: 69%;
+              height: 23%;
+            }
+
+            &.bottom {
+              top: 92%;
+              height: 10%;
+            }
+          }
         }
       }
     }
@@ -948,6 +1045,22 @@ $itinerary-tab-switch-height: 48px;
 
       &.second {
         top: 76%;
+      }
+    }
+
+    .itinerary-route-number.between-transit {
+      position: absolute;
+
+      &.first {
+        top: 31%;
+      }
+
+      &.second {
+        top: 57%;
+      }
+
+      &.third {
+        top: 82%;
       }
     }
 
@@ -1011,6 +1124,10 @@ $itinerary-tab-switch-height: 48px;
     }
 
     &.car {
+      :last-child {
+        bottom: initial;
+      }
+
       .route-number {
         top: 60%;
         right: 1px;
@@ -1134,7 +1251,7 @@ $itinerary-tab-switch-height: 48px;
     }
 
     &.bicycle {
-      border-left: 6px solid #ccc;
+      border-left: 8px solid #ccc;
       border-radius: 3px;
       top: 30px;
       height: 32%;
@@ -1188,6 +1305,7 @@ $itinerary-tab-switch-height: 48px;
 
     &.walk,
     &.bicycle_walk,
+    &.car_boarding,
     &.car-park-walk {
       background-size: 100% auto;
       background-position-y: 8px;

@@ -8,7 +8,11 @@ import { configShape, planEdgeShape } from '../../util/shapes';
 import Icon from '../Icon';
 import Itinerary from './Itinerary';
 import { isBrowser } from '../../util/browser';
-import { getExtendedMode, showBikeBoardingNote } from '../../util/legUtils';
+import {
+  getExtendedMode,
+  showBikeBoardingNote,
+  showCarBoardingNote,
+} from '../../util/legUtils';
 import ItineraryListHeader from './ItineraryListHeader';
 import ItinerariesNotFound from './ItinerariesNotFound';
 import Loading from '../Loading';
@@ -29,6 +33,7 @@ function ItineraryList(
     onSelectImmediately,
     searchTime,
     bikeParkItineraryCount,
+    carDirectItineraryCount,
     showRelaxedPlanNotifier,
     showRentalVehicleNotifier,
     separatorPosition,
@@ -107,6 +112,34 @@ function ItineraryList(
           defaultMessage="Take your bike with you onboard"
           key="itinerary-summary.bikeandpublic-title"
           showBikeBoardingInfo={showBikeBoardingInfo}
+        />,
+      );
+    }
+  }
+  if (hash === streetHash.carAndVehicle) {
+    // carDirectItineraryCount tells how many itineraries in array use the direct mode (should be 1 or 0).
+    if (planEdges.length > carDirectItineraryCount) {
+      // the rest use car + public
+      const mode =
+        getExtendedMode(
+          planEdges[carDirectItineraryCount].node.legs.find(l => l.transitLeg),
+          config,
+        ) || 'ferry';
+      const legs = planEdges
+        .slice(carDirectItineraryCount)
+        .flatMap(edge => edge.node.legs);
+      const showCarBoardingInfo = legs.some(leg =>
+        showCarBoardingNote(leg, config),
+      );
+
+      summaries.splice(
+        carDirectItineraryCount,
+        0,
+        <ItineraryListHeader
+          translationId={`itinerary-summary.carAndPublic-${mode}-title`}
+          defaultMessage="Take your car with you onboard"
+          key="itinerary-summary.carandpublic-title"
+          showCarBoardingInfo={showCarBoardingInfo}
         />,
       );
     }
@@ -204,6 +237,7 @@ ItineraryList.propTypes = {
   onSelect: PropTypes.func.isRequired,
   onSelectImmediately: PropTypes.func.isRequired,
   bikeParkItineraryCount: PropTypes.number,
+  carDirectItineraryCount: PropTypes.number,
   showRelaxedPlanNotifier: PropTypes.bool,
   showRentalVehicleNotifier: PropTypes.bool,
   separatorPosition: PropTypes.number,
@@ -213,6 +247,7 @@ ItineraryList.propTypes = {
 
 ItineraryList.defaultProps = {
   bikeParkItineraryCount: 0,
+  carDirectItineraryCount: 0,
   planEdges: [],
   showRelaxedPlanNotifier: false,
   showRentalVehicleNotifier: false,

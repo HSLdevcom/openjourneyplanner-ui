@@ -324,7 +324,7 @@ export function getRentalStationsToHideOnMap(
   const objectsToHide = { vehicleRentalStations: [] };
   if (hasVehicleRentalStation) {
     objectsToHide.vehicleRentalStations = selectedItinerary?.legs
-      ?.filter(leg => leg.from?.vehicleRentalStation)
+      ?.filter(leg => leg.from.vehicleRentalStation)
       .map(station => station.from?.vehicleRentalStation.stationId);
   }
   return objectsToHide;
@@ -464,6 +464,29 @@ export function mergeBikeTransitPlans(bikeParkPlan, bikeTransitPlan) {
     ),
     bikeParkItineraryCount: n1,
     bikePublicItineraryCount: n2,
+  };
+}
+
+/**
+ * Merge the direct car plan with the car transit plan.
+ */
+export function mergeCarDirectAndTransitPlans(carDirectPlan, carTransitPlan) {
+  const carDirectPlanEdges = carDirectPlan?.edges || [];
+  let carPublicEdges = carTransitPlan?.edges || [];
+
+  // If the car direct plan has a shorter duration than a transit plan, the transit plan is filtered out.
+  if (carDirectPlanEdges.length === 1) {
+    carPublicEdges = carPublicEdges.filter(
+      itinerary =>
+        itinerary.node.duration <= carDirectPlanEdges[0].node.duration,
+    );
+  }
+
+  return {
+    searchDateTime: carTransitPlan.searchDateTime,
+    edges: [...carDirectPlanEdges, ...carPublicEdges],
+    carDirectItineraryCount: carDirectPlanEdges.length,
+    carPublicItineraryCount: carPublicEdges.length,
   };
 }
 

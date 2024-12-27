@@ -835,7 +835,28 @@ export default {
         ],
       },
     },
+    {
+      showForCarWithPublic: true,
+
+      id: 'externalCostWithCar',
+
+      content: {
+        fi: [
+          'Kulkuneuvossa mahdollisuus kuljettaa autoa. ',
+          'Tarkasta auton kuljettamisen mahdollinen maksullisuus operaattorilta.',
+        ],
+        en: [
+          'You can take your car on board. ',
+          'Check with the transport operator if an additional fee will be charged for the transportation of cars.',
+        ],
+        sv: [
+          'Du kan ta med bilen ombord. ',
+          'Kontrollera med trafikoperatören om det är avgiftsbelagt att transportera bilar.',
+        ],
+      },
+    },
   ],
   navigation: false,
   sendAnalyticsCustomEventGoals: false,
+  shortenLongTextThreshold: 10, // for route number in itinerary summary
 };

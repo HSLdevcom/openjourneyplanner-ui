@@ -965,6 +965,9 @@ const translations = {
     car: 'Car',
     'car-distance-duration': 'Drive {duration} ({distance})',
     'car-distance-no-duration': 'Drive {distance}',
+    'car-drive-from-transit-no-duration':
+      'Drive your car from the {transportMode}',
+    'car-drive-to-transit-no-duration': 'Drive your car to the {transportMode}',
     'car-park': 'Park & ride',
     'car-park-disclaimer':
       'You can conveniently combine car and public transport: leave your car at a Park & Ride and continue by train, bus, metro or tram. Car parking is free of charge and there are no time limits.',
@@ -1207,6 +1210,10 @@ const translations = {
     'itinerary-summary.bikeAndPublic-subway-title': 'Take your bike to metro',
     'itinerary-summary.bikeAndPublic-tram-title': 'Take your bike to tram',
     'itinerary-summary.bikePark-title': 'Leave your bike at a Park & Ride',
+    'itinerary-summary.car-boarding-information':
+      'You can take your car on board. Check with the transport operator if an additional fee will be charged for the transportation of cars.',
+    'itinerary-summary.carAndPublic-ferry-title': 'Drive your car to the ferry',
+    'itinerary-summary.carAndPublic-rail-title': 'Drive your car to the train',
     'itinerary-summary.interline-wait':
       'The route number ({shortName}) and destination ({destination}) will change at the {stop} stop. Waiting time at the stop is {time}. Please wait onboard.',
     'itinerary-summary.interline-wait-multiple-legs':
@@ -1647,6 +1654,8 @@ const translations = {
       'Show a combination of cycling and public transport. Duration {duration}, distance {length}',
     'street-mode-car-aria':
       'Show driving route. Duration {duration}, distance {length}',
+    'street-mode-carandvehicle-aria':
+      'Show a route that may include other modes of transport, such as car ferries. Duration {duration}, distance {length}',
     'street-mode-parkandride-aria':
       'Show park and ride route. Duration {duration}, driving distance {length}',
     'street-mode-walk-aria':
@@ -2236,6 +2245,8 @@ const translations = {
     car: 'Auto',
     'car-distance-duration': 'Autoile {duration} ({distance})',
     'car-distance-no-duration': 'Autoile {distance}',
+    'car-drive-from-transit-no-duration': 'Aja autosi {transportMode}',
+    'car-drive-to-transit-no-duration': 'Aja autosi {transportMode}',
     'car-park': 'Liityntäpysäköinti',
     'car-park-disclaimer':
       'Voit yhdistää kätevästi joukkoliikenteen ja autoilun, kun jätät autosi liityntäpysäköintiin ja jatkat matkaasi junalla, bussilla, metrolla tai ratikalla. Auton pysäköinti on useissa paikoissa maksutonta eikä siinä ole aikarajaa.',
@@ -2474,6 +2485,10 @@ const translations = {
     'itinerary-summary.bikeAndPublic-tram-title':
       'Ota pyöräsi mukaan raitiovaunuun',
     'itinerary-summary.bikePark-title': 'Jätä pyöräsi liityntäpysäköintiin',
+    'itinerary-summary.car-boarding-information':
+      'Kulkuneuvossa mahdollisuus kuljettaa autoa. Tarkasta auton kuljettamisen mahdollinen maksullisuus operaattorilta.',
+    'itinerary-summary.carAndPublic-ferry-title': 'Aja autosi lauttaan',
+    'itinerary-summary.carAndPublic-rail-title': 'Aja autosi junaan',
     'itinerary-summary.interline-wait':
       'Linjatunnus ({shortName}) ja määränpää ({destination}) vaihtuvat pysäkillä {stop}. Matka jatkuu {time} odotuksen jälkeen. Odota kulkuneuvossa.',
     'itinerary-summary.interline-wait-multiple-legs':
@@ -2911,6 +2926,8 @@ const translations = {
       'Näytä pyöräilyn ja julkisen liikenteen yhdistelmä. Kesto {duration}, pyöräilyn pituus {length}',
     'street-mode-car-aria':
       'Näytä ajoreitti. Kesto {duration}, pituus {length}',
+    'street-mode-carandvehicle-aria':
+      'Näytä ajoreitti, joka voi sisältää muita kulkuvälineitä kuten esimerkiksi autolauttoja. Kesto {duration}, pituus {length}',
     'street-mode-parkandride-aria':
       'Näytä liityntäpysäköintireitti. Kesto {duration}, autoilun pituus {length}',
     'street-mode-walk-aria':
@@ -5152,6 +5169,8 @@ const translations = {
     car: 'Bil',
     'car-distance-duration': 'Kör {duration} ({distance})',
     'car-distance-no-duration': 'Kör {distance}',
+    'car-drive-from-transit-no-duration': 'Kör din bil av {transportMode}',
+    'car-drive-to-transit-no-duration': 'Kör din bil ombord på {transportMode}',
     'car-park': 'Infartsparkering',
     'car-park-disclaimer':
       'Du kan enkelt kombinera kollektivtrafiken med bilkörning, när du lämnar din bil i anslutningsparkering och fortsätter din resa med tåg, buss, metro eller spårvagn. Parkeringen är gratis och den har inte en begränsad parkeringstid.',
@@ -5392,6 +5411,11 @@ const translations = {
     'itinerary-summary.bikeAndPublic-tram-title': 'Ta cykeln med på spårvagnen',
     'itinerary-summary.bikePark-title':
       'Lämna din cykel till anslutningsparkeringen',
+    'itinerary-summary.car-boarding-information':
+      'Du kan ta med bilen ombord. Kontrollera med trafikoperatören om det är avgiftsbelagt att transportera bilar.',
+    'itinerary-summary.carAndPublic-ferry-title':
+      'Kör din bil ombord på färjan',
+    'itinerary-summary.carAndPublic-rail-title': 'Kör din bil ombord på tåget',
     'itinerary-summary.interline-wait':
       'Linjenumret ({shortName}) och destinationen ({destination}) ändras vid hållplats {stop}. Resan fortsätter om {time}. Vänta ombord på bussen.',
     'itinerary-summary.interline-wait-multiple-legs':
@@ -5831,6 +5855,8 @@ const translations = {
     'street-mode-bikeandvehicle-aria':
       'Visa kombinationen av cykling och kollektivtrafik. Tid {duration}, längd {length}',
     'street-mode-car-aria': 'Visa bilrutt. Tid {duration}, längd {length}',
+    'street-mode-carandvehicle-aria':
+      'Visa en rutt som kan innehålla andra trafikmedel, såsom bilfärjor. Varaktighet {duration}, längd {length}',
     'street-mode-parkandride-aria':
       'Visa anslutningsparkeringrutt. Tid {duration}, längd {length}',
     'street-mode-walk-aria':

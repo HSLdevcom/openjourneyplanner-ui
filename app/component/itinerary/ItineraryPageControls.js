@@ -76,6 +76,7 @@ class ItineraryPageControls extends React.Component {
             iconClassName="arrow-icon"
             fallback={
               params.hash === streetHash.bikeAndVehicle ||
+              params.hash === streetHash.carAndVehicle ||
               params.hash === streetHash.parkAndRide
                 ? 'pop'
                 : undefined

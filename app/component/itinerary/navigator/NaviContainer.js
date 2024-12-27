@@ -9,9 +9,10 @@ import NaviBottom from './NaviBottom';
 import NaviCardContainer from './NaviCardContainer';
 import { useRealtimeLegs } from './hooks/useRealtimeLegs';
 import NavigatorOutroModal from './navigatoroutro/NavigatorOutroModal';
-import { DESTINATION_RADIUS } from './NaviUtils';
+import { DESTINATION_RADIUS, summaryString } from './NaviUtils';
 
 const ADDITIONAL_ARRIVAL_TIME = 60000; // 60 seconds in ms
+const LEGLOG = true;
 
 function NaviContainer(
   {
@@ -70,6 +71,11 @@ function NaviContainer(
 
   const isJourneyCompleted = isDestinationReached || isPastExpectedArrival;
 
+  if (LEGLOG) {
+    // eslint-disable-next-line
+    console.log(...summaryString(realTimeLegs, time, previousLeg, currentLeg, nextLeg));
+  }
+
   return (
     <>
       <NaviCardContainer
@@ -86,6 +92,7 @@ function NaviContainer(
         firstLeg={firstLeg}
         lastLeg={lastLeg}
         isJourneyCompleted={isJourneyCompleted}
+        previousLeg={previousLeg}
       />
       {isJourneyCompleted && isNavigatorIntroDismissed && (
         <NavigatorOutroModal

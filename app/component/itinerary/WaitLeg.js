@@ -12,7 +12,7 @@ import { legTimeStr } from '../../util/legUtils';
 
 /* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
 function WaitLeg(
-  { children, leg, start, waitTime, focusAction, index },
+  { children, leg, start, waitTime, focusAction, index, icon },
   { config },
 ) {
   const modeClassName = 'wait';
@@ -32,6 +32,7 @@ function WaitLeg(
       <ItineraryCircleLineWithIcon
         modeClassName={modeClassName}
         index={index}
+        icon={icon}
       />
       <div className="small-9 columns itinerary-instruction-column wait">
         <span className="sr-only">
@@ -62,15 +63,13 @@ function WaitLeg(
             focusAction={focusAction}
           />
         </div>
-        <div className="itinerary-leg-action">
-          <div className="itinerary-leg-action-content">
-            <FormattedMessage
-              id="wait-amount-of-time"
-              values={{ duration: `(${durationToString(waitTime)})` }}
-              defaultMessage="Wait {duration}"
-            />
-            <ItineraryMapAction target="" focusAction={focusAction} />
-          </div>
+        <div className="itinerary-leg-action itinerary-leg-action-content">
+          <FormattedMessage
+            id="wait-amount-of-time"
+            values={{ duration: `(${durationToString(waitTime)})` }}
+            defaultMessage="Wait {duration}"
+          />
+          <ItineraryMapAction target="" focusAction={focusAction} />
         </div>
       </div>
     </div>
@@ -84,10 +83,12 @@ WaitLeg.propTypes = {
   children: PropTypes.node,
   waitTime: PropTypes.number.isRequired,
   leg: legShape.isRequired,
+  icon: PropTypes.string,
 };
 
 WaitLeg.defaultProps = {
   children: undefined,
+  icon: undefined,
 };
 
 WaitLeg.contextTypes = {

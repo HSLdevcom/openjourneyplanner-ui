@@ -129,11 +129,9 @@ function ViaLeg(props, { config, intl }) {
             focusAction={props.focusAction}
           />
         </div>
-        <div className="itinerary-leg-action">
-          <div className="itinerary-leg-action-content">
-            {getDescription(props.leg.mode, distance, duration)}
-            <ItineraryMapAction target="" focusAction={props.focusToLeg} />
-          </div>
+        <div className="itinerary-leg-action itinerary-leg-action-content">
+          {getDescription(props.leg.mode, distance, duration)}
+          <ItineraryMapAction target="" focusAction={props.focusToLeg} />
         </div>
       </div>
     </div>

@@ -32,6 +32,7 @@ function ItineraryPageMap(
     showDurationBubble,
     itinerary,
     showBackButton,
+    isLocationPopupEnabled,
     ...rest
   },
   { match, router, executeAction, config },
@@ -99,13 +100,18 @@ function ItineraryPageMap(
     leafletObjs.push(<LocationMarker key={`via_${i}`} position={via} />);
   });
 
-  // max 5 viapoints
-  const locationPopup =
-    config.viaPointsEnabled && viaPoints.length < 5
-      ? 'all'
-      : 'origindestination';
-  const onSelectLocation = (item, id) =>
-    onLocationPopup(item, id, router, match, executeAction);
+  let locationPopup = 'none';
+  let onSelectLocation;
+
+  if (isLocationPopupEnabled) {
+    // max 5 viapoints
+    locationPopup =
+      config.viaPointsEnabled && viaPoints.length < 5
+        ? 'all'
+        : 'origindestination';
+    onSelectLocation = (item, id) =>
+      onLocationPopup(item, id, router, match, executeAction);
+  }
 
   return (
     <MapWithTracking
@@ -149,6 +155,7 @@ ItineraryPageMap.propTypes = {
   showDurationBubble: PropTypes.bool,
   itinerary: itineraryShape,
   showBackButton: PropTypes.bool,
+  isLocationPopupEnabled: PropTypes.bool,
 };
 
 ItineraryPageMap.defaultProps = {
@@ -158,6 +165,7 @@ ItineraryPageMap.defaultProps = {
   showDurationBubble: false,
   itinerary: undefined,
   showBackButton: true,
+  isLocationPopupEnabled: false,
 };
 
 ItineraryPageMap.contextTypes = {

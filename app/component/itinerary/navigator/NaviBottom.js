@@ -11,7 +11,6 @@ export default function NaviBottom(
   const remainingDuration = Math.ceil((arrival - time) / 60000); // ms to minutes
   return (
     <div className="navi-bottom-sheet">
-      <div className="divider" />
       <div className="navi-bottom-controls">
         <button
           type="button"

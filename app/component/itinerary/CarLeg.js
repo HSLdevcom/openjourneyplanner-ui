@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import { FormattedMessage, intlShape } from 'react-intl';
+import cx from 'classnames';
 import { legShape, configShape } from '../../util/shapes';
 import Icon from '../Icon';
 import ItineraryMapAction from './ItineraryMapAction';
@@ -8,6 +9,7 @@ import { displayDistance } from '../../util/geo-utils';
 import { durationToString } from '../../util/timeUtils';
 import ItineraryCircleLineWithIcon from './ItineraryCircleLineWithIcon';
 import { legTimeStr, legDestination } from '../../util/legUtils';
+import ItineraryCircleLineLong from './ItineraryCircleLineLong';
 
 export default function CarLeg(props, { config, intl }) {
   const distance = displayDistance(
@@ -18,6 +20,20 @@ export default function CarLeg(props, { config, intl }) {
   const duration = durationToString(props.leg.duration * 1000);
   const firstLegClassName = props.index === 0 ? 'first' : '';
   const modeClassName = 'car';
+
+  const circleLine = props.carBoardingLeg ? (
+    <ItineraryCircleLineLong
+      index={props.index}
+      modeClassName={modeClassName}
+      boardingLeg={props.carBoardingLeg}
+    />
+  ) : (
+    <ItineraryCircleLineWithIcon
+      index={props.index}
+      modeClassName={modeClassName}
+      icon="icon-icon_car-withoutBox"
+    />
+  );
 
   const [address, place] = props.leg.from.name.split(/, (.+)/); // Splits the name-string to two parts from the first occurance of ', '
 
@@ -42,11 +58,7 @@ export default function CarLeg(props, { config, intl }) {
           {legTimeStr(props.leg.start)}
         </div>
       </div>
-      <ItineraryCircleLineWithIcon
-        index={props.index}
-        modeClassName={modeClassName}
-        icon="icon-icon_car-withoutBox"
-      />
+      {circleLine}
       <div
         className={`small-9 columns itinerary-instruction-column ${firstLegClassName} ${props.leg.mode.toLowerCase()}`}
       >
@@ -70,23 +82,69 @@ export default function CarLeg(props, { config, intl }) {
             focusAction={props.focusAction}
           />
         </div>
-        <div className="itinerary-leg-action">
-          <div className="itinerary-leg-action-content">
+        {props.carBoardingLeg?.from.stop && (
+          <div
+            className={cx(
+              'itinerary-leg-action',
+              'car',
+              'itinerary-leg-action-content',
+            )}
+          >
             <FormattedMessage
-              id={
-                config.hideCarSuggestionDuration
-                  ? 'car-distance-no-duration'
-                  : 'car-distance-duration'
-              }
-              values={{ distance, duration }}
-              defaultMessage="Drive {distance} ({duration})}"
+              id="car-drive-from-transit-no-duration"
+              values={{
+                transportMode: (
+                  <FormattedMessage
+                    id={`from-${props.carBoardingLeg.from.stop.vehicleMode.toLowerCase()}`}
+                  />
+                ),
+              }}
             />
             <ItineraryMapAction
               target={props.leg.from.name || ''}
-              focusAction={props.focusToLeg}
+              focusAction={props.focusAction}
             />
           </div>
+        )}
+        <div className="itinerary-leg-action itinerary-leg-action-content">
+          <FormattedMessage
+            id={
+              config.hideCarSuggestionDuration
+                ? 'car-distance-no-duration'
+                : 'car-distance-duration'
+            }
+            values={{ distance, duration }}
+            defaultMessage="Drive {distance} ({duration})}"
+          />
+          <ItineraryMapAction
+            target={props.leg.from.name || ''}
+            focusAction={props.focusToLeg}
+          />
         </div>
+        {props.carBoardingLeg?.to.stop && (
+          <div
+            className={cx(
+              'itinerary-leg-action',
+              'car',
+              'itinerary-leg-action-content',
+            )}
+          >
+            <FormattedMessage
+              id="car-drive-to-transit-no-duration"
+              values={{
+                transportMode: (
+                  <FormattedMessage
+                    id={`to-${props.carBoardingLeg.to.stop?.vehicleMode.toLowerCase()}`}
+                  />
+                ),
+              }}
+            />
+            <ItineraryMapAction
+              target={props.leg.from.name || ''}
+              focusAction={props.focusAction}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -98,9 +156,10 @@ CarLeg.propTypes = {
   focusAction: PropTypes.func.isRequired,
   focusToLeg: PropTypes.func.isRequired,
   children: PropTypes.node,
+  carBoardingLeg: legShape,
 };
 
-CarLeg.defaultProps = { children: undefined };
+CarLeg.defaultProps = { children: undefined, carBoardingLeg: undefined };
 
 CarLeg.contextTypes = {
   config: configShape.isRequired,

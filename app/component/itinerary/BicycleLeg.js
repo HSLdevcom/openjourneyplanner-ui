@@ -139,11 +139,12 @@ export default function BicycleLeg(
       />
     );
   } else if (bicycleWalkLeg) {
-    const modeClassNames = bicycleWalkLeg.to?.stop
-      ? [modeClassName, bicycleWalkLeg.mode.toLowerCase()]
-      : [bicycleWalkLeg.mode.toLowerCase(), modeClassName];
     circleLine = (
-      <ItineraryCircleLineLong index={index} modeClassNames={modeClassNames} />
+      <ItineraryCircleLineLong
+        index={index}
+        modeClassName={modeClassName}
+        boardingLeg={bicycleWalkLeg}
+      />
     );
   } else if (mode === 'BICYCLE') {
     circleLine = (
@@ -315,42 +316,46 @@ export default function BicycleLeg(
           </div>
         )}
         {bicycleWalkLeg?.from.stop && (
-          <div className={cx('itinerary-leg-action', 'bicycle')}>
-            <div className="itinerary-leg-action-content">
-              {bicycleWalkLeg.distance === -1 ? (
-                <FormattedMessage
-                  id="bicycle-walk-from-transit-no-duration"
-                  values={{
-                    transportMode: (
-                      <FormattedMessage
-                        id={`from-${bicycleWalkLeg.from.stop.vehicleMode.toLowerCase()}`}
-                      />
-                    ),
-                  }}
-                />
-              ) : (
-                <FormattedMessage
-                  id="bicycle-walk-from-transit"
-                  values={{
-                    transportMode: (
-                      <FormattedMessage
-                        id={`from-${bicycleWalkLeg.from.stop.vehicleMode.toLowerCase()}`}
-                      />
-                    ),
-                    duration: durationToString(bicycleWalkLeg.duration * 1000),
-                    distance: displayDistance(
-                      parseInt(bicycleWalkLeg.distance, 10),
-                      config,
-                      intl.formatNumber,
-                    ),
-                  }}
-                />
-              )}
-              <ItineraryMapAction
-                target={leg.from.name || ''}
-                focusAction={focusAction}
+          <div
+            className={cx(
+              'itinerary-leg-action',
+              'bicycle',
+              'itinerary-leg-action-content',
+            )}
+          >
+            {bicycleWalkLeg.distance === -1 ? (
+              <FormattedMessage
+                id="bicycle-walk-from-transit-no-duration"
+                values={{
+                  transportMode: (
+                    <FormattedMessage
+                      id={`from-${bicycleWalkLeg.from.stop.vehicleMode.toLowerCase()}`}
+                    />
+                  ),
+                }}
               />
-            </div>
+            ) : (
+              <FormattedMessage
+                id="bicycle-walk-from-transit"
+                values={{
+                  transportMode: (
+                    <FormattedMessage
+                      id={`from-${bicycleWalkLeg.from.stop.vehicleMode.toLowerCase()}`}
+                    />
+                  ),
+                  duration: durationToString(bicycleWalkLeg.duration * 1000),
+                  distance: displayDistance(
+                    parseInt(bicycleWalkLeg.distance, 10),
+                    config,
+                    intl.formatNumber,
+                  ),
+                }}
+              />
+            )}
+            <ItineraryMapAction
+              target={leg.from.name || ''}
+              focusAction={focusAction}
+            />
           </div>
         )}
         {isScooter && !scooterSettingsOn && (
@@ -401,53 +406,61 @@ export default function BicycleLeg(
             </div>
           </div>
         )}
-        <div className={cx('itinerary-leg-action', 'bike')}>
-          <div className="itinerary-leg-action-content">
-            {stopsDescription}
-            <ItineraryMapAction
-              target=""
-              ariaLabelId="itinerary-summary-row.clickable-area-description"
-              focusAction={focusToLeg}
-            />
-          </div>
+        <div
+          className={cx(
+            'itinerary-leg-action',
+            'bike',
+            'itinerary-leg-action-content',
+          )}
+        >
+          {stopsDescription}
+          <ItineraryMapAction
+            target=""
+            ariaLabelId="itinerary-summary-row.clickable-area-description"
+            focusAction={focusToLeg}
+          />
         </div>
         {bicycleWalkLeg && bicycleWalkLeg?.to.stop && (
-          <div className={cx('itinerary-leg-action', 'bicycle')}>
-            <div className="itinerary-leg-action-content">
-              {bicycleWalkLeg.distance === -1 ? (
-                <FormattedMessage
-                  id="bicycle-walk-to-transit-no-duration"
-                  values={{
-                    transportMode: (
-                      <FormattedMessage
-                        id={`to-${bicycleWalkLeg.to.stop?.vehicleMode.toLowerCase()}`}
-                      />
-                    ),
-                  }}
-                />
-              ) : (
-                <FormattedMessage
-                  id="bicycle-walk-to-transit"
-                  values={{
-                    transportMode: (
-                      <FormattedMessage
-                        id={`to-${bicycleWalkLeg.to.stop.vehicleMode.toLowerCase()}`}
-                      />
-                    ),
-                    duration: durationToString(bicycleWalkLeg.duration * 1000),
-                    distance: displayDistance(
-                      parseInt(bicycleWalkLeg.distance, 10),
-                      config,
-                      intl.formatNumber,
-                    ),
-                  }}
-                />
-              )}
-              <ItineraryMapAction
-                target={leg.from.name || ''}
-                focusAction={focusAction}
+          <div
+            className={cx(
+              'itinerary-leg-action',
+              'bicycle',
+              'itinerary-leg-action-content',
+            )}
+          >
+            {bicycleWalkLeg.distance === -1 ? (
+              <FormattedMessage
+                id="bicycle-walk-to-transit-no-duration"
+                values={{
+                  transportMode: (
+                    <FormattedMessage
+                      id={`to-${bicycleWalkLeg.to.stop?.vehicleMode.toLowerCase()}`}
+                    />
+                  ),
+                }}
               />
-            </div>
+            ) : (
+              <FormattedMessage
+                id="bicycle-walk-to-transit"
+                values={{
+                  transportMode: (
+                    <FormattedMessage
+                      id={`to-${bicycleWalkLeg.to.stop.vehicleMode.toLowerCase()}`}
+                    />
+                  ),
+                  duration: durationToString(bicycleWalkLeg.duration * 1000),
+                  distance: displayDistance(
+                    parseInt(bicycleWalkLeg.distance, 10),
+                    config,
+                    intl.formatNumber,
+                  ),
+                }}
+              />
+            )}
+            <ItineraryMapAction
+              target={leg.from.name || ''}
+              focusAction={focusAction}
+            />
           </div>
         )}
         {isScooter && (

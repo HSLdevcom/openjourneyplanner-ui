@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import cx from 'classnames';
 import Icon from '../Icon';
 import RouteNumber from '../RouteNumber';
+import { legShape } from '../../util/shapes';
 
 const ItineraryCircleLineLong = props => {
   const [imgUrl, setImgUrl] = useState('');
@@ -32,14 +33,39 @@ const ItineraryCircleLineLong = props => {
     }
     return null;
   };
+
+  let firstModeClassName;
+  let secondModeClassName;
+  let positionRelativeToTransit;
+  if (
+    props.boardingLeg.to.stop !== null &&
+    props.boardingLeg.from.stop !== null
+  ) {
+    positionRelativeToTransit = 'between-transit';
+    firstModeClassName = props.boardingLeg.mode.toLowerCase();
+    secondModeClassName = props.modeClassName.toLowerCase();
+  } else if (props.boardingLeg.to.stop !== null) {
+    positionRelativeToTransit = 'before-transit';
+    firstModeClassName = props.modeClassName.toLowerCase();
+    secondModeClassName = props.boardingLeg.mode.toLowerCase();
+  } else {
+    // props.boardingLeg.from.stop !== undefined
+    positionRelativeToTransit = 'after-transit';
+    firstModeClassName = props.boardingLeg.mode.toLowerCase();
+    secondModeClassName = props.modeClassName.toLowerCase();
+  }
+
   const topMarker = getMarker(true);
   const bottomMarker = getMarker(false);
   const legBeforeLineStyle = { color: props.color };
+  const carBoardingRouteNumber = (
+    <RouteNumber mode="car" icon="icon-icon_car-withoutBox" vertical />
+  );
   // eslint-disable-next-line global-require
   legBeforeLineStyle.backgroundImage = imgUrl;
   return (
     <div
-      className={cx('leg-before long bicycle', {
+      className={cx('leg-before long', props.modeClassName, {
         first: props.index === 0,
       })}
       aria-hidden="true"
@@ -47,27 +73,81 @@ const ItineraryCircleLineLong = props => {
       {topMarker}
       <div
         style={legBeforeLineStyle}
-        className={cx('leg-before-line top', props.modeClassNames[0])}
+        className={cx(
+          'leg-before-line top',
+          positionRelativeToTransit,
+          firstModeClassName,
+        )}
       />
-      <div className="itinerary-route-number first">
-        <RouteNumber mode={props.modeClassNames[0]} vertical />
+      <div
+        className={cx(
+          'itinerary-route-number',
+          'first',
+          positionRelativeToTransit,
+        )}
+      >
+        {props.modeClassName === 'bicycle' ? (
+          <RouteNumber mode={firstModeClassName} vertical />
+        ) : (
+          positionRelativeToTransit === 'before-transit' &&
+          carBoardingRouteNumber
+        )}
       </div>
-
       <div
         style={legBeforeLineStyle}
         className={cx(
           'leg-before-line middle',
-          props.modeClassNames[0] === 'bicycle'
-            ? props.modeClassNames[0]
-            : props.modeClassNames[1],
+          positionRelativeToTransit,
+          props.modeClassName,
         )}
       />
-      <div className="itinerary-route-number second">
-        <RouteNumber mode={props.modeClassNames[1]} vertical />
+      <div
+        className={cx(
+          'itinerary-route-number',
+          'second',
+          positionRelativeToTransit,
+        )}
+      >
+        {props.modeClassName === 'bicycle' ? (
+          <RouteNumber mode={secondModeClassName} vertical />
+        ) : (
+          (positionRelativeToTransit === 'after-transit' ||
+            positionRelativeToTransit === 'between-transit') &&
+          carBoardingRouteNumber
+        )}
       </div>
+      {positionRelativeToTransit === 'between-transit' && (
+        <div
+          style={legBeforeLineStyle}
+          className={cx(
+            'leg-before-line second-middle',
+            positionRelativeToTransit,
+            props.modeClassName,
+          )}
+        />
+      )}
+      {positionRelativeToTransit === 'between-transit' &&
+        props.modeClassName === 'bicycle' && (
+          <div
+            className={cx(
+              'itinerary-route-number',
+              'third',
+              positionRelativeToTransit,
+            )}
+          >
+            <RouteNumber mode={firstModeClassName} vertical />
+          </div>
+        )}
+
       <div
         style={legBeforeLineStyle}
-        className={cx('leg-before-line bottom', props.modeClassNames[1])}
+        className={cx(
+          'leg-before-line bottom',
+          positionRelativeToTransit,
+          positionRelativeToTransit === 'between-transit'
+            ? firstModeClassName
+            : secondModeClassName,
+        )}
       />
       {props.renderBottomMarker && bottomMarker}
     </div>
@@ -77,8 +157,9 @@ const ItineraryCircleLineLong = props => {
 ItineraryCircleLineLong.propTypes = {
   index: PropTypes.number.isRequired,
   color: PropTypes.string,
-  modeClassNames: PropTypes.arrayOf(PropTypes.string).isRequired,
   renderBottomMarker: PropTypes.bool,
+  modeClassName: PropTypes.string.isRequired,
+  boardingLeg: legShape.isRequired,
 };
 
 ItineraryCircleLineLong.defaultProps = {

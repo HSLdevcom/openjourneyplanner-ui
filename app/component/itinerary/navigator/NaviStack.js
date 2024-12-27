@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import cx from 'classnames';
 import NaviMessage from './NaviMessage';
 
-const NaviStack = ({ messages, handleRemove, topPosition }) => {
+const NaviStack = ({ messages, handleRemove }) => {
   return (
-    <div className={cx('info-stack', 'slide-in')} style={{ top: topPosition }}>
+    <div className={cx('info-stack', 'slide-in')}>
       {messages.map((notification, index) => (
         <NaviMessage
           key={notification.id}
@@ -29,7 +29,6 @@ NaviStack.propTypes = {
     }),
   ).isRequired,
   handleRemove: PropTypes.func.isRequired,
-  topPosition: PropTypes.number.isRequired,
 };
 
 export default NaviStack;

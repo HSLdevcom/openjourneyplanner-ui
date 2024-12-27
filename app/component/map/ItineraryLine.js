@@ -7,8 +7,9 @@ import { isBrowser } from '../../util/browser';
 import { getMiddleOf } from '../../util/geo-utils';
 import {
   getInterliningLegs,
-  getLegText,
+  getRouteText,
   isCallAgencyLeg,
+  LegMode,
 } from '../../util/legUtils';
 import { getRouteMode } from '../../util/modeUtils';
 import { configShape, legShape } from '../../util/shapes';
@@ -62,7 +63,7 @@ class ItineraryLine extends React.Component {
     const transitLegs = [];
 
     this.props.legs.forEach((leg, i) => {
-      if (!leg || leg.mode === 'WAIT') {
+      if (!leg || leg.mode === LegMode.Wait) {
         return;
       }
       const nextLeg = this.props.legs[i + 1];
@@ -175,7 +176,7 @@ class ItineraryLine extends React.Component {
             />,
           );
         } else if (leg.transitLeg) {
-          const name = getLegText(
+          const name = getRouteText(
             leg.route,
             this.context.config,
             interliningWithRoute,

@@ -1,3 +1,5 @@
+$fixed-width-padding: 16px;
+
 .navi-start-container {
   padding: 0 10px;
 
@@ -48,12 +50,19 @@
   &.slide-out {
     animation: slideUpToTop 3s ease-out forwards;
   }
+
+  &.hide-card {
+    animation: hideTopCard 2s ease-out forwards;
+    pointer-events: none;
+  }
+
+  &.show-card {
+    animation: slideDownFromTop 2s ease-out forwards;
+  }
 }
 
 .navitop {
-  margin-bottom: 5px;
-  width: 92%;
-  margin-left: 8px;
+  margin: 0 var(--space-s) 5px var(--space-s);
   border-radius: 8px;
   min-height: 70px;
   color: black;
@@ -62,6 +71,7 @@
   align-items: center;
   letter-spacing: -0.3px;
   box-shadow: 0 2px 4px 0 rgba(51, 51, 51, 0.2);
+  width: calc(100vw - #{$fixed-width-padding});
 
   &.expanded {
     max-height: unset;
@@ -120,10 +130,9 @@
 
         .wait-leg {
           display: flex;
-          align-items: center;
           margin-top: 3px;
           flex-direction: column;
-          align-self: flex-start;
+          align-items: flex-start;
 
           .route-info {
             display: flex;
@@ -365,9 +374,10 @@
 .info-stack {
   position: fixed;
   height: 69px;
-  margin-left: 8px;
-  width: 90%;
   letter-spacing: -0.3px;
+  width: calc(100% - #{$fixed-width-padding});
+  margin-right: 8px;
+  margin-left: 8px;
 
   div:first-child {
     margin-top: 0;
@@ -418,6 +428,8 @@
       .navi-alert-content {
         width: 100%;
         margin: 0 8px;
+        display: flex;
+        flex-direction: column;
       }
     }
 
@@ -428,6 +440,7 @@
         display: flex;
         flex-direction: column;
         margin: 0 8px;
+        width: 100%;
 
         span:first-child {
           font-weight: $font-weight-medium;
@@ -443,24 +456,24 @@
           font-size: $font-size-small;
         }
       }
+    }
 
-      .alt-btn {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
+    .alt-btn {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
 
-        .show-options {
-          padding: var(--space-s, 16px) var(--space-xs, 8px)
-            var(--space-s, 16px) var(--space-s, 16px);
-          background: #0074bf;
-          color: #fff;
-          border-radius: 999px; // var(--radius-radius-medium, 8px);
-          margin-top: var(--space-xxs);
+      .show-options {
+        padding: var(--space-s, 16px) var(--space-xs, 8px) var(--space-s, 16px)
+          var(--space-s, 16px);
+        background: #0074bf;
+        color: #fff;
+        border-radius: 999px; // var(--radius-radius-medium, 8px);
+        margin-top: var(--space-xxs);
 
-          /* box-shadow-card-s-strong */
-          box-shadow: 0 2px 4px 0
-            var(--color-shadow-strong, rgba(51, 51, 51, 0.2));
-        }
+        /* box-shadow-card-s-strong */
+        box-shadow: 0 2px 4px 0
+          var(--color-shadow-strong, rgba(51, 51, 51, 0.2));
       }
     }
 
@@ -598,6 +611,16 @@
 
   to {
     transform: translateY(0);
+  }
+}
+
+@keyframes hideTopCard {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-100%);
   }
 }
 

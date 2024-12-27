@@ -225,6 +225,20 @@
 
   .legs-container {
     width: 100%;
+    position: relative;
+
+    .overflow-icon-container {
+      position: absolute;
+      background: $white;
+      top: 0;
+      right: 0;
+      padding-top: 0;
+      margin-top: 7px;
+
+      .overflow-icon {
+        font-size: 24px;
+      }
+    }
   }
 
   .itinerary-legs {
@@ -479,6 +493,13 @@
           padding-bottom: 4px;
         }
 
+        .itinerary-icon_with-car {
+          color: white;
+          height: 20px;
+          width: 20px;
+          padding-bottom: 4px;
+        }
+
         .special-icon {
           height: 1.5rem;
         }
@@ -665,6 +686,7 @@
     .itinerary-legs {
       padding-top: 0;
       margin-top: 7px;
+      overflow-x: clip;
 
       .vehicle-number {
         font-size: $font-size-small;
@@ -746,6 +768,24 @@
 
 .mobile .itinerary-legs {
   padding-top: 7px;
+  overflow-x: clip;
+}
+
+.mobile .legs-container {
+  position: relative;
+
+  .overflow-icon-container {
+    position: absolute;
+    background: $white;
+    top: 0;
+    right: 0;
+    padding-top: 0;
+    margin-top: 7px;
+
+    .overflow-icon {
+      font-size: 24px;
+    }
+  }
 }
 
 .mobile {

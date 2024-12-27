@@ -15,6 +15,7 @@ export default function AlternativeItineraryBar(
     bikePlan,
     bikePublicPlan,
     carPlan,
+    carPublicPlan,
     parkRidePlan,
     loading,
   },
@@ -69,6 +70,14 @@ export default function AlternativeItineraryBar(
               onClick={selectStreetMode}
             />
           )}
+          {carPublicPlan?.edges?.length > 0 && (
+            <StreetModeSelectorButton
+              icon="icon-icon_car-withoutBox"
+              name={streetHash.carAndVehicle}
+              plan={carPublicPlan}
+              onClick={selectStreetMode}
+            />
+          )}
           {config.emphasizeOneWayJourney && (
             <div style={{ alignSelf: 'center' }}>
               <FormattedMessage
@@ -90,6 +99,7 @@ AlternativeItineraryBar.propTypes = {
   bikePublicPlan: planShape,
   parkRidePlan: planShape,
   carPlan: planShape,
+  carPublicPlan: planShape,
   weatherData: PropTypes.shape({
     temperature: PropTypes.number,
     windSpeed: PropTypes.number,
@@ -105,6 +115,7 @@ AlternativeItineraryBar.defaultProps = {
   bikePublicPlan: undefined,
   parkRidePlan: undefined,
   carPlan: undefined,
+  carPublicPlan: undefined,
   loading: undefined,
 };
 

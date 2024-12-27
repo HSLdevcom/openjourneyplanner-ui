@@ -68,12 +68,12 @@ function WalkLeg(
   }
 
   const destinationLabel =
-    leg.to?.name?.toLowerCase() === 'scooter'
+    leg.to.name?.toLowerCase() === 'scooter'
       ? intl.formatMessage({
           id: 'e-scooter',
           defaultMessage: 'scooter',
         })
-      : leg.to?.name;
+      : leg.to.name;
 
   return (
     <div key={index} className="row itinerary-row">
@@ -223,26 +223,20 @@ function WalkLeg(
           </div>
         )}
 
-        <div className="itinerary-leg-action">
-          <div className="itinerary-leg-action-content">
-            <FormattedMessage
-              id="walk-distance-duration"
-              values={{
-                distance: config.emphasizeDistance ? (
-                  <b>{distance}</b>
-                ) : (
-                  distance
-                ),
-                duration,
-              }}
-              defaultMessage="Walk {distance} ({duration})"
-            />
-            <ItineraryMapAction
-              target=""
-              ariaLabelId="itinerary-summary-row.clickable-area-description"
-              focusAction={focusToLeg}
-            />
-          </div>
+        <div className="itinerary-leg-action itinerary-leg-action-content">
+          <FormattedMessage
+            id="walk-distance-duration"
+            values={{
+              distance: config.emphasizeDistance ? <b>{distance}</b> : distance,
+              duration,
+            }}
+            defaultMessage="Walk {distance} ({duration})"
+          />
+          <ItineraryMapAction
+            target=""
+            ariaLabelId="itinerary-summary-row.clickable-area-description"
+            focusAction={focusToLeg}
+          />
         </div>
       </div>
     </div>

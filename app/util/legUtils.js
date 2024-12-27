@@ -1,7 +1,48 @@
 import cloneDeep from 'lodash/cloneDeep';
 import get from 'lodash/get';
-import { BIKEAVL_UNKNOWN } from './vehicleRentalUtils';
 import { getRouteMode } from './modeUtils';
+import { BIKEAVL_UNKNOWN } from './vehicleRentalUtils';
+
+/**
+ * Gets a (nested) property value from an object
+ *
+ * @param {Object.<string, any>} obj object with properties i.e. { foo: 'bar', baz: {qux: 'quux'} }
+ * @param {string} propertyString string representation of object property i.e. foo, baz.qux
+ * @returns {Object}
+ */
+function getNestedValue(obj, propertyString) {
+  return propertyString.split('.').reduce((acc, part) => acc && acc[part], obj);
+}
+
+/**
+ * Compares if given legs share any of the given properties.
+ * Can be used to check if two separate leg objects are identical
+ * Returns true if both legs are null|undefined
+ *
+ * @param {Object.<string, any>|undefined} leg1
+ * @param {Object.<string, any>|undefined} leg2
+ * @param {string[]} properties list of object fields to compare i.e. ['foo', 'bar.baz']
+ * @returns {boolean}
+ */
+export function isAnyLegPropertyIdentical(leg1, leg2, properties) {
+  if (leg1 === leg2) {
+    return true;
+  }
+
+  if (!leg1 || !leg2) {
+    return false;
+  }
+
+  for (let i = 0; i < properties.length; i++) {
+    const property = properties[i];
+    const val1 = getNestedValue(leg1, property);
+    const val2 = getNestedValue(leg2, property);
+    if (val1 && val2 && val1 === val2) {
+      return true;
+    }
+  }
+  return false;
+}
 
 /**
  * Get time as  milliseconds since the Unix Epoch
@@ -81,6 +122,7 @@ export const LegMode = {
   Walk: 'WALK',
   Car: 'CAR',
   Rail: 'RAIL',
+  Wait: 'WAIT',
 };
 
 /**
@@ -144,7 +186,7 @@ function continueWithBicycle(leg1, leg2) {
   return isBicycle1 && isBicycle2 && !leg1.to.vehicleParking;
 }
 
-export function getLegText(route, config, interliningWithRoute) {
+export function getRouteText(route, config, interliningWithRoute) {
   const showAgency = get(config, 'agency.show', false);
   if (interliningWithRoute && interliningWithRoute !== route.shortName) {
     return `${route.shortName} / ${interliningWithRoute}`;
@@ -679,7 +721,47 @@ export function getExtendedMode(leg, config) {
 }
 
 /**
- * Determines whether to show a notification for a bike with a public transit
+ * Creates a boarding leg when a car or bike boards/alights a vehicle if certain criteria are met.
+ */
+export function getBoardingLeg(
+  nextLeg,
+  previousLeg,
+  waitLeg,
+  leg,
+  boardingMode,
+) {
+  if ((nextLeg?.transitLeg && !waitLeg) || previousLeg?.transitLeg) {
+    let { from, to } = leg;
+    // don't render instructions to walk bike out / drive car from vehicle
+    // if biking / driving starts from stop (no transit first)
+    if (!previousLeg?.transitLeg && leg.from.stop) {
+      from = {
+        ...from,
+        stop: null,
+      };
+    }
+    if ((!nextLeg?.transitLeg && leg.to.stop) || waitLeg) {
+      to = {
+        ...to,
+        stop: null,
+      };
+    }
+    return {
+      duration: 0,
+      start: leg.start,
+      end: leg.start,
+      distance: -1,
+      rentedBike: leg.rentedBike,
+      to,
+      from,
+      mode: boardingMode,
+    };
+  }
+  return undefined;
+}
+
+/**
+ * Determines whether to show a notification for a bike with public transit
  *
  * @param {object} leg - The leg object.
  * @param {object} config - Config data.
@@ -687,9 +769,19 @@ export function getExtendedMode(leg, config) {
  */
 export const showBikeBoardingNote = (leg, config) => {
   const { bikeBoardingModes } = config;
-  return (
-    bikeBoardingModes && bikeBoardingModes[leg.mode]?.showNotification === true
-  );
+  return bikeBoardingModes?.[leg.mode]?.showNotification;
+};
+
+/**
+ * Determines whether to show a notification for a car with public transit
+ *
+ * @param {object} leg - The leg object.
+ * @param {object} config - Config data.
+ * @returns {boolean} - Returns true if a notifier should be shown
+ */
+export const showCarBoardingNote = (leg, config) => {
+  const { carBoardingModes } = config;
+  return carBoardingModes?.[leg.mode]?.showNotification;
 };
 
 /**

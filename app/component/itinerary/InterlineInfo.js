@@ -6,7 +6,7 @@ import { getHeadsignFromRouteLongName, legTime } from '../../util/legUtils';
 import Icon from '../Icon';
 import { legShape } from '../../util/shapes';
 
-const InterlineInfo = ({ legs, leg }) => {
+const InterlineInfo = ({ legs, leg, usingOwnCarWholeTrip }) => {
   let totalWait = 0;
   const allLegs = [leg, ...legs];
   const routes = [];
@@ -18,11 +18,12 @@ const InterlineInfo = ({ legs, leg }) => {
       }
     });
   }
+  const icon = usingOwnCarWholeTrip ? 'icon-icon_wait-car' : 'icon-icon_wait';
   return (
     <div className="interline-info-container">
       {legs.length === 1 && (
         <>
-          <Icon img="icon-icon_wait" />
+          <Icon img={icon} />
           <FormattedMessage
             id="itinerary-summary.interline-wait"
             values={{
@@ -47,7 +48,7 @@ const InterlineInfo = ({ legs, leg }) => {
       )}
       {legs.length > 1 && (
         <>
-          <Icon img="icon-icon_wait" />
+          <Icon img={icon} />
           <FormattedMessage
             id="itinerary-summary.interline-wait-multiple-legs"
             values={{
@@ -72,5 +73,6 @@ const InterlineInfo = ({ legs, leg }) => {
 InterlineInfo.propTypes = {
   leg: legShape.isRequired,
   legs: PropTypes.arrayOf(legShape).isRequired,
+  usingOwnCarWholeTrip: PropTypes.bool.isRequired,
 };
 export default InterlineInfo;

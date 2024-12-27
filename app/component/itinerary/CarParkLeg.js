@@ -90,18 +90,22 @@ function CarParkLeg(props, { config, intl }) {
           />
         </div>
         {!props.noWalk && (
-          <div className={cx('itinerary-leg-action', 'car')}>
-            <div className="itinerary-leg-action-content">
-              <FormattedMessage
-                id="walk-distance-duration"
-                values={{ distance, duration }}
-                defaultMessage="Walk {distance} ({duration})"
-              />
-              <ItineraryMapAction
-                target={props.leg.from.name || ''}
-                focusAction={props.focusAction}
-              />
-            </div>
+          <div
+            className={cx(
+              'itinerary-leg-action',
+              'car',
+              'itinerary-leg-action-content',
+            )}
+          >
+            <FormattedMessage
+              id="walk-distance-duration"
+              values={{ distance, duration }}
+              defaultMessage="Walk {distance} ({duration})"
+            />
+            <ItineraryMapAction
+              target={props.leg.from.name || ''}
+              focusAction={props.focusAction}
+            />
           </div>
         )}
       </div>

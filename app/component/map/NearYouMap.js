@@ -232,7 +232,7 @@ function NearYouMap(
     const newBounds = handleBounds(position, sortedStopEdges);
     if (newBounds.length > 0) {
       setBounds(newBounds);
-      setTimeout(() => mwtRef.current?.map.updateZoom(), 1);
+      setTimeout(() => mwtRef.current?.map?.updateZoom(), 1);
     }
   }, [position, sortedStopEdges]);
 

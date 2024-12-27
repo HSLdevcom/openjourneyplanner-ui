@@ -1,5 +1,7 @@
 # Using scripts
 
+See the `themeMap` in `app/configurations/config.default.js` for configuration options.
+
 ## Before using
 ```
 source ui.sh
