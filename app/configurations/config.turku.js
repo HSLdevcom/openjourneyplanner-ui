@@ -46,7 +46,7 @@ const POI_MAP_PREFIX = `${MAP_URL}/map/v3/waltti-alt`;
 export default configMerger(walttiConfig, {
   CONFIG,
 
-  feedIds: ['TurkuTest'],
+  feedIds: ['TurkuTrunkroutes'],
 
   URL: {
     OTP: OTP_URL,
