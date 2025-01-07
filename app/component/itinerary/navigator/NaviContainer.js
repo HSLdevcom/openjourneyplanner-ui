@@ -65,7 +65,7 @@ function NaviContainer(
   const arrivalTime = legTime(lastLeg.end);
 
   const isDestinationReached =
-    position && lastLeg && distance(position, lastLeg.to) <= DESTINATION_RADIUS;
+    position && distance(position, lastLeg.to) <= DESTINATION_RADIUS;
 
   const isPastExpectedArrival = time > arrivalTime + ADDITIONAL_ARRIVAL_TIME;
 

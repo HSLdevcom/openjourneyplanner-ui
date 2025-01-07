@@ -30,6 +30,12 @@ const legQuery = graphql`
             time
           }
         }
+        stop {
+          gtfsId
+          lat
+          lon
+          name
+        }
       }
       to {
         vehicleRentalStation {

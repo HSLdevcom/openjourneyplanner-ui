@@ -652,7 +652,12 @@ const Itinerary = (
     firstDeparture = compressedLegs.find(isTransitLeg);
     if (firstDeparture) {
       let firstDepartureStopType;
-      if (firstDeparture.mode === 'RAIL' || firstDeparture.mode === 'SUBWAY') {
+      if (firstDeparture.mode === 'FERRY') {
+        firstDepartureStopType = 'from-ferrypier';
+      } else if (
+        firstDeparture.mode === 'RAIL' ||
+        firstDeparture.mode === 'SUBWAY'
+      ) {
         firstDepartureStopType = 'from-station';
       } else {
         firstDepartureStopType = 'from-stop';

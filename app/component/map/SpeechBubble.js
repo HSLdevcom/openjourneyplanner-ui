@@ -48,5 +48,5 @@ SpeechBubble.propTypes = {
 SpeechBubble.defaultProps = {
   speechBubbleStyle: 'topRight',
   text: '',
-  zIndexOffset: undefined,
+  zIndexOffset: 400,
 };

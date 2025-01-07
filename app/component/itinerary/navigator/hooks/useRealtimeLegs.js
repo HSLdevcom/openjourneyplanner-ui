@@ -91,8 +91,13 @@ function matchLegEnds(legs) {
   }
 }
 
-function getLegsOfInterest(initialLegs, time, previousFinishedLeg) {
-  if (!initialLegs?.length) {
+function getLegsOfInterest(
+  realTimeLegs,
+  time,
+  previousFinishedLeg,
+  itineraryStarted,
+) {
+  if (!realTimeLegs?.length) {
     return {
       firstLeg: undefined,
       lastLeg: undefined,
@@ -100,8 +105,7 @@ function getLegsOfInterest(initialLegs, time, previousFinishedLeg) {
       nextLeg: undefined,
     };
   }
-
-  const legs = initialLegs.reduce((acc, curr, i, arr) => {
+  const legs = realTimeLegs.reduce((acc, curr, i, arr) => {
     acc.push(curr);
     const next = arr[i + 1];
 
@@ -130,7 +134,8 @@ function getLegsOfInterest(initialLegs, time, previousFinishedLeg) {
     isAnyLegPropertyIdentical(currentLeg, previousFinishedLeg, [
       'legId',
       'legGeometry.points',
-    ])
+    ]) &&
+    itineraryStarted // prev and current are both undefined before itinerary starts
   ) {
     previousLeg = currentLeg;
     currentLeg = nextLeg;
@@ -141,7 +146,7 @@ function getLegsOfInterest(initialLegs, time, previousFinishedLeg) {
     lastLeg: legs[legs.length - 1],
     previousLeg,
     currentLeg,
-    nextLeg: initialLegs.find(({ start }) => legTime(start) >= nextStart),
+    nextLeg: realTimeLegs.find(({ start }) => legTime(start) >= nextStart),
   };
 }
 
@@ -149,11 +154,22 @@ const useRealtimeLegs = (relayEnvironment, initialLegs = []) => {
   const [realTimeLegs, setRealTimeLegs] = useState();
   const [time, setTime] = useState(Date.now());
   const previousFinishedLeg = useRef(undefined);
+  const itineraryStarted = useRef(false);
 
   const origin = useMemo(
     () => GeodeticToEcef(initialLegs[0].from.lat, initialLegs[0].from.lon),
     [initialLegs[0]],
   );
+
+  const planarLegs = useMemo(() => {
+    return initialLegs.map(leg => {
+      const geometry = polyUtil.decode(leg.legGeometry.points);
+      return {
+        ...leg,
+        geometry: geometry.map(p => GeodeticToEnu(p[0], p[1], origin)),
+      };
+    });
+  }, [initialLegs]);
 
   const queryAndMapRealtimeLegs = useCallback(
     async legs => {
@@ -188,14 +204,6 @@ const useRealtimeLegs = (relayEnvironment, initialLegs = []) => {
       return;
     }
 
-    const planarLegs = initialLegs.map(leg => {
-      const geometry = polyUtil.decode(leg.legGeometry.points);
-      return {
-        ...leg,
-        geometry: geometry.map(p => GeodeticToEnu(p[0], p[1], origin)),
-      };
-    });
-
     const rtLegMap = await queryAndMapRealtimeLegs(planarLegs).catch(err =>
       // eslint-disable-next-line no-console
       console.error('Failed to query and map real time legs', err),
@@ -219,7 +227,7 @@ const useRealtimeLegs = (relayEnvironment, initialLegs = []) => {
     // shift non-transit-legs to match possibly changed transit legs
     matchLegEnds(rtLegs);
     setRealTimeLegs(rtLegs);
-  }, [initialLegs, queryAndMapRealtimeLegs]);
+  }, [planarLegs, queryAndMapRealtimeLegs]);
 
   useEffect(() => {
     fetchAndSetRealtimeLegs();
@@ -233,10 +241,17 @@ const useRealtimeLegs = (relayEnvironment, initialLegs = []) => {
   }, [fetchAndSetRealtimeLegs]);
 
   const { firstLeg, lastLeg, currentLeg, nextLeg, previousLeg } =
-    getLegsOfInterest(realTimeLegs, time, previousFinishedLeg.current);
+    getLegsOfInterest(
+      realTimeLegs,
+      time,
+      previousFinishedLeg.current,
+      itineraryStarted.current,
+    );
 
   previousFinishedLeg.current = previousLeg;
-
+  if (currentLeg) {
+    itineraryStarted.current = true;
+  }
   // return wait legs as undefined as they are not a global concept
   return {
     realTimeLegs,

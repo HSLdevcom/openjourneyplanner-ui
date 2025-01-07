@@ -18,19 +18,11 @@ const proxy = require('express-http-proxy');
 
 global.self = { fetch: global.fetch };
 
-let Raven;
 const devhost = '';
 
-if (process.env.NODE_ENV === 'production' && process.env.SENTRY_SECRET_DSN) {
-  Raven = require('raven');
-  Raven.config(process.env.SENTRY_SECRET_DSN, {
-    captureUnhandledRejections: true,
-  }).install();
-} else {
-  process.on('unhandledRejection', (reason, p) => {
-    console.log('Unhandled Rejection at:', p, 'reason:', reason);
-  });
-}
+process.on('unhandledRejection', (reason, p) => {
+  console.log('Unhandled Rejection at:', p, 'reason:', reason);
+});
 
 /* ********* Server ********* */
 const express = require('express');
@@ -145,17 +137,7 @@ function onError(err, req, res) {
   res.end(err.message + err.stack);
 }
 
-function setUpRaven() {
-  if (process.env.NODE_ENV === 'production' && process.env.SENTRY_SECRET_DSN) {
-    app.use(Raven.requestHandler());
-  }
-}
-
 function setUpErrorHandling() {
-  if (process.env.NODE_ENV === 'production' && process.env.SENTRY_SECRET_DSN) {
-    app.use(Raven.errorHandler());
-  }
-
   app.use(onError);
 }
 
@@ -458,7 +440,6 @@ function fetchCitybikeConfigurations() {
 if (process.env.OIDC_CLIENT_ID) {
   setUpOpenId();
 }
-setUpRaven();
 setUpStaticFolders();
 setUpMiddleware();
 setUpRoutes();

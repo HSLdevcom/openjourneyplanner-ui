@@ -43,6 +43,11 @@ $fixed-width-padding: 16px;
   font-weight: $font-weight-medium;
 }
 
+.notification-header {
+  font-size: $font-size-normal;
+  font-weight: $font-weight-medium;
+}
+
 .navi-card-container {
   position: fixed;
   width: 100vw;
@@ -61,7 +66,7 @@ $fixed-width-padding: 16px;
   }
 }
 
-.navitop {
+.navi-top-card {
   margin: 0 var(--space-s) 5px var(--space-s);
   border-radius: 8px;
   min-height: 70px;
@@ -72,121 +77,112 @@ $fixed-width-padding: 16px;
   letter-spacing: -0.3px;
   box-shadow: 0 2px 4px 0 rgba(51, 51, 51, 0.2);
   width: calc(100vw - #{$fixed-width-padding});
+  cursor: default;
+  font-size: $font-size-normal;
+  font-weight: $font-weight-book;
 
   &.expanded {
     max-height: unset;
   }
 
-  .navitop-arrow {
+  .navi-top-card-arrow {
     .inverted {
       transform: rotate(180deg);
     }
   }
 
-  .content {
+  .main-card {
     width: 100%;
+    margin: var(--space-m) var(--space-l);
 
-    .navi-top-card {
-      margin: 16px 24px 16px;
+    .content {
+      display: flex;
+      flex-direction: row;
+      color: black;
+      justify-content: center;
 
-      .main-card {
-        display: flex;
-        flex-direction: row;
+      .mode {
+        width: 32px;
+        height: 32px;
         color: black;
+        margin-right: var(--space-s);
+        margin-top: var(--space-xxs);
+      }
+    }
 
-        .mode {
-          width: 32px;
-          height: 32px;
-          color: black;
-          margin-right: var(--space-s);
-          margin-top: var(--space-xxs);
-        }
+    .instructions {
+      display: flex;
+      align-items: flex-start;
+      flex-direction: column;
+      width: 100%;
+
+      &.expanded {
+        margin-bottom: 0;
       }
 
-      .instructions {
+      .vehicle-leg {
         display: flex;
+        margin-top: var(--space-xs);
+        width: 80%;
+        text-align: left;
+      }
+
+      .wait-leg {
+        display: flex;
+        margin-top: 3px;
         flex-direction: column;
-        width: 100%;
-        font-size: $font-size-normal;
-        font-weight: $font-weight-medium;
+        align-items: flex-start;
 
-        &.expanded {
-          margin-bottom: 0;
+        .route-info {
+          display: flex;
+          align-self: flex-start;
+          margin-bottom: var(--space-xcs);
         }
 
-        .destination-header {
-          font-size: $font-size-normal;
-          font-weight: 500;
-          display: flex;
-        }
-
-        .vehicle-leg {
-          display: flex;
+        .wait-duration {
           margin-top: var(--space-xs);
-          font-weight: $font-weight-book;
-          width: 80%;
-          text-align: left;
         }
 
-        .wait-leg {
-          display: flex;
-          margin-top: 3px;
-          flex-direction: column;
-          align-items: flex-start;
+        .bar {
+          border-radius: $border-radius;
+        }
 
-          .route-info {
-            display: flex;
-            align-self: flex-start;
-            margin-bottom: var(--space-xcs);
-          }
-
-          .wait-duration {
-            font-weight: $font-weight-book;
-            margin-top: var(--space-xs);
-          }
-
-          .bar {
-            border-radius: $border-radius;
-          }
-
-          .route-number {
-            .vcenter-children {
-              .vehicle-number {
-                color: white;
-                margin-top: 5px;
-              }
-
-              display: flex;
+        .route-number {
+          .vcenter-children {
+            .vehicle-number {
+              color: white;
+              margin-top: 5px;
             }
-          }
 
-          .headsign {
-            margin-left: 10px;
-            font-size: $font-size-small;
-            font-weight: $font-weight-book;
-            max-width: 85%;
-            text-align: left;
-            align-content: center;
-          }
-
-          .icon {
-            margin-top: 2px;
-            height: 25px;
-            width: 25px;
+            display: flex;
           }
         }
-      }
 
-      .duration {
-        &.fade-out {
-          animation: fadeOut 3s forwards;
+        .headsign {
+          margin-left: 10px;
+          font-size: $font-size-small;
+          max-width: 85%;
+          text-align: left;
+          align-content: center;
         }
 
-        font-size: $font-size-xsmall;
-        font-weight: $font-weight-book;
-        display: flex;
-        margin-top: 4px;
+        .icon {
+          margin-top: 2px;
+          height: 25px;
+          width: 25px;
+        }
       }
+    }
+
+    .duration {
+      &.fade-out {
+        animation: fadeOut 3s forwards;
+      }
+
+      font-size: $font-size-xsmall;
+      font-weight: $font-weight-book;
+      display: flex;
+      margin-top: 4px;
     }
 
     .extension {
@@ -206,13 +202,11 @@ $fixed-width-padding: 16px;
       .stop-count {
         display: flex;
         margin-left: 35px;
-        font-weight: $font-weight-book;
       }
 
       .extension-routenumber {
         display: flex;
         flex-direction: row;
-        font-weight: $font-weight-book;
         margin-left: 35px;
         margin-bottom: var(--space-s);
         text-align: left;
@@ -308,7 +302,6 @@ $fixed-width-padding: 16px;
       }
 
       .destination {
-        font-weight: $font-weight-book;
         text-align: left;
 
         .details {
@@ -410,6 +403,8 @@ $fixed-width-padding: 16px;
     animation:
       slideDownFromTop 0.5s ease-out forwards,
       fadeIn 0.5s ease-out forwards;
+    font-size: $font-size-xsmall;
+    font-weight: $font-weight-book;
 
     .icon-container {
       display: flex;
@@ -418,63 +413,36 @@ $fixed-width-padding: 16px;
       width: 16px;
     }
 
+    .navi-info-content {
+      display: flex;
+      flex-direction: column;
+      margin-left: 8px;
+      margin-right: 8px;
+      width: 100%;
+    }
+
     &.info {
       background-color: #e5f2fa;
     }
 
     &.warning {
       background-color: #fff8e8;
-
-      .navi-alert-content {
-        width: 100%;
-        margin: 0 8px;
-        display: flex;
-        flex-direction: column;
-      }
     }
 
     &.alert {
       background-color: #fdf3f6;
-
-      .navi-alert-content {
-        display: flex;
-        flex-direction: column;
-        margin: 0 8px;
-        width: 100%;
-
-        span:first-child {
-          font-weight: $font-weight-medium;
-          font-size: $font-size-normal;
-        }
-
-        span:last-child {
-          font-size: $font-size-small;
-          font-weight: $font-weight-book;
-        }
-
-        .header {
-          font-size: $font-size-small;
-        }
-      }
     }
 
-    .alt-btn {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
+    .new-itinerary-search {
+      padding: var(--space-s, 16px) var(--space-xs, 8px) var(--space-s, 16px)
+        var(--space-s, 16px);
+      background: #0074bf;
+      color: #fff;
+      border-radius: 999px; // var(--radius-radius-medium, 8px);
+      margin-top: var(--space-xxs);
 
-      .show-options {
-        padding: var(--space-s, 16px) var(--space-xs, 8px) var(--space-s, 16px)
-          var(--space-s, 16px);
-        background: #0074bf;
-        color: #fff;
-        border-radius: 999px; // var(--radius-radius-medium, 8px);
-        margin-top: var(--space-xxs);
-
-        /* box-shadow-card-s-strong */
-        box-shadow: 0 2px 4px 0
-          var(--color-shadow-strong, rgba(51, 51, 51, 0.2));
-      }
+      /* box-shadow-card-s-strong */
+      box-shadow: 0 2px 4px 0 var(--color-shadow-strong, rgba(51, 51, 51, 0.2));
     }
 
     &.slide-out-right {
@@ -511,95 +479,62 @@ $fixed-width-padding: 16px;
         slideDownFromTop 0.5s ease-out forwards,
         fadeOut 0.5s ease-out forwards;
     }
-
-    .navi-info {
-      display: flex;
-      flex-direction: column;
-      margin-left: 25px;
-
-      span:first-child {
-        font-weight: $font-weight-medium;
-        font-size: $font-size-normal;
-      }
-
-      span:last-child {
-        font-size: $font-size-xsmall;
-      }
-    }
-
-    .navi-info-content {
-      display: flex;
-      flex-direction: column;
-      margin-left: 8px;
-      margin-right: 8px;
-      width: 100%;
-
-      span:first-child {
-        font-weight: $font-weight-medium;
-        font-size: $font-size-normal;
-      }
-
-      span:last-child {
-        font-size: $font-size-xsmall;
-        font-weight: $font-weight-book;
-      }
-    }
   }
 }
 
 .navi-bottom-sheet {
-  .divider {
-    width: 100%;
-    height: 1px;
-    border-top: 1px solid #ddd;
-    margin-top: 10px;
-  }
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  font-size: $font-size-normal;
+  text-align: center;
+  margin: var(--space-m) var(--space-l);
 
-  .navi-bottom-controls {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    font-size: $font-size-normal;
-    text-align: center;
-    margin: 20px 24px 10px 24px;
-
-    .navi-close-button {
-      border-style: solid;
-      border-width: 1px;
-      border-radius: 20px;
-      width: 100px;
-      height: 40px;
-      text-align: center;
-      background-color: white;
-      border-color: $cancelation-red;
-      color: $cancelation-red;
-    }
+  &.ticket-link {
+    margin: var(--space-l) var(--space-m);
 
     .navi-time {
-      display: flex;
-      flex-direction: column;
-      color: $black;
-
-      .navi-daytime {
-        font-size: $font-size-xsmall;
-        font-weight: $font-weight-book;
-      }
+      align-items: inherit;
     }
+  }
 
-    .navi-ticket-button {
-      border-radius: 20px;
-      width: 100px;
-      height: 40px;
-      text-align: center;
-      margin-left: 16px;
-      background-color: $primary-color;
+  .navi-close-button {
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 20px;
+    width: 100px;
+    height: 40px;
+    text-align: center;
+    background-color: white;
+    border-color: $cancelation-red;
+    color: $cancelation-red;
+  }
+
+  .navi-time {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    color: $black;
+
+    .navi-daytime {
+      font-size: $font-size-xsmall;
+      font-weight: $font-weight-book;
+    }
+  }
+
+  .navi-ticket-button {
+    border-radius: 20px;
+    width: 100px;
+    height: 40px;
+    text-align: center;
+    margin-left: 16px;
+    background-color: $primary-color;
+    color: white;
+
+    a {
       color: white;
-
-      a {
-        color: white;
-        text-decoration: none;
-      }
+      text-decoration: none;
     }
   }
 }

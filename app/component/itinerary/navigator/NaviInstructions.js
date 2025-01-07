@@ -6,7 +6,12 @@ import { displayDistance } from '../../../util/geo-utils';
 import { legShape, configShape } from '../../../util/shapes';
 import { legDestination, legTimeStr, legTime } from '../../../util/legUtils';
 import RouteNumber from '../../RouteNumber';
-import { LEGTYPE, getLocalizedMode, getRemainingTraversal } from './NaviUtils';
+import {
+  LEGTYPE,
+  getLocalizedMode,
+  getToLocalizedMode,
+  getRemainingTraversal,
+} from './NaviUtils';
 import { durationToString } from '../../../util/timeUtils';
 import { getRouteMode } from '../../../util/modeUtils';
 
@@ -29,7 +34,7 @@ export default function NaviInstructions(
 
     return (
       <>
-        <div className="destination-header">
+        <div className="notification-header">
           <FormattedMessage id={instructions} defaultMessage="Go to" />
           &nbsp;
           {legDestination(intl, leg, null, nextLeg)}
@@ -42,10 +47,9 @@ export default function NaviInstructions(
       </>
     );
   }
-  if (legType === LEGTYPE.WAIT && nextLeg.mode !== 'WALK') {
+  if (legType === LEGTYPE.WAIT && nextLeg.transitLeg) {
     const { mode, headsign, route, start } = nextLeg;
     const hs = headsign || nextLeg.trip?.tripHeadsign;
-    const localizedMode = getLocalizedMode(mode, intl);
 
     const remainingDuration = Math.max(
       Math.ceil((legTime(start) - time) / 60000),
@@ -64,11 +68,11 @@ export default function NaviInstructions(
 
     return (
       <>
-        <div className="destination-header">
+        <div className="notification-header">
           <FormattedMessage
-            id="navigation-wait-mode"
-            values={{ mode: localizedMode }}
-            defaultMessage="Wait for {mode}"
+            id="navigation-get-mode"
+            values={{ mode: getToLocalizedMode(mode, intl) }}
+            defaultMessage="Get on the {mode}"
           />
         </div>
         <div className="wait-leg">
@@ -96,12 +100,15 @@ export default function NaviInstructions(
 
   if (legType === LEGTYPE.TRANSIT) {
     const rt = leg.realtimeState === 'UPDATED';
-
     const t = legTime(leg.end);
-    const stopOrStation = leg.to.stop.parentStation
-      ? intl.formatMessage({ id: 'navileg-from-station' })
-      : intl.formatMessage({ id: 'navileg-from-stop' });
-    const localizedMode = getLocalizedMode(leg.mode, intl);
+
+    const destId = // eslint-disable-next-line no-nested-ternary
+      leg.mode === 'FERRY'
+        ? 'navileg-at-ferrypier'
+        : leg.to.stop.parentStation
+          ? 'navileg-at-station'
+          : 'navileg-at-stop';
+    const stopOrStation = intl.formatMessage({ id: destId });
 
     const remainingDuration = Math.max(Math.ceil((t - time) / 60000), 0); // ms to minutes, >= 0
     const values = {
@@ -113,11 +120,11 @@ export default function NaviInstructions(
 
     return (
       <>
-        <div className="destination-header">
+        <div className="notification-header">
           <FormattedMessage
             id={instructions}
             defaultMessage="{mode}trip"
-            values={{ mode: localizedMode }}
+            values={{ mode: getLocalizedMode(leg.mode, intl) }}
           />
         </div>
         <div className="vehicle-leg">

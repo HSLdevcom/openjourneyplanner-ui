@@ -15,7 +15,6 @@ const STOP_TIMETABLES_URL =
   process.env.STOP_TIMETABLES_URL || 'https://dev.kartat.hsl.fi';
 const APP_PATH = process.env.APP_CONTEXT || '';
 const {
-  SENTRY_DSN,
   // AXE,
   NODE_ENV,
   API_SUBSCRIPTION_QUERY_PARAMETER_NAME,
@@ -34,7 +33,6 @@ const realtime = require('./realtimeUtils').default;
 const REALTIME_PATCH = safeJsonParse(process.env.REALTIME_PATCH) || {};
 
 export default {
-  SENTRY_DSN,
   PORT,
   // AXE,
   CONFIG,

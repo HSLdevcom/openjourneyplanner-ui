@@ -52,7 +52,7 @@ export function locationToUri(location) {
   if (!location.lat) {
     return '-';
   }
-  let address = location.address || '';
+  let address = location.address || location.name || '';
   if (location.gtfsId) {
     address = `${address}**${location.gtfsId}`;
   }

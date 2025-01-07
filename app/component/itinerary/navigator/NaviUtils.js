@@ -1,14 +1,15 @@
-import React from 'react';
 import distance from '@digitransit-search-util/digitransit-search-util-distance';
+import React from 'react';
 import { FormattedMessage } from 'react-intl';
+import { ExtendedRouteTypes } from '../../../constants';
+import { getFaresFromLegs } from '../../../util/fareUtils';
 import { GeodeticToEnu } from '../../../util/geo-utils';
 import { legTime, legTimeAcc } from '../../../util/legUtils';
-import { timeStr, epochToIso } from '../../../util/timeUtils';
-import { getFaresFromLegs } from '../../../util/fareUtils';
-import { ExtendedRouteTypes } from '../../../constants';
+import { locationToUri } from '../../../util/otpStrings';
 import { getItineraryPagePath } from '../../../util/path';
+import { epochToIso, timeStr } from '../../../util/timeUtils';
 
-const TRANSFER_SLACK = 60000;
+const TRANSFER_SLACK = 80000;
 const DISPLAY_MESSAGE_THRESHOLD = 120 * 1000; // 2 minutes
 
 export const DESTINATION_RADIUS = 20; // meters
@@ -191,12 +192,21 @@ function findTransferProblems(legs, time, position, origin) {
   }
   return problems;
 }
+
 export const getLocalizedMode = (mode, intl) => {
   return intl.formatMessage({
     id: `${mode.toLowerCase()}`,
     defaultMessage: `${mode}`,
   });
 };
+
+export const getToLocalizedMode = (mode, intl) => {
+  return intl.formatMessage({
+    id: `to-${mode.toLowerCase()}`,
+    defaultMessage: `${mode}`,
+  });
+};
+
 export function getFirstLastLegs(legs) {
   const first = legs[0];
   const last = legs[legs.length - 1];
@@ -207,7 +217,6 @@ export const getAdditionalMessages = (
   nextLeg,
   firstLeg,
   time,
-  intl,
   config,
   messages,
 ) => {
@@ -219,19 +228,23 @@ export const getAdditionalMessages = (
     legTime(leg.end) - time < DISPLAY_MESSAGE_THRESHOLD
   ) {
     // Todo: multiple fares?
-    const fare = getFaresFromLegs([nextLeg], config)[0];
-    msgs.push({
-      severity: 'INFO',
-      content: (
-        <div className="navi-info-content">
-          <FormattedMessage id="navigation-remember-ticket" />
-          <span>
-            {fare.ticketName} {fare.price} €
-          </span>
-        </div>
-      ),
-      id: 'ticket',
-    });
+    const fares = getFaresFromLegs([nextLeg], config);
+    if (fares?.length) {
+      msgs.push({
+        severity: 'INFO',
+        content: (
+          <div className="navi-info-content">
+            <span className="notification-header">
+              <FormattedMessage id="navigation-remember-ticket" />
+            </span>
+            <span>
+              {fares[0].ticketName} {fares[0].price} €
+            </span>
+          </div>
+        ),
+        id: 'ticket',
+      });
+    }
   }
   return msgs;
 };
@@ -245,8 +258,7 @@ export const getTransitLegState = (leg, intl, messages, time) => {
   }
 
   const notInSchedule =
-    estimated?.delay > DISPLAY_MESSAGE_THRESHOLD ||
-    estimated?.delay < -DISPLAY_MESSAGE_THRESHOLD;
+    estimated?.delay > TRANSFER_SLACK || estimated?.delay < -TRANSFER_SLACK;
   const localizedMode = getLocalizedMode(mode, intl);
   let content;
   let severity;
@@ -261,7 +273,7 @@ export const getTransitLegState = (leg, intl, messages, time) => {
     const translationId = `navigation-mode-${delay > 0 ? 'late' : 'early'}`;
 
     content = (
-      <div className="navi-alert-content">
+      <div className="navi-alert-content notification-header">
         <FormattedMessage id={translationId} values={{ mode: routeName }} />
       </div>
     );
@@ -270,14 +282,20 @@ export const getTransitLegState = (leg, intl, messages, time) => {
     const departure = leg.trip.stoptimesForDate[0];
     const departed =
       1000 * (departure.serviceDay + departure.scheduledDeparture);
-    if (time - departed < DISPLAY_MESSAGE_THRESHOLD) {
+    if (
+      time - departed < DISPLAY_MESSAGE_THRESHOLD &&
+      time + DISPLAY_MESSAGE_THRESHOLD > legTime(leg.start)
+    ) {
       // vehicle just departed, maybe no realtime yet
-      return [];
+      severity = 'INFO';
+    } else {
+      severity = 'WARNING';
     }
-    severity = 'WARNING';
     content = (
       <div className="navi-info-content">
-        <FormattedMessage id="navileg-mode-schedule" />
+        <span className="notification-header">
+          <FormattedMessage id="navileg-mode-schedule" />
+        </span>
         <FormattedMessage
           id="navileg-start-schedule"
           values={{
@@ -290,15 +308,23 @@ export const getTransitLegState = (leg, intl, messages, time) => {
     );
   } else {
     const { parentStation, name } = from.stop;
-    const stopOrStation = parentStation
-      ? intl.formatMessage({ id: 'from-station' })
-      : intl.formatMessage({ id: 'from-stop' });
+
+    const fromId = // eslint-disable-next-line no-nested-ternary
+      mode === 'FERRY'
+        ? 'from-ferrypier'
+        : parentStation
+          ? 'from-station'
+          : 'from-stop';
+    const stopOrStation = intl.formatMessage({ id: fromId });
+
     content = (
       <div className="navi-info-content">
-        <FormattedMessage
-          id="navileg-mode-realtime"
-          values={{ route: shortName, mode: localizedMode }}
-        />
+        <span className="notification-header">
+          <FormattedMessage
+            id="navileg-mode-realtime"
+            values={{ route: shortName, mode: localizedMode }}
+          />
+        </span>
         <FormattedMessage
           id="navileg-start-realtime"
           values={{
@@ -314,6 +340,45 @@ export const getTransitLegState = (leg, intl, messages, time) => {
   return [{ severity, content, id: legId, expiresOn: legTime(start) }];
 };
 
+export function itinerarySearchPath(time, leg, nextLeg, position, to) {
+  let from;
+  if (leg?.transitLeg) {
+    from = leg.intermediatePlaces.find(
+      p => legTime(p.arrival) > time + TRANSFER_SLACK,
+    );
+    if (!from) {
+      from = leg.to;
+    }
+  } else {
+    from = position || leg?.to || nextLeg?.from;
+  }
+  const location = { ...from, ...from.stop };
+
+  return getItineraryPagePath(locationToUri(location), to);
+}
+
+function withNewSearchBtn(children, searchCallback) {
+  return (
+    <div className="navi-info-content">
+      {children}
+      <FormattedMessage id="navigation-abort-trip" />
+      <button
+        className="new-itinerary-search"
+        type="button"
+        onClick={searchCallback}
+      >
+        <span className="notification-header">
+          <FormattedMessage id="settings-dropdown-open-label" />
+        </span>
+      </button>
+    </div>
+  );
+}
+
+function alertId(alert) {
+  return `${alert.effectiveStartDate}-${alert.alertDescriptionText}`;
+}
+
 export const getItineraryAlerts = (
   legs,
   time,
@@ -321,21 +386,16 @@ export const getItineraryAlerts = (
   origin,
   intl,
   messages,
-  location,
-  router,
+  itinerarySearchCallback,
 ) => {
-  const canceled = legs.filter(
-    leg => leg.realtimeState === 'CANCELED' && legTime(leg.start) > time,
-  );
-  let content;
   const alerts = legs.flatMap(leg => {
     return leg.alerts
       .filter(alert => {
-        const { first } = getFirstLastLegs(legs);
-        const startTime = legTime(first.start) / 1000;
-        if (messages.get(alert.id)) {
+        if (messages.get(alertId(alert))?.closed) {
           return false;
         }
+        const { first } = getFirstLastLegs(legs);
+        const startTime = legTime(first.start) / 1000;
         // show only alerts that are active when
         // the journey starts
         if (startTime < alert.effectiveStartDate) {
@@ -352,51 +412,42 @@ export const getItineraryAlerts = (
       .map(alert => ({
         severity: 'ALERT',
         content: (
-          <div className="navi-alert-content">
-            <span className="header"> {alert.alertHeaderText}</span>
+          <div className="navi-info-content">
+            <span className="notification-header">{alert.alertHeaderText}</span>
           </div>
         ),
-        id: `${alert.effectiveStartDate}-${alert.alertDescriptionText}`,
+        id: alertId(alert),
       }));
   });
-  const abortTrip = <FormattedMessage id="navigation-abort-trip" />;
-  const withShowRoutesBtn = children => (
-    <div className="alt-btn">
-      {children}
-      <button
-        className="show-options"
-        type="button"
-        onClick={() => router.push(getItineraryPagePath('POS', location.to))}
-      >
-        <FormattedMessage id="settings-dropdown-open-label" />
-      </button>
-    </div>
+
+  const canceled = legs.filter(
+    leg => leg.realtimeState === 'CANCELED' && legTime(leg.start) > time,
   );
 
-  if (canceled) {
+  if (canceled.length) {
     // show routes button only for first canceled leg.
     canceled.forEach((leg, i) => {
       const { legId, mode, route } = leg;
 
       const lMode = getLocalizedMode(mode, intl);
       const routeName = `${lMode} ${route.shortName}`;
+
       const m = (
-        <FormattedMessage
-          id="navigation-mode-canceled"
-          values={{ mode: routeName }}
-        />
+        <span className="notification-header">
+          <FormattedMessage
+            id="navigation-mode-canceled"
+            values={{ mode: routeName }}
+          />
+        </span>
       );
       // we want to show the show routes button only for the first canceled leg.
-      if (i === 0) {
-        content = withShowRoutesBtn(
-          <div className="navi-alert-content">
-            {m}
-            {abortTrip}
-          </div>,
+      const content =
+        i === 0 ? (
+          withNewSearchBtn({ m }, itinerarySearchCallback)
+        ) : (
+          <div className="navi-info-content notification-header">{m}</div>
         );
-      } else {
-        content = <div className="navi-alert-content">{m}</div>;
-      }
+
       if (!messages.get(`canceled-${legId}`)) {
         alerts.push({
           severity: 'ALERT',
@@ -407,36 +458,36 @@ export const getItineraryAlerts = (
         });
       }
     });
-  }
-
-  const transferProblems = findTransferProblems(legs, time, position, origin);
-  if (transferProblems.length) {
-    let prob = transferProblems.find(p => p.severity === 'ALERT');
-    if (!prob) {
-      // just take first
-      [prob] = transferProblems;
-    }
-    const transferId = `transfer-${prob.fromLeg.legId}-${prob.toLeg.legId}}`;
-    const alert = messages.get(transferId);
-    if (!alert || alert.severity !== prob.severity) {
-      content = withShowRoutesBtn(
-        <div className="navi-alert-content">
-          <FormattedMessage
-            id="navigation-transfer-problem"
-            values={{
-              route1: prob.fromLeg.route.shortName,
-              route2: prob.toLeg.route.shortName,
-            }}
-          />
-          {abortTrip}
-        </div>,
-      );
-      alerts.push({
-        severity: prob.severity,
-        content,
-        id: transferId,
-        hideClose: prob.severity === 'ALERT',
-      });
+  } else {
+    const transferProblems = findTransferProblems(legs, time, position, origin);
+    if (transferProblems.length) {
+      let prob = transferProblems.find(p => p.severity === 'ALERT');
+      if (!prob) {
+        // just take first
+        [prob] = transferProblems;
+      }
+      const transferId = `transfer-${prob.fromLeg.legId}-${prob.toLeg.legId}}`;
+      const alert = messages.get(transferId);
+      if (!alert || alert.severity !== prob.severity) {
+        alerts.push({
+          severity: prob.severity,
+          content: withNewSearchBtn(
+            <span className="notification-header">
+              <FormattedMessage
+                id="navigation-transfer-problem"
+                values={{
+                  route1: prob.fromLeg.route.shortName,
+                  route2: prob.toLeg.route.shortName,
+                }}
+              />
+            </span>,
+            itinerarySearchCallback,
+          ),
+          id: transferId,
+          hideClose: prob.severity === 'ALERT',
+          expiresOn: legTime(prob.toLeg.start),
+        });
+      }
     }
   }
   return alerts;

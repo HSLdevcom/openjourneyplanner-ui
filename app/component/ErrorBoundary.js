@@ -9,26 +9,17 @@ import isRelayNetworkError from '../util/relayUtils';
 export default class ErrorBoundary extends React.Component {
   static propTypes = { children: PropTypes.node.isRequired };
 
-  static contextTypes = {
-    raven: PropTypes.shape({
-      captureException: PropTypes.func.isRequired,
-    }),
-  };
-
   state = { error: null, hasRetried: false };
 
   resetState = () => this.setState({ error: null, hasRetried: true });
 
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(error) {
     if (this.state.hasRetried) {
       // Did retry, didn't help
       window.location.reload();
       return;
     }
     this.setState({ error });
-    if (this.context.raven && !isRelayNetworkError(error)) {
-      this.context.raven.captureException(error, { extra: errorInfo });
-    }
   }
 
   render() {
@@ -49,11 +40,6 @@ export default class ErrorBoundary extends React.Component {
             <button type="button" onClick={this.resetState}>
               <FormattedMessage id="try-again" defaultMessage="Try again ›" />
             </button>
-            {/*
-              <button onClick(() => this.context.raven.lastEventId() && this.context.raven.showReportDialog())>
-                <FormattedMessage id="tell-us-what-happened" defaultMessage="Tell us what happened" />
-              </button>
-              */}
           </p>
         </div>
       );
