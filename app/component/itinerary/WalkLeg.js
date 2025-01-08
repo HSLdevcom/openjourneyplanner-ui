@@ -75,9 +75,18 @@ function WalkLeg(
       : leg.to?.name;
   const entranceName = leg?.steps?.find(
     // eslint-disable-next-line no-underscore-dangle
-    step => step?.entity?.__typename === 'Entrance' || step?.entity?.code,
-  )?.entity?.code;
+    step => step?.feature?.__typename === 'Entrance' || step?.feature?.code,
+  )?.feature?.code;
 
+  const entranceAccessible = leg?.steps?.find(
+    // eslint-disable-next-line no-underscore-dangle
+    step =>
+      // eslint-disable-next-line no-underscore-dangle
+      step?.feature?.__typename === 'Entrance' ||
+      step?.feature?.wheelchairAccessible,
+  )?.feature?.wheelchairAccessible;
+  // eslint-disable-next-line no-console
+  console.log('entranceAccessible', entranceAccessible);
   return (
     <div key={index} className="row itinerary-row">
       <span className="sr-only">
@@ -233,12 +242,24 @@ function WalkLeg(
 
         <div className="itinerary-leg-action">
           {previousLeg?.mode === 'SUBWAY' && (
-            <div>
-              <FormattedMessage id="station-exit" defaultMessage="Exit" />
-              <Icon img="icon-icon_subway" />
+            <div className="subway-entrance-info-container">
+              <div className="subway-entrance-info-text">
+                <FormattedMessage id="station-exit" defaultMessage="Exit" />
+              </div>
+              <Icon
+                img="icon-icon_subway_entrance"
+                className="subway-entrance-info-icon-metro"
+              />
               {entranceName && (
                 <Icon
+                  className="subway-entrance-info-icon-code"
                   img={`icon-icon_subway_entrance_${entranceName.toLowerCase()}`}
+                />
+              )}
+              {entranceAccessible === 'POSSIBLE' && (
+                <Icon
+                  className="subway-entrance-info-icon-code"
+                  img="icon-icon_wheelchair_filled"
                 />
               )}
             </div>
@@ -263,15 +284,27 @@ function WalkLeg(
             />
           </div>
           {nextLeg?.mode === 'SUBWAY' && (
-            <div>
-              <FormattedMessage
-                id="station-entrance"
-                defaultMessage="Entrance"
+            <div className="subway-entrance-info-container">
+              <div className="subway-entrance-info-text">
+                <FormattedMessage
+                  id="station-entrance"
+                  defaultMessage="Entrance"
+                />
+              </div>
+              <Icon
+                img="icon-icon_subway_entrance"
+                className="subway-entrance-info-icon-metro"
               />
-              <Icon img="icon-icon_subway" />
               {entranceName && (
                 <Icon
+                  className="subway-entrance-info-icon-code"
                   img={`icon-icon_subway_entrance_${entranceName.toLowerCase()}`}
+                />
+              )}
+              {entranceAccessible === 'POSSIBLE' && (
+                <Icon
+                  className="subway-entrance-info-icon-code"
+                  img="icon-icon_wheelchair_filled"
                 />
               )}
             </div>

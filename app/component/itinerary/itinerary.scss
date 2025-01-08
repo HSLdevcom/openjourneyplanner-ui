@@ -1997,7 +1997,7 @@ $itinerary-tab-switch-height: 48px;
     .itinerary-leg-action {
       border-top: 1px solid #ddd;
       padding: 1.2em 0;
-      margin-bottom: 1px;
+      margin-bottom: 1em;
       height: 60px;
       font-size: 0.9375rem;
 
@@ -2017,6 +2017,36 @@ $itinerary-tab-switch-height: 48px;
             padding-top: 5px;
           }
         }
+      }
+    }
+
+    .subway-entrance-info-container {
+      display: flex;
+      align-items: center;
+      height: 24px;
+      margin-top: 1px;
+
+      .subway-entrance-info-text {
+        margin-right: 0.2em;
+        align-items: center;
+      }
+
+      .icon-container {
+        display: flex;
+      }
+
+      .subway-entrance-info-icon-metro {
+        width: 24px;
+        height: 100%;
+        vertical-align: middle;
+        display: flex;
+      }
+
+      .subway-entrance-info-icon-code {
+        width: 24px;
+        height: 100%;
+        vertical-align: middle;
+        display: flex;
       }
     }
 

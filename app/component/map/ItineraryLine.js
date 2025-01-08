@@ -114,8 +114,9 @@ class ItineraryLine extends React.Component {
         (nextLeg?.mode === 'SUBWAY' || previousLeg?.mode === 'SUBWAY')
       ) {
         const entranceObjects = leg?.steps?.filter(
-          // eslint-disable-next-line no-underscore-dangle
-          step => step?.entity?.__typename === 'Entrance' || step?.entity?.code,
+          step =>
+            // eslint-disable-next-line no-underscore-dangle
+            step?.feature?.__typename === 'Entrance' || step?.feature?.code,
         );
 
         // Select the entrance to the outside if there are multiple entrances
@@ -338,10 +339,11 @@ export default createFragmentContainer(ItineraryLine, {
         points
       }
       steps {
-        entity {
+        feature {
           __typename
           ... on Entrance {
             code
+            wheelchairAccessible
           }
         }
         lat

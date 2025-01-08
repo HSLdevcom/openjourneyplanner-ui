@@ -392,7 +392,7 @@ const withRelay = createFragmentContainer(
             points
           }
           steps {
-            entity {
+            feature {
               __typename
               ... on Entrance {
                 code

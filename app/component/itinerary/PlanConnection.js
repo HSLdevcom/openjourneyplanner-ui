@@ -77,10 +77,11 @@ const planConnection = graphql`
               gtfsId
             }
             steps {
-              entity {
+              feature {
                 __typename
                 ... on Entrance {
                   code
+                  wheelchairAccessible
                 }
               }
               lat
