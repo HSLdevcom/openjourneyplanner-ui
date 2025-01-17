@@ -1344,6 +1344,7 @@ const translations = {
     'navileg-at-stop': 'stop',
     'navileg-bicycle': 'Cycle to',
     'navileg-car': 'Drive to',
+    'navileg-hop-on': 'TODO_ja nouse kyytiin',
     'navileg-in-transit': 'TODO_{mode}matka',
     'navileg-in-transit-interline':
       'TODO_Matka jatkuu {stopOrStation} {stop}  samassa kulkuneuvossa {duration} päästä klo {legTime}',
@@ -2633,6 +2634,7 @@ const translations = {
     'navileg-at-stop': 'pysäkillä',
     'navileg-bicycle': 'Pyöräile',
     'navileg-car': 'Aja',
+    'navileg-hop-on': 'ja nouse kyytiin',
     'navileg-in-transit': '{mode}matka',
     'navileg-in-transit-interline':
       'Matka jatkuu {stopOrStation} {stop}  samassa kulkuneuvossa {duration} min päästä klo {legTime}',
@@ -5577,6 +5579,7 @@ const translations = {
     'navileg-at-stop': 'hållplats',
     'navileg-bicycle': 'Cycla till',
     'navileg-car': 'Kör till',
+    'navileg-hop-on': 'TODO_ja nouse kyytiin',
     'navileg-in-transit': 'TODO_{mode}matka',
     'navileg-in-transit-interline':
       'TODO_Matka jatkuu {stopOrStation} {stop}  samassa kulkuneuvossa {duration} päästä klo {legTime}',

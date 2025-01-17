@@ -11,6 +11,7 @@ import {
   getLocalizedMode,
   getToLocalizedMode,
   getRemainingTraversal,
+  withRealTime,
 } from './NaviUtils';
 import { durationToString } from '../../../util/timeUtils';
 import { getRouteMode } from '../../../util/modeUtils';
@@ -19,10 +20,6 @@ export default function NaviInstructions(
   { leg, nextLeg, instructions, legType, time, position, origin },
   { intl, config },
 ) {
-  const withRealTime = (rt, children) => (
-    <span className={cx('bold', { realtime: rt })}>{children}</span>
-  );
-
   if (legType === LEGTYPE.MOVE) {
     const remainingTraversal = getRemainingTraversal(
       leg,
@@ -31,13 +28,16 @@ export default function NaviInstructions(
       time,
     );
     const distance = remainingTraversal * leg.distance;
-
     return (
       <>
         <div className="notification-header">
           <FormattedMessage id={instructions} defaultMessage="Go to" />
           &nbsp;
           {legDestination(intl, leg, null, nextLeg)}
+          &nbsp;
+          {nextLeg && (
+            <FormattedMessage id="navileg-hop-on" defaultMessage="by" />
+          )}
         </div>
 
         <div className={cx('duration', { realtime: !!position })}>

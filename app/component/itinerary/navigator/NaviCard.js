@@ -99,7 +99,12 @@ export default function NaviCard(
     <div className="main-card">
       <div className="content">{mainCardContent}</div>
       {cardExpanded && (
-        <NaviCardExtension legType={legType} leg={leg} nextLeg={nextLeg} />
+        <NaviCardExtension
+          legType={legType}
+          leg={leg}
+          nextLeg={nextLeg}
+          time={time}
+        />
       )}
     </div>
   );
