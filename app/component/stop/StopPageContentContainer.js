@@ -111,7 +111,7 @@ class StopPageContent extends React.Component {
             className="stop-page momentum-scroll"
             infiniteScroll
             currentTime={this.props.currentTime}
-            isStopPage
+            showVehicles
           />
         </div>
       </ScrollableWrapper>

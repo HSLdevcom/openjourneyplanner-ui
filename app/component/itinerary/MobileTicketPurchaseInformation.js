@@ -3,7 +3,7 @@ import React from 'react';
 import { intlShape, FormattedMessage } from 'react-intl';
 import { configShape, fareShape } from '../../util/shapes';
 import { renderZoneTicket } from './ZoneTicket';
-import { getAlternativeFares } from '../../util/fareUtils';
+import { getAlternativeFares, formatFare } from '../../util/fareUtils';
 import { addAnalyticsEvent } from '../../util/analyticsUtils';
 
 export default function MobileTicketPurchaseInformation(
@@ -20,9 +20,7 @@ export default function MobileTicketPurchaseInformation(
     config.availableTickets,
   );
   const price =
-    config.showTicketPrice && fare.price > 0
-      ? `${fare.price.toFixed(2)} €`.replace('.', ',')
-      : '';
+    config.showTicketPrice && fare.price > 0 ? formatFare(fare) : '';
 
   const faresInfo = () => {
     const header = `${intl.formatMessage({

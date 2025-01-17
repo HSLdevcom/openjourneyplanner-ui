@@ -216,6 +216,7 @@ class TransitLeg extends React.Component {
                 getZoneLabel(nextZoneId, this.context.config)) ||
               undefined
             }
+            isViaPoint={place.isViaPoint}
             isLastPlace={isLastPlace}
             isCanceled={isCanceled}
           />
@@ -478,6 +479,12 @@ class TransitLeg extends React.Component {
                 to={`/${PREFIX_STOPS}/${leg.from.stop.gtfsId}`}
               >
                 {leg.from.name}
+                {leg.isViaPoint && (
+                  <Icon
+                    img="icon-icon_mapMarker-via"
+                    className="itinerary-mapmarker-icon"
+                  />
+                )}
                 <Icon
                   img="icon-icon_arrow-collapse--right"
                   className="itinerary-arrow-icon"

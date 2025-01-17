@@ -5,7 +5,10 @@ import { FormattedMessage } from 'react-intl';
 import Icon from '../../Icon';
 import StopCode from '../../StopCode';
 import PlatformNumber from '../../PlatformNumber';
-import { getZoneLabel, legTime } from '../../../util/legUtils';
+import {
+  getZoneLabel,
+  getHeadsignFromRouteLongName,
+} from '../../../util/legUtils';
 import ZoneIcon from '../../ZoneIcon';
 import { legShape, configShape } from '../../../util/shapes';
 import { getDestinationProperties, LEGTYPE } from './NaviUtils';
@@ -13,7 +16,7 @@ import { getRouteMode } from '../../../util/modeUtils';
 
 import RouteNumberContainer from '../../RouteNumberContainer';
 
-const NaviCardExtension = ({ legType, leg, nextLeg, time }, { config }) => {
+const NaviCardExtension = ({ legType, leg, nextLeg }, { config }) => {
   const { stop, name, rentalVehicle, vehicleParking, vehicleRentalStation } =
     leg ? leg.to : nextLeg.from;
   const { code, platformCode, zoneId, vehicleMode } = stop || {};
@@ -35,26 +38,22 @@ const NaviCardExtension = ({ legType, leg, nextLeg, time }, { config }) => {
   }
 
   if (legType === LEGTYPE.TRANSIT) {
-    const { intermediatePlaces, headsign, trip, realtimeState, route } = leg;
+    const { intermediatePlaces, headsign, trip, route } = leg;
     const hs = headsign || trip.tripHeadsign;
-    const idx = intermediatePlaces.findIndex(p => legTime(p.arrival) > time);
-    const count = idx > -1 ? intermediatePlaces.length - idx : 0;
-    const stopCount = (
-      <span className={cx('bold', { realtime: realtimeState === 'UPDATED' })}>
-        {count}
-      </span>
-    );
+    const stopCount = <span className="bold">{intermediatePlaces.length}</span>;
     const translationId =
-      count === 1 ? 'navileg-one-stop-remaining' : 'navileg-stops-remaining';
+      intermediatePlaces.length === 1
+        ? 'navileg-one-intermediate-stop'
+        : 'navileg-intermediate-stops';
     const mode = getRouteMode(route, config);
-
+    const iconColor =
+      config.colors.iconColors[`mode-${mode}`] || leg.route.color;
     return (
       <div className="extension">
-        <div className="extension-divider" />
         <div className="extension-routenumber">
           <RouteNumberContainer
             className={cx('line', mode)}
-            route={leg.route}
+            route={route}
             mode={mode}
             isTransitLeg
             vertical
@@ -62,7 +61,9 @@ const NaviCardExtension = ({ legType, leg, nextLeg, time }, { config }) => {
           />
           <div className="headsign">{hs}</div>
         </div>
+        <div className="extension-divider" />
         <div className="stop-count">
+          <Icon img="navi-intermediatestops" color={iconColor} />
           <FormattedMessage
             id={translationId}
             values={{ stopCount }}
@@ -72,9 +73,8 @@ const NaviCardExtension = ({ legType, leg, nextLeg, time }, { config }) => {
       </div>
     );
   }
-  return (
-    <div className="extension">
-      <div className="extension-divider" />
+  const stopInformation = () => {
+    return (
       <div className="extension-walk">
         <Icon img="navi-expand" className="icon-expand" />
         <Icon
@@ -104,6 +104,35 @@ const NaviCardExtension = ({ legType, leg, nextLeg, time }, { config }) => {
           </div>
         </div>
       </div>
+    );
+  };
+
+  if (legType === LEGTYPE.WAIT_IN_VEHICLE) {
+    const { route, trip } = nextLeg;
+    return (
+      <div className="extension">
+        <div className="extension-divider" />
+        <div className="wait-in-vehicle">
+          <FormattedMessage
+            id="navigation-interline-wait"
+            values={{
+              line: <span className="bold">{route.shortName}</span>,
+              destination: (
+                <span className="bold">
+                  {trip.tripHeadsign || getHeadsignFromRouteLongName(route)}
+                </span>
+              ),
+            }}
+          />
+        </div>
+        {stopInformation()}
+      </div>
+    );
+  }
+  return (
+    <div className="extension">
+      <div className="extension-divider" />
+      {stopInformation()}
     </div>
   );
 };
@@ -112,7 +141,6 @@ NaviCardExtension.propTypes = {
   leg: legShape,
   nextLeg: legShape,
   legType: PropTypes.string,
-  time: PropTypes.number.isRequired,
 };
 
 NaviCardExtension.defaultProps = {

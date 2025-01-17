@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useContext, useState } from 'react';
+import React, { useEffect, useContext, useState, useRef } from 'react';
 import { matchShape, routerShape } from 'found';
 import { connectToStores } from 'fluxible-addons-react';
 import distance from '@digitransit-search-util/digitransit-search-util-distance';
@@ -57,11 +57,12 @@ function StopPageMap(
   const maxShowRouteDistance = breakpoint === 'large' ? 900 : 470;
   const { environment } = useContext(ReactRelayContext);
   const [walk, setWalk] = useState(null);
+  const [bounds, setBounds] = useState(null);
+  const isRouting = useRef(false);
 
   useEffect(() => {
-    let isMounted = true;
     const fetchWalk = async targetStop => {
-      if (locationState.hasLocation && locationState.address) {
+      if (locationState.hasLocation) {
         if (distance(locationState, stop) < maxShowRouteDistance) {
           const settings = getSettings(config);
           const variables = {
@@ -87,22 +88,32 @@ function StopPageMap(
           fetchQuery(environment, walkQuery, variables)
             .toPromise()
             .then(result => {
-              if (isMounted) {
-                setWalk(
-                  result.plan.edges.length ? result.plan.edges?.[0].node : null,
-                );
-              }
+              setWalk(
+                result.plan.edges.length ? result.plan.edges?.[0].node : null,
+              );
             });
         }
       }
     };
-    if (stop && locationState.hasLocation) {
+    if (!walk && stop && locationState.hasLocation && !isRouting.current) {
+      isRouting.current = true;
       fetchWalk(stop);
     }
-    return () => {
-      isMounted = false;
-    };
-  }, [locationState.status]);
+    if (
+      locationState.lat &&
+      locationState.lon &&
+      distance(locationState, stop) < maxShowRouteDistance
+    ) {
+      setBounds([
+        [locationState.lat, locationState.lon],
+        [
+          stop.lat + (stop.lat - locationState.lat),
+          stop.lon + (stop.lon - locationState.lon),
+        ],
+      ]);
+    }
+  }, [stop, locationState.status]);
+
   if (locationState.loadingPosition) {
     return <Loading />;
   }
@@ -145,26 +156,12 @@ function StopPageMap(
   }
   const id = match.params.stopId || match.params.terminalId || match.params.id;
 
-  const mwtProps = {};
-  if (
-    locationState &&
-    locationState.lat &&
-    locationState.lon &&
-    stop.lat &&
-    stop.lon &&
-    distance(locationState, stop) < maxShowRouteDistance
-  ) {
-    mwtProps.bounds = [
-      [locationState.lat, locationState.lon],
-      [
-        stop.lat + (stop.lat - locationState.lat),
-        stop.lon + (stop.lon - locationState.lon),
-      ],
-    ];
+  const mwtProps = { zoom: 18 };
+  if (bounds) {
+    mwtProps.bounds = bounds;
   } else {
     mwtProps.lat = stop.lat;
     mwtProps.lon = stop.lon;
-    mwtProps.zoom = !match.params.stopId || stop.platformCode ? 18 : 16;
   }
 
   return (

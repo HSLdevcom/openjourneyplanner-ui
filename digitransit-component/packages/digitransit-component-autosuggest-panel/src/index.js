@@ -521,6 +521,7 @@ class DTAutosuggestPanel extends React.Component {
           list={viaPoints}
           handle={`.${styles['viapoint-before']}`}
           animation={200}
+          disabled={viaPoints.length <= 1}
           setList={items => {
             const newViaPoints = items.filter(vp => !isViaPointEmpty(vp));
             if (newViaPoints.length > 0) {
@@ -537,9 +538,15 @@ class DTAutosuggestPanel extends React.Component {
                 <div className={styles.row}>
                   <div
                     className={styles['viapoint-before']}
-                    style={{ cursor: 'move' }}
+                    style={viaPoints.length > 1 ? { cursor: 'move' } : {}}
                   >
-                    <Icon img="ellipsis" rotate={90} color={this.props.color} />
+                    {viaPoints.length > 1 && (
+                      <Icon
+                        img="ellipsis"
+                        rotate={90}
+                        color={this.props.color}
+                      />
+                    )}
                   </div>
                   <div
                     className={cx(
@@ -690,7 +697,7 @@ class DTAutosuggestPanel extends React.Component {
               className={cx(styles['add-via-point'], styles.more, {
                 collapsed: viaPoints.length > 4,
               })}
-              enabled={showViapointControl}
+              enabled={showViapointControl && viaPoints.length === 0}
               onClick={() => this.handleAddViaPointClick()}
               onKeyPress={e =>
                 isKeyboardSelectionEvent(e) && this.handleAddViaPointClick()

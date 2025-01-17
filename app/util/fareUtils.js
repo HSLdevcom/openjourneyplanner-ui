@@ -1,6 +1,11 @@
 import { uniqBy } from 'lodash';
 import { getSettings } from './planParamUtil';
 
+// TODO: support for currency
+export function formatFare(fare) {
+  return `${fare.price.toFixed(2)} €`.replace('.', ',');
+}
+
 export const getFaresFromLegs = (legs, config) => {
   if (
     !Array.isArray(legs) ||

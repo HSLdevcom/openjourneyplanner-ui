@@ -1,12 +1,10 @@
+/* eslint-disable no-param-reassign */
+import cloneDeep from 'lodash/cloneDeep';
 import polyUtil from 'polyline-encoded';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { fetchQuery } from 'react-relay';
 import { GeodeticToEcef, GeodeticToEnu } from '../../../../util/geo-utils';
-import {
-  isAnyLegPropertyIdentical,
-  legTime,
-  LegMode,
-} from '../../../../util/legUtils';
+import { legTime } from '../../../../util/legUtils';
 import { epochToIso } from '../../../../util/timeUtils';
 import { legQuery } from '../../queries/LegQuery';
 
@@ -28,8 +26,12 @@ function getLegGap(legs, index) {
 function shiftLegs(legs, i1, i2, gap) {
   for (let j = i1; j <= i2; j++) {
     const leg = legs[j];
-    leg.start.scheduledTime = epochToIso(legTime(leg.start) + gap);
-    leg.end.scheduledTime = epochToIso(legTime(leg.end) + gap);
+    if (!leg.freezeStart) {
+      leg.start.scheduledTime = epochToIso(legTime(leg.start) + gap);
+    }
+    if (!leg.freezeEnd) {
+      leg.end.scheduledTime = epochToIso(legTime(leg.end) + gap);
+    }
   }
 }
 
@@ -40,8 +42,12 @@ function scaleLegs(legs, i1, i2, k) {
     const leg = legs[j];
     const s = legTime(leg.start);
     const e = legTime(leg.end);
-    leg.start.scheduledTime = epochToIso(base + k * (s - base));
-    leg.end.scheduledTime = epochToIso(base + k * (e - base));
+    if (!leg.freezeStart) {
+      leg.start.scheduledTime = epochToIso(base + k * (s - base));
+    }
+    if (!leg.freezeEnd) {
+      leg.end.scheduledTime = epochToIso(base + k * (e - base));
+    }
   }
 }
 
@@ -91,13 +97,8 @@ function matchLegEnds(legs) {
   }
 }
 
-function getLegsOfInterest(
-  realTimeLegs,
-  time,
-  previousFinishedLeg,
-  itineraryStarted,
-) {
-  if (!realTimeLegs?.length) {
+function getLegsOfInterest(legs, now) {
+  if (!legs?.length) {
     return {
       firstLeg: undefined,
       lastLeg: undefined,
@@ -105,80 +106,60 @@ function getLegsOfInterest(
       nextLeg: undefined,
     };
   }
-  const legs = realTimeLegs.reduce((acc, curr, i, arr) => {
-    acc.push(curr);
-    const next = arr[i + 1];
 
-    // A wait leg is added, if next leg exists but it does not start when current ends
-    if (next && legTime(curr.end) !== legTime(next.start)) {
-      acc.push({
-        id: null,
-        legGeometry: { points: null },
-        mode: LegMode.Wait,
-        start: curr.end,
-        end: next.start,
-      });
-    }
-
-    return acc;
-  }, []);
-
-  let currentLeg = legs.find(
-    ({ start, end }) => legTime(start) <= time && legTime(end) >= time,
+  const currentLeg = legs.find(
+    ({ start, end }) => legTime(start) <= now && legTime(end) >= now,
   );
-  let previousLeg = legs.findLast(({ end }) => legTime(end) < time);
-  const nextLeg = legs.find(({ start }) => legTime(start) > time);
+  const previousLeg = legs.findLast(({ end }) => legTime(end) < now);
+  const nextStart = currentLeg ? legTime(currentLeg.end) : now;
 
-  // Indices are shifted by one if a previously completed leg reappears as current.
-  if (
-    isAnyLegPropertyIdentical(currentLeg, previousFinishedLeg, [
-      'legId',
-      'legGeometry.points',
-    ]) &&
-    itineraryStarted // prev and current are both undefined before itinerary starts
-  ) {
-    previousLeg = currentLeg;
-    currentLeg = nextLeg;
-  }
-  const nextStart = currentLeg ? legTime(currentLeg.end) : time;
   return {
     firstLeg: legs[0],
     lastLeg: legs[legs.length - 1],
     previousLeg,
     currentLeg,
-    nextLeg: realTimeLegs.find(({ start }) => legTime(start) >= nextStart),
+    nextLeg: legs.find(({ start }) => legTime(start) >= nextStart),
   };
 }
 
-const useRealtimeLegs = (relayEnvironment, initialLegs = []) => {
-  const [realTimeLegs, setRealTimeLegs] = useState();
-  const [time, setTime] = useState(Date.now());
-  const previousFinishedLeg = useRef(undefined);
-  const itineraryStarted = useRef(false);
+function getInitialState(legs) {
+  const time = Date.now();
+  if (legs.length) {
+    const origin = GeodeticToEcef(legs[0].from.lat, legs[0].from.lon);
+    return {
+      origin,
+      time,
+      realTimeLegs: legs.map(leg => {
+        const geometry = polyUtil.decode(leg.legGeometry.points);
+        const clonedLeg = cloneDeep(leg);
+        clonedLeg.geometry = geometry.map(p =>
+          GeodeticToEnu(p[0], p[1], origin),
+        );
+        clonedLeg.freezeStart = legTime(clonedLeg.start) <= time;
+        clonedLeg.freezeEnd = legTime(clonedLeg.end) <= time;
+        return clonedLeg;
+      }),
+    };
+  }
+  return {
+    time,
+    realTimeLegs: [],
+  };
+}
 
-  const origin = useMemo(
-    () => GeodeticToEcef(initialLegs[0].from.lat, initialLegs[0].from.lon),
-    [initialLegs[0]],
+const useRealtimeLegs = (relayEnvironment, initialLegs) => {
+  const [{ origin, time, realTimeLegs }, setTimeAndRealTimeLegs] = useState(
+    () => getInitialState(initialLegs),
   );
 
-  const planarLegs = useMemo(() => {
-    return initialLegs.map(leg => {
-      const geometry = polyUtil.decode(leg.legGeometry.points);
-      return {
-        ...leg,
-        geometry: geometry.map(p => GeodeticToEnu(p[0], p[1], origin)),
-      };
-    });
-  }, [initialLegs]);
-
   const queryAndMapRealtimeLegs = useCallback(
-    async legs => {
+    async (legs, now) => {
       if (!legs.length) {
         return {};
       }
 
       const legQueries = legs
-        .filter(leg => leg.transitLeg && legTime(leg.end) > time)
+        .filter(leg => leg.transitLeg && legTime(leg.end) > now)
         .map(leg =>
           fetchQuery(
             relayEnvironment,
@@ -197,71 +178,74 @@ const useRealtimeLegs = (relayEnvironment, initialLegs = []) => {
   );
 
   const fetchAndSetRealtimeLegs = useCallback(async () => {
-    if (
-      !initialLegs?.length ||
-      time >= legTime(initialLegs[initialLegs.length - 1].end)
-    ) {
-      return;
-    }
-
-    const rtLegMap = await queryAndMapRealtimeLegs(planarLegs).catch(err =>
-      // eslint-disable-next-line no-console
-      console.error('Failed to query and map real time legs', err),
+    const now = Date.now();
+    const rtLegMap = await queryAndMapRealtimeLegs(realTimeLegs, now).catch(
+      err =>
+        // eslint-disable-next-line no-console
+        console.error('Failed to query and map real time legs', err),
     );
 
-    const rtLegs = planarLegs.map(l => {
-      const rtLeg = l.legId ? rtLegMap[l.legId] : null;
-      if (rtLeg) {
-        return {
-          ...l,
-          ...rtLeg,
-          to: {
-            ...l.to,
-            vehicleRentalStation: rtLeg.to.vehicleRentalStation,
-          },
-        };
-      }
-      // copy leg times so that modification will not change original times
-      return { ...l, start: { ...l.start }, end: { ...l.end } };
+    setTimeAndRealTimeLegs(prev => {
+      // Maps previous legs with fresh real time transit legs. If transit leg start or end time is in the past according
+      // to previous state, the time is marked as frozen to stabilize the current navigation state.
+      // rtLegMap does not contain legs that have ended in the past as they've been filtered before updates are queried
+      const rtLegs = prev.realTimeLegs.map(l => {
+        const rtLeg =
+          l.legId && rtLegMap[l.legId] ? { ...rtLegMap[l.legId] } : null;
+        if (rtLeg) {
+          // If start is frozen, the property is deleted to prevent it from affecting any views
+          if (l.freezeStart) {
+            delete rtLeg.start;
+          }
+
+          return {
+            ...l,
+            ...rtLeg, // delete above prevent this from overwriting a previous, frozen state
+            to: {
+              ...l.to,
+              vehicleRentalStation: rtLeg.to.vehicleRentalStation,
+            },
+          };
+        }
+        // Non-transit legs are kept unfrozen for now to allow them to be scaled or shifted
+        return l;
+      });
+
+      // Shift unfrozen, non-transit-legs to match possibly changed transit legs
+      matchLegEnds(rtLegs, now);
+
+      // Freezes any leg.start|end in the past
+      rtLegs.forEach(l => {
+        l.freezeStart = legTime(l.start) <= now;
+        l.freezeEnd = legTime(l.end) <= now;
+      });
+
+      return { ...prev, time: now, realTimeLegs: rtLegs };
     });
-    // shift non-transit-legs to match possibly changed transit legs
-    matchLegEnds(rtLegs);
-    setRealTimeLegs(rtLegs);
-  }, [planarLegs, queryAndMapRealtimeLegs]);
+  }, [queryAndMapRealtimeLegs]);
 
   useEffect(() => {
     fetchAndSetRealtimeLegs();
 
     const interval = setInterval(() => {
       fetchAndSetRealtimeLegs();
-      setTime(Date.now());
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [fetchAndSetRealtimeLegs]);
+  }, []);
 
   const { firstLeg, lastLeg, currentLeg, nextLeg, previousLeg } =
-    getLegsOfInterest(
-      realTimeLegs,
-      time,
-      previousFinishedLeg.current,
-      itineraryStarted.current,
-    );
+    getLegsOfInterest(realTimeLegs, time);
 
-  previousFinishedLeg.current = previousLeg;
-  if (currentLeg) {
-    itineraryStarted.current = true;
-  }
-  // return wait legs as undefined as they are not a global concept
   return {
     realTimeLegs,
     time,
     origin,
     firstLeg,
     lastLeg,
-    previousLeg: previousLeg?.mode === LegMode.Wait ? undefined : previousLeg,
-    currentLeg: currentLeg?.mode === LegMode.Wait ? undefined : currentLeg,
-    nextLeg: nextLeg?.mode === LegMode.Wait ? undefined : nextLeg,
+    previousLeg,
+    currentLeg,
+    nextLeg,
   };
 };
 

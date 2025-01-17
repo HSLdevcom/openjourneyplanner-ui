@@ -276,6 +276,12 @@ export default function BicycleLeg(
                     to={`/${PREFIX_STOPS}/${fromStop.gtfsId}`}
                   >
                     {origin}
+                    {leg.isViaPoint && (
+                      <Icon
+                        img="icon-icon_mapMarker-via"
+                        className="itinerary-mapmarker-icon"
+                      />
+                    )}
                     <Icon
                       img="icon-icon_arrow-collapse--right"
                       className="itinerary-arrow-icon"

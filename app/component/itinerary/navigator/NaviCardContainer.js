@@ -27,7 +27,13 @@ function addMessages(incominMessages, newMessages) {
   });
 }
 
-const getLegType = (leg, firstLeg, time, countAtLegEnd) => {
+const getLegType = (
+  leg,
+  firstLeg,
+  time,
+  countAtLegEnd,
+  interlineWithPreviousLeg,
+) => {
   let legType;
   if (time < legTime(firstLeg.start)) {
     legType = LEGTYPE.PENDING;
@@ -42,7 +48,7 @@ const getLegType = (leg, firstLeg, time, countAtLegEnd) => {
       legType = LEGTYPE.TRANSIT;
     }
   } else {
-    legType = LEGTYPE.WAIT;
+    legType = interlineWithPreviousLeg ? LEGTYPE.WAIT_IN_VEHICLE : LEGTYPE.WAIT;
   }
   return legType;
 };
@@ -132,7 +138,11 @@ function NaviCardContainer(
       ),
     );
 
-    if (match.location.query?.debug !== undefined && position) {
+    if (
+      match.location.query?.debug !== undefined &&
+      position &&
+      !messages.get('debug')?.closed
+    ) {
       const info1 = `lat: ${position.lat} lon: ${position.lon}`;
       const info2 = `status: ${position.status}`;
       const info3 = `locations: ${position.locationCount} watchId: ${position.watchId}`;
@@ -226,7 +236,13 @@ function NaviCardContainer(
 
   // LegChange fires animation, we need to keep the old data until card goes out of the view.
   const l = legChanging ? previousLeg : currentLeg;
-  const legType = getLegType(l, firstLeg, time, legEndRef.current);
+  const legType = getLegType(
+    l,
+    firstLeg,
+    time,
+    legEndRef.current,
+    nextLeg?.interlineWithPreviousLeg,
+  );
 
   const containerTopPosition =
     mapLayerRef.current.getBoundingClientRect().top + TOPBAR_PADDING;

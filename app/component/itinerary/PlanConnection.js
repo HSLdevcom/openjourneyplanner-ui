@@ -117,6 +117,7 @@ const planConnection = graphql`
             }
             route {
               shortName
+              longName
               color
               gtfsId
               type
@@ -128,6 +129,7 @@ const planConnection = graphql`
             trip {
               gtfsId
               directionId
+              tripHeadsign
               stoptimesForDate {
                 stop {
                   gtfsId

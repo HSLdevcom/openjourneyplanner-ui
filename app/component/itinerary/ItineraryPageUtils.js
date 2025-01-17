@@ -472,15 +472,7 @@ export function mergeBikeTransitPlans(bikeParkPlan, bikeTransitPlan) {
  */
 export function mergeCarDirectAndTransitPlans(carDirectPlan, carTransitPlan) {
   const carDirectPlanEdges = carDirectPlan?.edges || [];
-  let carPublicEdges = carTransitPlan?.edges || [];
-
-  // If the car direct plan has a shorter duration than a transit plan, the transit plan is filtered out.
-  if (carDirectPlanEdges.length === 1) {
-    carPublicEdges = carPublicEdges.filter(
-      itinerary =>
-        itinerary.node.duration <= carDirectPlanEdges[0].node.duration,
-    );
-  }
+  const carPublicEdges = carTransitPlan?.edges || [];
 
   return {
     searchDateTime: carTransitPlan.searchDateTime,

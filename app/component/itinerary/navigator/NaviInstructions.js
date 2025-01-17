@@ -98,6 +98,31 @@ export default function NaviInstructions(
     );
   }
 
+  if (legType === LEGTYPE.WAIT_IN_VEHICLE) {
+    const totalWait = legTime(nextLeg.start) - time;
+    return (
+      <>
+        <div className="notification-header">
+          <FormattedMessage
+            id="wait-in-vehicle"
+            defaultMessage="Wait in the vehicle"
+          />
+        </div>
+        <div className="wait-leg">
+          <FormattedMessage
+            id="navigation-interline-resume"
+            values={{
+              duration: withRealTime(
+                nextLeg.realtimeState === 'UPDATED',
+                durationToString(totalWait),
+              ),
+            }}
+          />
+        </div>
+      </>
+    );
+  }
+
   if (legType === LEGTYPE.TRANSIT) {
     const rt = leg.realtimeState === 'UPDATED';
     const t = legTime(leg.end);
@@ -117,7 +142,9 @@ export default function NaviInstructions(
       duration: withRealTime(rt, remainingDuration),
       legTime: withRealTime(rt, legTimeStr(leg.end)),
     };
-
+    const translationId = nextLeg?.interlineWithPreviousLeg
+      ? 'navileg-in-transit-interline'
+      : 'navileg-leave-at';
     return (
       <>
         <div className="notification-header">
@@ -129,7 +156,7 @@ export default function NaviInstructions(
         </div>
         <div className="vehicle-leg">
           <FormattedMessage
-            id="navileg-leave-at"
+            id={translationId}
             defaultMessage="leave from the vehicle at stop {stop} in {duration} minutes at {legTime}"
             values={values}
           />

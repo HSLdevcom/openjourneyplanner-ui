@@ -21,6 +21,7 @@ import {
   getLegBadgeProps,
   isCallAgencyLeg,
   getInterliningLegs,
+  isFirstInterliningLeg,
   getTotalDistance,
   getRouteText,
   legTime,
@@ -318,8 +319,8 @@ const Itinerary = (
     }
     nameLengthSum += 10; // every leg requires some minimum space
     if (
-      leg.intermediatePlace ||
-      connectsFromViaPoint(leg, intermediatePlaces)
+      i > 0 &&
+      (leg.intermediatePlace || connectsFromViaPoint(leg, intermediatePlaces))
     ) {
       intermediateSlack +=
         legTime(leg.start) - legTime(compressedLegs[i - 1].end); // calculate time spent at each intermediate place
@@ -361,11 +362,9 @@ const Itinerary = (
     let waitLength;
     const startMs = legTime(leg.start);
     const endMs = legTime(leg.end);
-    const isNextLegLast = i + 1 === compressedLegs.length - 1;
-    const shouldRenderLastLeg =
-      isNextLegLast && lastLegLength < renderBarThreshold;
-    const previousLeg = compressedLegs[i - 1];
-    const nextLeg = compressedLegs[i + 1];
+    const previousLeg = i > 0 ? compressedLegs[i - 1] : null;
+    const nextLeg =
+      i < compressedLegs.length - 1 ? compressedLegs[i + 1] : null;
     let legLength = relativeLength(endMs - startMs);
     const longName = !leg?.route?.shortName || leg?.route?.shortName.length > 5;
 
@@ -386,24 +385,37 @@ const Itinerary = (
       }
     }
 
-    const [interliningLines, interliningLegs] = getInterliningLegs(
-      compressedLegs,
-      i,
-    );
-
-    const lastLegWithInterline = interliningLegs[interliningLegs.length - 1];
-    if (lastLegWithInterline) {
+    if (isFirstInterliningLeg(compressedLegs, i)) {
+      const [interliningLines, interliningLegs] = getInterliningLegs(
+        compressedLegs,
+        i,
+      );
       interliningWithRoute = interliningLines.join(' / ');
-      legLength =
-        ((legTime(lastLegWithInterline.end) - startMs) / durationWithoutSlack) *
-        100;
+      const lastLegWithInterline = interliningLegs[interliningLegs.length - 1];
+      legLength = relativeLength(legTime(lastLegWithInterline.end) - startMs);
+      if (
+        compressedLegs.length - 2 === i + interliningLegs.length &&
+        lastLegLength < renderBarThreshold
+      ) {
+        // If the last interlining leg is the next to last leg and
+        // if the last leg is too short add its length to the interlining leg.
+        legLength += lastLegLength;
+      }
+    } else if (leg.interlineWithPreviousLeg) {
+      // Interlining legs after the first one should be skipped, this skips to the next index.
+      return;
+    } else if (
+      compressedLegs.length - 2 === i &&
+      lastLegLength < renderBarThreshold
+    ) {
+      // Interlining legs handle this addition differently.
+      // If this leg is the next to last leg and
+      // if the last leg is too short add its length to the leg before it.
+      legLength += lastLegLength;
     }
+
     legLength += addition;
     addition = 0;
-
-    if (shouldRenderLastLeg) {
-      legLength += lastLegLength; // if the last leg is too short add its length to the leg before it
-    }
     if (legLength < renderBarThreshold && isLegOnFoot(leg)) {
       // don't render short legs that are on foot at all
       renderBar = false;
@@ -592,25 +604,23 @@ const Itinerary = (
         legLength > renderRouteNumberThreshold &&
         !longName &&
         transitLegCount < 7;
-      if (!leg.interlineWithPreviousLeg) {
-        legs.push(
-          <RouteLeg
-            key={`${leg.mode}_${startMs}`}
-            leg={leg}
-            fitRouteNumber={
-              (fitAllRouteNumbers && !longName) || renderRouteNumberForALongLeg
-            }
-            interliningWithRoute={interliningWithRoute}
-            intl={intl}
-            legLength={legLength}
-            large={breakpoint === 'large'}
-            withBicycle={withBicycle}
-            withCar={withCar}
-            hasOneTransitLeg={hasOneTransitLeg(itinerary)}
-            shortenLabels={shortenLabels}
-          />,
-        );
-      }
+      legs.push(
+        <RouteLeg
+          key={`${leg.mode}_${startMs}`}
+          leg={leg}
+          fitRouteNumber={
+            (fitAllRouteNumbers && !longName) || renderRouteNumberForALongLeg
+          }
+          interliningWithRoute={interliningWithRoute}
+          intl={intl}
+          legLength={legLength}
+          large={breakpoint === 'large'}
+          withBicycle={withBicycle}
+          withCar={withCar}
+          hasOneTransitLeg={hasOneTransitLeg(itinerary)}
+          shortenLabels={shortenLabels}
+        />,
+      );
       vehicleNames.push(
         formatMessage(
           {

@@ -80,7 +80,7 @@ class DepartureListContainer extends Component {
     infiniteScroll: PropTypes.bool,
     className: PropTypes.string,
     isTerminal: PropTypes.bool,
-    isStopPage: PropTypes.bool,
+    showVehicles: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -88,7 +88,7 @@ class DepartureListContainer extends Component {
     infiniteScroll: false,
     className: undefined,
     isTerminal: false,
-    isStopPage: false,
+    showVehicles: false,
     mode: 'BUS',
   };
 
@@ -114,19 +114,19 @@ class DepartureListContainer extends Component {
         }
       }, 100);
     }
-    if (this.context.config.showVehiclesOnStopPage && this.props.isStopPage) {
+    if (this.context.config.showVehiclesOnStopPage && this.props.showVehicles) {
       const departures = asDepartures(this.props.stoptimes)
         .filter(departure => !(this.props.isTerminal && departure.isArrival))
-        .filter(departure => this.props.currentTime < departure.stoptime);
+        .filter(departure => this.props.currentTime < departure.time);
       this.startClient(departures);
     }
   }
 
   componentDidUpdate() {
-    if (this.context.config.showVehiclesOnStopPage && this.props.isStopPage) {
+    if (this.context.config.showVehiclesOnStopPage && this.props.showVehicles) {
       const departures = asDepartures(this.props.stoptimes)
         .filter(departure => !(this.props.isTerminal && departure.isArrival))
-        .filter(departure => this.props.currentTime < departure.stoptime)
+        .filter(departure => this.props.currentTime < departure.time)
         .filter(departure => departure.realtime);
 
       this.updateClient(departures);
@@ -134,7 +134,7 @@ class DepartureListContainer extends Component {
   }
 
   componentWillUnmount() {
-    if (this.context.config.showVehiclesOnStopPage && this.props.isStopPage) {
+    if (this.context.config.showVehiclesOnStopPage && this.props.showVehicles) {
       const { client } = this.context.getStore('RealTimeInformationStore');
       if (client) {
         this.context.executeAction(stopRealTimeClient, client);

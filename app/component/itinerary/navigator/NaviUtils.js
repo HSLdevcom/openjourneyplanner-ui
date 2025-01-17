@@ -2,35 +2,39 @@ import distance from '@digitransit-search-util/digitransit-search-util-distance'
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import { ExtendedRouteTypes } from '../../../constants';
-import { getFaresFromLegs } from '../../../util/fareUtils';
+import { getFaresFromLegs, formatFare } from '../../../util/fareUtils';
 import { GeodeticToEnu } from '../../../util/geo-utils';
 import { legTime, legTimeAcc } from '../../../util/legUtils';
 import { locationToUri } from '../../../util/otpStrings';
 import { getItineraryPagePath } from '../../../util/path';
-import { epochToIso, timeStr } from '../../../util/timeUtils';
+import { durationToString, epochToIso, timeStr } from '../../../util/timeUtils';
 
-const TRANSFER_SLACK = 80000;
+const TRANSFER_SLACK = 60000;
 const DISPLAY_MESSAGE_THRESHOLD = 120 * 1000; // 2 minutes
 
 export const DESTINATION_RADIUS = 20; // meters
 
 export function summaryString(legs, time, previousLeg, currentLeg, nextLeg) {
   const parts = epochToIso(time).split('T')[1].split('+');
-  let msg = `${parts[0]}`;
+  let msg = `${parts[0]} `;
   const colors = [];
 
   legs.forEach(l => {
+    let color = 'color:gray';
     if (legTime(l.start) <= time && time <= legTime(l.end)) {
-      colors.push('color:green');
+      color = 'color:green';
     } else if (l.transitLeg) {
-      colors.push('color: #aaaaff');
-    } else {
-      colors.push('color: #aaaaaa');
+      color = 'color:pink';
     }
-    msg += `%c ${legTimeAcc(l.start)}-${legTimeAcc(l.end)}`;
+    colors.push(l.freezeStart ? 'color:lightblue' : color);
+    msg += `%c${legTimeAcc(l.start)}`;
+    colors.push('color:gray');
+    msg += `%c-`;
+    colors.push(l.freezeEnd ? 'color:lightblue' : color);
+    msg += `%c${legTimeAcc(l.end)} `;
   });
-  colors.push('color: #bbbbbb');
-  msg += `%c ${previousLeg?.mode} ${currentLeg?.mode} ${nextLeg?.mode}`;
+  colors.push('color:gray');
+  msg += `%c${previousLeg?.mode} ${currentLeg?.mode} ${nextLeg?.mode}`;
   colors.unshift(msg);
 
   return colors;
@@ -119,7 +123,7 @@ export function getRemainingTraversal(leg, pos, origin, time) {
 }
 
 function findTransferProblems(legs, time, position, origin) {
-  const problems = [];
+  const transfers = [];
 
   for (let i = 1; i < legs.length - 1; i++) {
     const prev = legs[i - 1];
@@ -130,11 +134,22 @@ function findTransferProblems(legs, time, position, origin) {
       // transfer at a stop
       const start = legTime(leg.start);
       const end = legTime(prev.end);
-      if (start > time && start - end < TRANSFER_SLACK) {
-        problems.push({
-          severity: start > end ? 'ALERT' : 'WARNING',
+      if (start > time) {
+        const duration = start - end;
+        let severity;
+        if (start < end) {
+          severity = 'ALERT';
+        } else if (duration < TRANSFER_SLACK) {
+          severity = 'WARNING';
+        } else {
+          severity = 'INFO'; // normal transfer
+        }
+        transfers.push({
+          severity,
           fromLeg: prev,
           toLeg: leg,
+          duration,
+          slack: duration,
         });
       }
     }
@@ -143,21 +158,22 @@ function findTransferProblems(legs, time, position, origin) {
       // transfer with some walking
       const t1 = legTime(prev.end);
       const t2 = legTime(next.start);
+      const duration = t2 - t1;
       if (t2 > time) {
         // transfer is not over yet
         if (t1 > t2) {
           // certain failure, next transit departs before previous arrives
-          problems.push({
+          transfers.push({
             severity: 'ALERT',
             fromLeg: prev,
             toLeg: next,
           });
         } else {
-          const transferDuration = leg.duration * 1000; // this is original duration
+          const legDuration = leg.duration * 1000; // this is original duration
           // check if user is already at the next departure stop
           const atStop =
             position && distance(position, leg.to) <= DESTINATION_RADIUS;
-          const slack = t2 - t1 - transferDuration;
+          let slack = duration - legDuration;
           if (!atStop && slack < TRANSFER_SLACK) {
             // original transfer not possible
             let severity = 'WARNING';
@@ -170,27 +186,39 @@ function findTransferProblems(legs, time, position, origin) {
               timeLeft = (t2 - time) / 1000;
             } else {
               toGo = 1.0;
-              timeLeft = (t2 - t1) / 1000; // should we consider also transfer slack here?
+              timeLeft = duration / 1000; // should we consider also transfer slack here?
             }
-            if (toGo > 0 && timeLeft > 0) {
+            if (toGo > 0) {
               const originalSpeed = leg.distance / leg.duration;
-              const newSpeed = (toGo * leg.distance) / timeLeft;
-              if (newSpeed > 2 * originalSpeed) {
-                // double speed compared to user's routing preference
+              const newSpeed = (toGo * leg.distance) / (timeLeft + 0.0001);
+              if (newSpeed > 1.5 * originalSpeed) {
+                // too high speed compared to user's routing preference
                 severity = 'ALERT';
               }
             }
-            problems.push({
+            transfers.push({
               severity,
               fromLeg: prev,
               toLeg: next,
+              duration,
+            });
+          } else {
+            if (atStop) {
+              slack = TRANSFER_SLACK * 2; // no slack prob if at stop
+            }
+            transfers.push({
+              severity: 'INFO',
+              fromLeg: prev,
+              toLeg: next,
+              duration,
+              slack,
             });
           }
         }
       }
     }
   }
-  return problems;
+  return transfers;
 }
 
 export const getLocalizedMode = (mode, intl) => {
@@ -207,11 +235,6 @@ export const getToLocalizedMode = (mode, intl) => {
   });
 };
 
-export function getFirstLastLegs(legs) {
-  const first = legs[0];
-  const last = legs[legs.length - 1];
-  return { first, last };
-}
 export const getAdditionalMessages = (
   leg,
   nextLeg,
@@ -238,7 +261,7 @@ export const getAdditionalMessages = (
               <FormattedMessage id="navigation-remember-ticket" />
             </span>
             <span>
-              {fares[0].ticketName} {fares[0].price} €
+              {fares[0].ticketName} {formatFare(fares[0])}
             </span>
           </div>
         ),
@@ -274,7 +297,7 @@ export const getTransitLegState = (leg, intl, messages, time) => {
 
     content = (
       <div className="navi-alert-content notification-header">
-        <FormattedMessage id={translationId} values={{ mode: routeName }} />
+        <FormattedMessage id={translationId} values={{ name: routeName }} />
       </div>
     );
     severity = 'WARNING';
@@ -282,10 +305,7 @@ export const getTransitLegState = (leg, intl, messages, time) => {
     const departure = leg.trip.stoptimesForDate[0];
     const departed =
       1000 * (departure.serviceDay + departure.scheduledDeparture);
-    if (
-      time - departed < DISPLAY_MESSAGE_THRESHOLD &&
-      time + DISPLAY_MESSAGE_THRESHOLD > legTime(leg.start)
-    ) {
+    if (time + DISPLAY_MESSAGE_THRESHOLD < departed) {
       // vehicle just departed, maybe no realtime yet
       severity = 'INFO';
     } else {
@@ -375,9 +395,7 @@ function withNewSearchBtn(children, searchCallback) {
   );
 }
 
-function alertId(alert) {
-  return `${alert.effectiveStartDate}-${alert.alertDescriptionText}`;
-}
+const notedSeverity = ['WARNING', 'ALERT'];
 
 export const getItineraryAlerts = (
   legs,
@@ -388,36 +406,34 @@ export const getItineraryAlerts = (
   messages,
   itinerarySearchCallback,
 ) => {
-  const alerts = legs.flatMap(leg => {
-    return leg.alerts
-      .filter(alert => {
-        if (messages.get(alertId(alert))?.closed) {
-          return false;
+  const alerts = [];
+  legs.forEach(leg => {
+    if (leg.transitLeg && legTime(leg.end) > time) {
+      const id = `alert-${leg.legId}`; // allow only one alert per leg
+      if (!messages.get(id)?.closed) {
+        const alert = leg.alerts.find(al => {
+          return (
+            // show only alerts that are active during the leg
+            legTime(leg.end) / 1000 > al.effectiveStartDate &&
+            legTime(leg.start) / 1000 < al.effectiveEndDate &&
+            notedSeverity.includes(al.alertSeverityLevel)
+          );
+        });
+        if (alert) {
+          alerts.push({
+            severity: 'ALERT',
+            content: (
+              <div className="navi-info-content">
+                <span className="notification-header">
+                  {alert.alertHeaderText}
+                </span>
+              </div>
+            ),
+            id,
+          });
         }
-        const { first } = getFirstLastLegs(legs);
-        const startTime = legTime(first.start) / 1000;
-        // show only alerts that are active when
-        // the journey starts
-        if (startTime < alert.effectiveStartDate) {
-          return false;
-        }
-        if (
-          alert.alertSeverityLevel === 'WARNING' ||
-          alert.alertSeverityLevel === 'SEVERE'
-        ) {
-          return true;
-        }
-        return false;
-      })
-      .map(alert => ({
-        severity: 'ALERT',
-        content: (
-          <div className="navi-info-content">
-            <span className="notification-header">{alert.alertHeaderText}</span>
-          </div>
-        ),
-        id: alertId(alert),
-      }));
+      }
+    }
   });
 
   const canceled = legs.filter(
@@ -436,7 +452,7 @@ export const getItineraryAlerts = (
         <span className="notification-header">
           <FormattedMessage
             id="navigation-mode-canceled"
-            values={{ mode: routeName }}
+            values={{ name: routeName }}
           />
         </span>
       );
@@ -459,35 +475,84 @@ export const getItineraryAlerts = (
       }
     });
   } else {
-    const transferProblems = findTransferProblems(legs, time, position, origin);
-    if (transferProblems.length) {
-      let prob = transferProblems.find(p => p.severity === 'ALERT');
-      if (!prob) {
-        // just take first
-        [prob] = transferProblems;
+    const transfers = findTransferProblems(legs, time, position, origin);
+    if (transfers.length) {
+      const prob =
+        transfers.find(p => p.severity === 'ALERT') ||
+        transfers.find(p => p.severity === 'WARNING');
+      if (prob) {
+        const transferId = `transfer-${prob.fromLeg.legId}-${prob.toLeg.legId}}`;
+        const alert = messages.get(transferId);
+        if (!alert?.closed || alert?.severity !== prob.severity) {
+          let content;
+          if (prob.severity === 'ALERT') {
+            content = withNewSearchBtn(
+              <span className="notification-header">
+                <FormattedMessage
+                  id="navigation-transfer-problem"
+                  values={{
+                    route1: prob.fromLeg.route.shortName,
+                    route2: prob.toLeg.route.shortName,
+                  }}
+                />
+              </span>,
+              itinerarySearchCallback,
+            );
+          } else {
+            content = (
+              <div className="navi-info-content">
+                <span className="notification-header">
+                  <FormattedMessage id="navigation-hurry-transfer" />
+                </span>
+                <FormattedMessage
+                  id="navigation-hurry-transfer-value"
+                  values={{
+                    transfer: `${prob.fromLeg.route.shortName} - ${prob.toLeg.route.shortName}`,
+                    time: durationToString(prob.duration),
+                  }}
+                />
+              </div>
+            );
+          }
+
+          alerts.push({
+            severity: prob.severity,
+            content,
+            id: transferId,
+            hideClose: prob.severity === 'ALERT',
+            expiresOn: legTime(prob.toLeg.start),
+          });
+        }
       }
-      const transferId = `transfer-${prob.fromLeg.legId}-${prob.toLeg.legId}}`;
-      const alert = messages.get(transferId);
-      if (!alert || alert.severity !== prob.severity) {
-        alerts.push({
-          severity: prob.severity,
-          content: withNewSearchBtn(
-            <span className="notification-header">
-              <FormattedMessage
-                id="navigation-transfer-problem"
-                values={{
-                  route1: prob.fromLeg.route.shortName,
-                  route2: prob.toLeg.route.shortName,
-                }}
-              />
-            </span>,
-            itinerarySearchCallback,
-          ),
-          id: transferId,
-          hideClose: prob.severity === 'ALERT',
-          expiresOn: legTime(prob.toLeg.start),
-        });
-      }
+      // show notification when problem gets solved
+      transfers.forEach(tr => {
+        if (tr.severity === 'INFO' && tr.slack > 1.5 * TRANSFER_SLACK) {
+          const id = `transfer-${tr.fromLeg.legId}-${tr.toLeg.legId}}`;
+          const alert = messages.get(id);
+          if (alert && alert.severity !== 'INFO') {
+            // a warning/alert has been showm
+            alerts.push({
+              severity: 'INFO',
+              content: (
+                <div className="navi-info-content">
+                  <span className="notification-header">
+                    <FormattedMessage id="navigation-hurry-transfer-solved" />
+                  </span>
+                  <FormattedMessage
+                    id="navigation-hurry-transfer-solved-details"
+                    values={{
+                      transfer: `${tr.fromLeg.route.shortName} - ${tr.toLeg.route.shortName}`,
+                      time: durationToString(tr.duration),
+                    }}
+                  />
+                </div>
+              ),
+              id,
+              expiresOn: legTime(tr.toLeg.start),
+            });
+          }
+        }
+      });
     }
   }
   return alerts;
@@ -583,4 +648,5 @@ export const LEGTYPE = {
   TRANSIT: 'TRANSIT',
   PENDING: 'PENDING',
   END: 'END',
+  WAIT_IN_VEHICLE: 'WAIT_IN_VEHICLE',
 };

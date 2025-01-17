@@ -1,6 +1,7 @@
 /* eslint-disable react/no-array-index-key */
 import PropTypes from 'prop-types';
 import React from 'react';
+import { matchShape } from 'found';
 import {
   configShape,
   fareShape,
@@ -25,12 +26,14 @@ import {
   isCallAgencyLeg,
   isLegOnFoot,
   legTime,
+  markViaPoints,
   getBoardingLeg,
 } from '../../util/legUtils';
 import { getRouteMode } from '../../util/modeUtils';
 import { addAnalyticsEvent } from '../../util/analyticsUtils';
 import Profile from './Profile';
 import BikeParkLeg from './BikeParkLeg';
+import { getIntermediatePlaces } from '../../util/otpStrings';
 
 const stopCode = stop => stop && stop.code && <StopCode code={stop.code} />;
 
@@ -53,7 +56,10 @@ export default class Legs extends React.Component {
     relayEnvironment: relayShape,
   };
 
-  static contextTypes = { config: configShape };
+  static contextTypes = {
+    config: configShape,
+    match: matchShape,
+  };
 
   static defaultProps = {
     fares: [],
@@ -95,7 +101,10 @@ export default class Legs extends React.Component {
     } = this.props;
     const { waitThreshold } = this.context.config.itinerary;
 
-    const compressedLegs = compressLegs(itinerary.legs, true).map(leg => ({
+    const { location } = this.context.match;
+    const intermediatePlaces = getIntermediatePlaces(location.query);
+    const itineraryLegs = markViaPoints(itinerary.legs, intermediatePlaces);
+    const compressedLegs = compressLegs(itineraryLegs, true).map(leg => ({
       showBikeBoardingInformation,
       showCarBoardingInformation,
       ...leg,
@@ -163,10 +172,15 @@ export default class Legs extends React.Component {
           !isNextLegInterlining &&
           leg.to.stop
         ) {
+          const waitLegProps = { ...leg };
+          if (nextLeg && nextLeg.isViaPoint) {
+            waitLegProps.isViaPoint = true;
+            nextLeg.isViaPoint = false;
+          }
           waitLeg = (
             <WaitLeg
               index={j}
-              leg={leg}
+              leg={waitLegProps}
               start={leg.end}
               waitTime={waitTime}
               focusAction={this.focus(leg.to)}
@@ -289,7 +303,7 @@ export default class Legs extends React.Component {
       legs.push(
         <WalkLeg
           index={numberOfLegs}
-          leg={lastLeg}
+          leg={{ ...lastLeg, isViaPoint: false }}
           previousLeg={lastLeg}
           focusAction={this.focus(lastLeg.to)}
           focusToLeg={this.focusToLeg(lastLeg)}

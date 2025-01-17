@@ -1585,6 +1585,11 @@ $itinerary-tab-switch-height: 48px;
           margin-left: 6px;
         }
 
+        .itinerary-mapmarker-icon {
+          font-size: 12px;
+          margin-left: 6px;
+        }
+
         .itinerary-intermediate-stop-name {
           flex-grow: 0;
         }
@@ -1762,6 +1767,11 @@ $itinerary-tab-switch-height: 48px;
 
           &.itinerary-arrow-icon {
             font-size: 10px;
+            margin-left: 6px;
+          }
+
+          &.itinerary-mapmarker-icon {
+            font-size: 12px;
             margin-left: 6px;
           }
         }

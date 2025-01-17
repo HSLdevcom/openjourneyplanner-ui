@@ -8,6 +8,7 @@ import { displayDistance } from '../../util/geo-utils';
 import { durationToString } from '../../util/timeUtils';
 import ItineraryCircleLineWithIcon from './ItineraryCircleLineWithIcon';
 import ItineraryMapAction from './ItineraryMapAction';
+import Icon from '../Icon';
 
 const BikeParkLeg = (
   { leg, index, focusAction, bikePark },
@@ -55,6 +56,12 @@ const BikeParkLeg = (
                 > */}
             <div className="address">
               <FormattedMessage id="bike-park" />
+              {leg.isViaPoint && (
+                <Icon
+                  img="icon-icon_mapMarker-via"
+                  className="itinerary-mapmarker-icon"
+                />
+              )}
               {/* TODO */}
               {/* {bikePark && (
                   <Icon
